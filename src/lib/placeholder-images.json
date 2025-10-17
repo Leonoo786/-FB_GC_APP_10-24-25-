@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "1",
+      "description": "A modern skyscraper in a bustling city center.",
+      "imageUrl": "https://images.unsplash.com/photo-1707077865701-2854996afc4f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxvZmZpY2UlMjBidWlsZGluZ3xlbnwwfHx8fDE3NjA3MzExNzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "office building"
+    },
+    {
+      "id": "2",
+      "description": "A new retail shopping center with a clean, modern design.",
+      "imageUrl": "https://images.unsplash.com/photo-1595879171931-4ca27febc4bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxyZXRhaWwlMjBjZW50ZXJ8ZW58MHx8fHwxNzYwNzM5OTYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "retail center"
+    },
+    {
+      "id": "3",
+      "description": "A large industrial warehouse near a port.",
+      "imageUrl": "https://images.unsplash.com/photo-1565610222536-ef125c59da2e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxpbmR1c3RyaWFsJTIwd2FyZWhvdXNlfGVufDB8fHx8MTc2MDczMzIxNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "industrial warehouse"
+    }
+  ]
 }
