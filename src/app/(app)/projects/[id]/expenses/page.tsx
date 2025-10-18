@@ -53,9 +53,9 @@ export default function ProjectExpensesPage({
     return <div>Loading...</div>;
   }
   const { expenses, budgetCategories } = appState;
-  const projectExpenses = expenses.filter(
+  const projectExpenses = expenses ? expenses.filter(
     (exp) => exp.projectId === params.id
-  );
+  ) : [];
 
   const handleImport = () => {
     toast({
