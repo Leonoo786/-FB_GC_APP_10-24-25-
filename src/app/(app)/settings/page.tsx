@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +40,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast";
+import { AppStateContext } from "@/context/app-state-context";
 
 
 const notificationItems = [
@@ -53,6 +54,7 @@ const notificationItems = [
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const appState = useContext(AppStateContext);
 
   // Profile State
   const [photoUrl, setPhotoUrl] = useState("https://i.pravatar.cc/150?u=john");
@@ -65,8 +67,8 @@ export default function SettingsPage() {
   const [bio, setBio] = useState("");
 
   // Company State
-  const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
-  const [companyName, setCompanyName] = useState("FancyBuilders Construction");
+  const [companyName, setCompanyName] = useState(appState?.companyName || "FancyBuilders Construction");
+  const [companyLogoUrl, setCompanyLogoUrl] = useState(appState?.companyLogoUrl || "/your-logo.png");
   const [industry, setIndustry] = useState("Construction");
   const [companySize, setCompanySize] = useState("51-200");
   const [address, setAddress] = useState("123 Construction Avenue");
@@ -93,7 +95,11 @@ export default function SettingsPage() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCompanyLogoUrl(e.target?.result as string);
+        const result = e.target?.result as string;
+        setCompanyLogoUrl(result);
+        if (appState?.setCompanyLogoUrl) {
+            appState.setCompanyLogoUrl(result);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -107,6 +113,12 @@ export default function SettingsPage() {
   };
   
   const handleCompanySaveChanges = () => {
+    if(appState?.setCompanyName) {
+        appState.setCompanyName(companyName);
+    }
+    if(appState?.setCompanyLogoUrl) {
+        appState.setCompanyLogoUrl(companyLogoUrl);
+    }
     toast({
       title: "Changes Saved",
       description: "Your company information has been updated.",
@@ -551,5 +563,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
