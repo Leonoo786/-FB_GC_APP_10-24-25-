@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -27,13 +28,44 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { FinancialBreakdownChart } from './_components/financial-breakdown-chart';
-import { projects } from '@/lib/data';
+import { projects, budgetItems, expenses as allExpenses } from '@/lib/data';
 
 export default function ProfitLossPage() {
-  const bidAmount = 5770758;
-  const budget = 4920565;
-  const expenses = 0;
-  const profitLoss = bidAmount - expenses;
+  const [selectedProjectId, setSelectedProjectId] = useState('all');
+
+  const financialData = useMemo(() => {
+    const relevantProjects =
+      selectedProjectId === 'all'
+        ? projects
+        : projects.filter((p) => p.id === selectedProjectId);
+
+    const bidAmount = relevantProjects.reduce(
+      (acc, p) => acc + p.revisedContract,
+      0
+    );
+
+    const projectIds = relevantProjects.map((p) => p.id);
+
+    const relevantBudgetItems = budgetItems.filter((item) =>
+      projectIds.includes(item.projectId)
+    );
+    const budget = relevantBudgetItems.reduce(
+      (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
+      0
+    );
+
+    const relevantExpenses = allExpenses.filter((expense) =>
+        projectIds.includes(expense.projectId)
+    );
+    const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
+
+    const profitLoss = bidAmount - expenses;
+    
+    const estimatedProfit = bidAmount - budget;
+
+
+    return { bidAmount, budget, expenses, profitLoss, estimatedProfit };
+  }, [selectedProjectId]);
 
   return (
     <div className="space-y-6">
@@ -46,7 +78,10 @@ export default function ProfitLossPage() {
             View financial performance across projects or for specific projects
           </p>
         </div>
-        <Select defaultValue="all">
+        <Select
+          defaultValue="all"
+          onValueChange={(value) => setSelectedProjectId(value)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select a project" />
           </SelectTrigger>
@@ -82,7 +117,7 @@ export default function ProfitLossPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {bidAmount.toLocaleString('en-US', {
+                  {financialData.bidAmount.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -97,7 +132,7 @@ export default function ProfitLossPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {budget.toLocaleString('en-US', {
+                  {financialData.budget.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -114,7 +149,7 @@ export default function ProfitLossPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {expenses.toLocaleString('en-US', {
+                  {financialData.expenses.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -133,7 +168,7 @@ export default function ProfitLossPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {profitLoss.toLocaleString('en-US', {
+                  {financialData.profitLoss.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -151,7 +186,15 @@ export default function ProfitLossPage() {
                 </p>
               </CardHeader>
               <CardContent className="pl-2">
-                <FinancialBreakdownChart />
+                <FinancialBreakdownChart
+                  data={{
+                    bidAmount: financialData.bidAmount,
+                    budget: financialData.budget,
+                    expenses: financialData.expenses,
+                    actualProfit: financialData.profitLoss,
+                    estimatedProfit: financialData.estimatedProfit,
+                  }}
+                />
               </CardContent>
             </Card>
           </div>
