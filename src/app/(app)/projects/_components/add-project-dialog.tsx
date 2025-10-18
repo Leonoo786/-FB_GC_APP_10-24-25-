@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -36,6 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useContext } from 'react';
+import { AppStateContext } from '@/context/app-state-context';
+import type { Project } from '@/lib/types';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -64,6 +68,8 @@ export function AddProjectDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const { toast } = useToast();
+  const appState = useContext(AppStateContext);
+
   const form = useForm<AddProjectFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -72,8 +78,39 @@ export function AddProjectDialog({
     }
   });
 
-  const onSubmit = (data: AddProjectFormValues) => {
-    console.log('New project:', data);
+  const onSubmit = async (data: AddProjectFormValues) => {
+    if (!appState) return;
+
+    let imageUrl = 'https://picsum.photos/seed/default/600/400';
+    if (data.projectImage && data.projectImage[0]) {
+      const file = data.projectImage[0] as File;
+      imageUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    const newProject: Project = {
+      id: crypto.randomUUID(),
+      projectNumber: `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
+      name: data.name,
+      ownerName: data.client,
+      addressStreet: data.addressStreet || '',
+      city: data.city || '',
+      zip: data.zip || '',
+      description: data.description,
+      status: data.status,
+      percentComplete: data.progress,
+      startDate: format(data.startDate, 'yyyy-MM-dd'),
+      endDate: format(data.endDate, 'yyyy-MM-dd'),
+      revisedContract: 0, // Default value
+      imageUrl: imageUrl,
+      imageHint: 'custom project',
+    };
+
+    appState.setProjects(currentProjects => [newProject, ...currentProjects]);
+    
     toast({
       title: 'Project Created',
       description: `Successfully created project: ${data.name}.`,
