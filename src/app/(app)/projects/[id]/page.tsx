@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { useState, use, useContext, useRef } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
-import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
+import { AddEditBudgetItemDialog } from "./_components/add-edit-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import type { BudgetItem } from "@/lib/types";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -27,14 +30,42 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         return null;
     }
     
+    const { budgetItems, setBudgetItems } = appState;
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
-    const [isAddBudgetItemOpen, setIsAddBudgetItemOpen] = useState(false);
-
-    const projectBudgetItems = appState.budgetItems.filter(item => item.projectId === project.id);
+    
+    const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
     };
+
+    const handleNewItem = () => {
+        setSelectedBudgetItem(null);
+        setDialogOpen(true);
+    };
+
+    const handleEditItem = (item: BudgetItem) => {
+        setSelectedBudgetItem(item);
+        setDialogOpen(true);
+    };
+
+    const handleDeleteItem = (itemId: string) => {
+        setBudgetItems(current => current.filter(item => item.id !== itemId));
+        toast({
+            title: "Budget Item Deleted",
+            description: "The item has been removed from the budget.",
+            variant: "destructive"
+        });
+    };
+
+    const handleSaveItem = (itemToSave: BudgetItem) => {
+        if (itemToSave.id) { // Editing existing item
+            setBudgetItems(current => current.map(item => item.id === itemToSave.id ? itemToSave : item));
+        } else { // Adding new item
+            setBudgetItems(current => [{...itemToSave, id: crypto.randomUUID()}, ...current]);
+        }
+    };
+
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -92,7 +123,13 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                 onChange={handleFileChange}
                 accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
             />
-            <AddBudgetItemDialog open={isAddBudgetItemOpen} onOpenChange={setIsAddBudgetItemOpen} projectId={project.id} />
+            <AddEditBudgetItemDialog 
+                open={dialogOpen} 
+                onOpenChange={setDialogOpen}
+                projectId={project.id}
+                budgetItem={selectedBudgetItem}
+                onSave={handleSaveItem}
+            />
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
@@ -109,7 +146,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 <Upload className="mr-2 h-4 w-4" />
                                 Import
                             </Button>
-                            <Button onClick={() => setIsAddBudgetItemOpen(true)}>
+                            <Button onClick={handleNewItem}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Budget Item
                             </Button>
@@ -155,8 +192,26 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action cannot be undone. This will permanently delete this budget item.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
