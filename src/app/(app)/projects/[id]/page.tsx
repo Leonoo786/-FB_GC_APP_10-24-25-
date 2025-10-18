@@ -1,12 +1,11 @@
 
 'use client'
-import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useState, use, useContext } from "react";
+import { useState, use, useContext, useRef } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
 import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
@@ -17,6 +16,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const params = use(paramsProp);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -30,15 +30,33 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
 
     const projectBudgetItems = appState.budgetItems.filter(item => item.projectId === project.id);
     
-    const handleImport = () => {
-        toast({
-            title: "Import from Excel",
-            description: "This functionality will allow you to import budget items from an Excel sheet.",
-        });
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            toast({
+                title: "File Selected",
+                description: `You selected "${file.name}". Processing functionality is not yet implemented.`,
+            });
+            // Reset file input
+            if(fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
     };
     
     return (
         <>
+            <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            />
             <AddBudgetItemDialog open={isAddBudgetItemOpen} onOpenChange={setIsAddBudgetItemOpen} projectId={project.id} />
             <Card>
                 <CardHeader>
@@ -52,7 +70,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                 <Label htmlFor="group-by-category">Group by Category</Label>
                             </div>
-                             <Button variant="outline" onClick={handleImport}>
+                             <Button variant="outline" onClick={handleImportClick}>
                                 <Upload className="mr-2 h-4 w-4" />
                                 Import
                             </Button>
