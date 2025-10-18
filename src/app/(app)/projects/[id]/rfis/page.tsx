@@ -44,9 +44,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-export default function ProjectRFIsPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
+export default function ProjectRFIsPage({ params }: { params: { id: string } }) {
   const [isAddRfiOpen, setIsAddRfiOpen] = useState(false);
-  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();

@@ -35,12 +35,11 @@ import type { ChangeOrder } from '@/lib/types';
 
 
 export default function ProjectChangeOrdersPage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [isAddCOOpen, setIsAddCOOpen] = useState(false);
-  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();
