@@ -1,7 +1,6 @@
 
 'use client';
 
-import { budgetItems, teamMembers } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
@@ -30,14 +29,12 @@ function ProjectDetailLayoutContent({
         return <div>Loading...</div>;
     }
 
-    const { projects, setProjects } = appState;
+    const { projects, setProjects, budgetItems } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
         notFound();
     }
-
-    const projectManager = teamMembers.find(tm => tm.role === 'Project Manager');
 
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);

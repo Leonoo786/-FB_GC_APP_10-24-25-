@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +27,16 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { budgetCategories } from '@/lib/data';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { AppStateContext } from '@/context/app-state-context';
+import type { BudgetItem } from '@/lib/types';
 
 const formSchema = z.object({
   category: z.string({ required_error: 'Please select a category.' }),
-  costType: z.string({ required_error: 'Please select a cost type.' }),
+  costType: z.enum(['labor', 'material', 'both']),
   notes: z.string().optional(),
   originalBudget: z.coerce.number().min(0, 'Budget must be a positive number.'),
 });
@@ -45,20 +46,38 @@ type AddBudgetItemFormValues = z.infer<typeof formSchema>;
 export function AddBudgetItemDialog({
   open,
   onOpenChange,
+  projectId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectId: string;
 }) {
   const { toast } = useToast();
+  const appState = useContext(AppStateContext);
   const form = useForm<AddBudgetItemFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       notes: '',
+      costType: 'material',
     },
   });
 
   const onSubmit = (data: AddBudgetItemFormValues) => {
-    console.log('New budget item:', data);
+    if (!appState) return;
+
+    const newBudgetItem: BudgetItem = {
+      id: crypto.randomUUID(),
+      projectId,
+      category: data.category,
+      costType: data.costType,
+      originalBudget: data.originalBudget,
+      approvedCOBudget: 0,
+      committedCost: 0,
+      projectedCost: data.originalBudget,
+    };
+    
+    appState.setBudgetItems(current => [...current, newBudgetItem]);
+
     toast({
       title: 'Budget Item Added',
       description: `Successfully added ${data.category} to the budget.`,
@@ -66,6 +85,8 @@ export function AddBudgetItemDialog({
     onOpenChange(false);
     form.reset();
   };
+
+  if (!appState) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -94,7 +115,7 @@ export function AddBudgetItemDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {budgetCategories
+                      {appState.budgetCategories
                         .sort((a, b) => a.name.localeCompare(b.name))
                         .map((category) => (
                           <SelectItem key={category.id} value={category.name}>
@@ -123,9 +144,9 @@ export function AddBudgetItemDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Labor">Labor</SelectItem>
-                      <SelectItem value="Material">Material</SelectItem>
-                      <SelectItem value="Both">Both</SelectItem>
+                      <SelectItem value="labor">Labor</SelectItem>
+                      <SelectItem value="material">Material</SelectItem>
+                      <SelectItem value="both">Both</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

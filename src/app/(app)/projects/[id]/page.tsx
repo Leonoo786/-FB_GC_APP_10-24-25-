@@ -1,6 +1,5 @@
 
 'use client'
-import { budgetItems } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -19,7 +18,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
 
     const project = appState?.projects.find(p => p.id === params.id);
     
-    if (!project) {
+    if (!appState || !project) {
         // Let layout handle the notFound case if context is not ready or project not found
         return null;
     }
@@ -27,11 +26,11 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     const [isAddBudgetItemOpen, setIsAddBudgetItemOpen] = useState(false);
 
-    const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+    const projectBudgetItems = appState.budgetItems.filter(item => item.projectId === project.id);
     
     return (
         <>
-            <AddBudgetItemDialog open={isAddBudgetItemOpen} onOpenChange={setIsAddBudgetItemOpen} />
+            <AddBudgetItemDialog open={isAddBudgetItemOpen} onOpenChange={setIsAddBudgetItemOpen} projectId={project.id} />
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">

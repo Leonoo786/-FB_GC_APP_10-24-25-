@@ -18,20 +18,21 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
-import { projects as initialProjects, budgetCategories as initialBudgetCategories, vendors as initialVendors } from '@/lib/data';
-import type { Project, BudgetCategory, Vendor } from '@/lib/types';
+import { budgetCategories as initialBudgetCategories, vendors as initialVendors, budgetItems as initialBudgetItems } from '@/lib/data';
+import type { Project, BudgetCategory, Vendor, BudgetItem } from '@/lib/types';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [companyName, setCompanyName] = useState('FancyBuilders');
     const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
-    const [projects, setProjects] = useState<Project[]>(initialProjects);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(initialBudgetCategories);
     const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(initialBudgetItems);
     
     return (
         <AppStateProvider 
-            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors }}
-            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors }}
+            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems }}
+            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems }}
         >
             <SidebarProvider>
                 <Sidebar>
