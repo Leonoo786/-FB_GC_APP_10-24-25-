@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -16,6 +17,7 @@ import {
   Truck,
   Users,
   ChevronDown,
+  TrendingUp,
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -34,6 +36,7 @@ import { cn } from "@/lib/utils";
 const mainNavLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/profit-loss", label: "Profit & Loss", icon: TrendingUp },
   { href: "/tasks", label: "Tasks", icon: CheckCircle2 },
   { href: "/daily-reports", label: "Daily Reports", icon: ClipboardCheck },
   { href: "/issues", label: "Issues", icon: AlertCircle },
