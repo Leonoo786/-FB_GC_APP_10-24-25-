@@ -1,7 +1,11 @@
+
+'use client';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { use } from "react";
 
-export default function ProjectTasksPage() {
+export default function ProjectTasksPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
+  const params = use(paramsProp);
   return (
     <div>
       <div className="flex justify-between items-center mb-4">

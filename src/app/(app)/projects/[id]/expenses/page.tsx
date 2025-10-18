@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,11 +38,12 @@ import { AddExpenseDialog } from '../_components/add-expense-dialog';
 import { format } from 'date-fns';
 
 export default function ProjectExpensesPage({
-  params,
+  params: paramsProp,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const params = use(paramsProp);
   const projectExpenses = expenses.filter(
     (exp) => exp.projectId === params.id
   );

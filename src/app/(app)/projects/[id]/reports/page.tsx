@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { notFound } from 'next/navigation';
 import {
   Card,
@@ -24,16 +25,17 @@ import { Button } from '@/components/ui/button';
 import { budgetItems, expenses, projects } from '@/lib/data';
 import type { BudgetItem, Expense } from '@/lib/types';
 import { TransactionsDialog } from '../_components/transactions-dialog';
+import { cn } from '@/lib/utils';
 
 export default function ProjectReportsPage({
-  params,
+  params: paramsProp,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [showGroupByCategory, setShowGroupByCategory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();

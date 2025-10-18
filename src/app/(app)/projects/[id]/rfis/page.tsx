@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   MoreHorizontal,
@@ -43,8 +44,9 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-export default function ProjectRFIsPage({ params }: { params: { id: string } }) {
+export default function ProjectRFIsPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
   const [isAddRfiOpen, setIsAddRfiOpen] = useState(false);
+  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();

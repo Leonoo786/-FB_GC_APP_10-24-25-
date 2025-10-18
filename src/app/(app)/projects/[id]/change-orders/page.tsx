@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { changeOrders, projects } from '@/lib/data';
@@ -34,12 +35,12 @@ import type { ChangeOrder } from '@/lib/types';
 
 
 export default function ProjectChangeOrdersPage({
-  params,
+  params: paramsProp,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [isAddCOOpen, setIsAddCOOpen] = useState(false);
-
+  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();

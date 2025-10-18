@@ -7,12 +7,13 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, use } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
 
-export default function ProjectBudgetPage({ params }: { params: { id: string } }) {
+export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
+    const params = use(paramsProp);
     const project = projects.find(p => p.id === params.id);
     if (!project) {
         notFound();

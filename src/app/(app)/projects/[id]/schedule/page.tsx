@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon, ArrowUpDown } from 'lucide-react';
 import {
@@ -34,11 +35,12 @@ import type { Task } from '@/lib/types';
 
 
 export default function ProjectSchedulePage({
-  params,
+  params: paramsProp,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const params = use(paramsProp);
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();

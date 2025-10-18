@@ -1,3 +1,4 @@
+
 import { budgetItems, projects, teamMembers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -9,14 +10,16 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { use } from "react";
 
 export default function ProjectDetailLayout({
-    params,
+    params: paramsProp,
     children,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
     children: React.ReactNode;
 }) {
+    const params = use(paramsProp);
     const project = projects.find(p => p.id === params.id);
     if (!project) {
         notFound();
