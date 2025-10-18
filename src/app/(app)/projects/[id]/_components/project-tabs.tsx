@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-    { name: "Reports", href: "/reports" },
     { name: "Budget", href: "" },
     { name: "Expenses", href: "/expenses" },
     { name: "Change Orders", href: "/change-orders" },
     { name: "Drawings", href: "/drawings" },
     { name: "Schedule", href: "/schedule" },
     { name: "RFIs", href: "/rfis" },
+    { name: "Reports", href: "/reports" },
     { name: "Client Uploads", href: "/client-uploads" },
 ];
 
@@ -19,11 +19,14 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
     const pathname = usePathname();
     
     return (
-        <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+        <div className="border-b">
+            <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
-                    const href = tab.href ? `/projects/${projectId}${tab.href}` : `/projects/${projectId}`;
-                    const isActive = pathname === href;
+                    const baseHref = `/projects/${projectId}`;
+                    const href = tab.href ? `${baseHref}${tab.href}` : baseHref;
+                    
+                    const isActive = tab.href === '' ? pathname === href : pathname.startsWith(href);
+
                     return (
                         <Link
                             key={tab.name}
