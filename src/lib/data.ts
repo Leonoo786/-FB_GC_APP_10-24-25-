@@ -1,4 +1,4 @@
-import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense } from './types';
+import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
 export const teamMembers: TeamMember[] = [
@@ -143,4 +143,10 @@ export const expenses: Expense[] = [
     { id: '1', projectId: '1', date: '2024-07-30', category: 'Sitework Material', vendorName: 'Concrete Cleaning Inc.', description: 'Concrete Mix', amount: 800.00, paymentMethod: 'Company Credit Card', invoiceNumber: 'INV-124' },
     { id: '2', projectId: '1', date: '2024-07-29', category: 'Foundation Labor', vendorName: 'A Morfin Trucking LLC', description: 'Concrete Pour Crew', amount: 3500.00, paymentMethod: 'Check', invoiceNumber: 'CHK-456' },
     { id: '3', projectId: '1', date: '2024-07-28', category: 'Foundation Material', vendorName: 'ACT PIPE AND SUPPLY, INC.', description: 'Rebar', amount: 1500.00, paymentMethod: 'Company Credit Card', invoiceNumber: 'INV-123' },
+];
+
+export const changeOrders: ChangeOrder[] = [
+    { id: '1', projectId: '1', coNumber: 'CO-001', description: 'Upgrade lobby lighting fixtures', totalRequest: 25000, status: 'Approved' },
+    { id: '2', projectId: '1', coNumber: 'CO-002', description: 'Additional data ports on 5th floor', totalRequest: 12000, status: 'Executed' },
+    { id: '3', projectId: '2', coNumber: 'CO-001', description: 'Modify parking lot layout', totalRequest: 35000, status: 'Submitted' },
 ];
