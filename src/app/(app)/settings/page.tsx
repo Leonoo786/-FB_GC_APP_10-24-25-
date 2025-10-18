@@ -20,10 +20,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "lucide-react";
 import { useTheme } from "next-themes";
+
+const notificationItems = [
+    { id: 'task-assignments', label: 'Task assignments and updates' },
+    { id: 'project-milestones', label: 'Project milestones' },
+    { id: 'document-uploads', label: 'Document uploads and updates' },
+    { id: 'comments-mentions', label: 'Comments and mentions' },
+    { id: 'budget-approvals', label: 'Budget approvals and changes' },
+];
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -188,8 +198,63 @@ export default function SettingsPage() {
               </CardFooter>
             </Card>
         </TabsContent>
-         <TabsContent value="notifications">
-            <p className="text-muted-foreground">Notifications settings will be displayed here.</p>
+         <TabsContent value="notifications" className="mt-6">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Notification Preferences</CardTitle>
+                    <CardDescription>Manage how you receive notifications</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div>
+                        <h3 className="mb-4 text-lg font-medium">Email Notifications</h3>
+                        <div className="space-y-4">
+                            {notificationItems.map((item) => (
+                                <div key={`email-${item.id}`} className="flex items-center justify-between rounded-lg border p-4">
+                                    <Label htmlFor={`email-${item.id}`}>{item.label}</Label>
+                                    <Switch id={`email-${item.id}`} defaultChecked />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                        <h3 className="mb-4 text-lg font-medium">In-App Notifications</h3>
+                        <div className="space-y-4">
+                             {notificationItems.map((item) => (
+                                <div key={`in-app-${item.id}`} className="flex items-center justify-between rounded-lg border p-4">
+                                    <Label htmlFor={`in-app-${item.id}`}>{item.label}</Label>
+                                    <Switch id={`in-app-${item.id}`} defaultChecked />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <Separator />
+
+                    <div>
+                         <h3 className="mb-4 text-lg font-medium">Frequency</h3>
+                         <div className="flex items-center justify-between rounded-lg border p-4">
+                            <Label>Email digest frequency</Label>
+                             <Select defaultValue="daily">
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="never">Never</SelectItem>
+                                </SelectContent>
+                            </Select>
+                         </div>
+                    </div>
+
+                </CardContent>
+                 <CardFooter className="border-t px-6 py-4 justify-end">
+                    <Button>Save Notification Settings</Button>
+                </CardFooter>
+             </Card>
         </TabsContent>
          <TabsContent value="company">
             <p className="text-muted-foreground">Company settings will be displayed here.</p>
