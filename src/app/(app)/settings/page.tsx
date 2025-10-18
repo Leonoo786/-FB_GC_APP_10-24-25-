@@ -24,8 +24,20 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, MoreHorizontal, User, Laptop, Smartphone } from "lucide-react";
+import { LogOut, MoreHorizontal, User, Laptop, Smartphone, TriangleAlert, Download } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const notificationItems = [
     { id: 'task-assignments', label: 'Task assignments and updates' },
@@ -408,8 +420,62 @@ export default function SettingsPage() {
                 </CardFooter>
             </Card>
         </TabsContent>
-        <TabsContent value="advanced">
-            <p className="text-muted-foreground">Advanced settings will be displayed here.</p>
+        <TabsContent value="advanced" className="mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Advanced Settings</CardTitle>
+                    <CardDescription>
+                        System administration and data management options
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div>
+                        <h3 className="font-medium text-lg mb-4">Data Management</h3>
+                        <Alert variant="destructive">
+                            <TriangleAlert className="h-4 w-4" />
+                            <AlertTitle>Reset Project Data</AlertTitle>
+                            <AlertDescription>
+                                <div className="flex justify-between items-center">
+                                    <p>
+                                        This action will permanently delete all project data including budgets, tasks, documents, and photos. User accounts will be preserved.
+                                    </p>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive">Reset All Project Data</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete all project data from our servers.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction>Continue</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+
+                    <div>
+                        <h3 className="font-medium text-lg mb-2">Data Export</h3>
+                        <Card>
+                            <CardContent className="flex flex-col items-center justify-center p-6 space-y-4">
+                               <p className="text-sm text-muted-foreground">Export all your project data for backup or transfer purposes.</p>
+                               <Button variant="outline">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Export All Data
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
     </div>
