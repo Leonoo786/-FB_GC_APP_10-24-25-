@@ -55,10 +55,11 @@ export type Expense = {
   projectId: string;
   date: string;
   category: string;
+  vendorName?: string;
   description: string;
   amount: number;
   paymentMethod: string;
-  invoiceNumber: string;
+  invoiceNumber?: string;
 };
 
 export type ChangeOrder = {

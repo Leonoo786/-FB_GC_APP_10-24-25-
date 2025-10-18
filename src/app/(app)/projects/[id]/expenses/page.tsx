@@ -1,16 +1,161 @@
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+'use client';
 
-export default function ProjectExpensesPage() {
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { expenses, budgetCategories } from '@/lib/data';
+import { MoreHorizontal, PlusCircle, ArrowUpDown } from 'lucide-react';
+import { AddExpenseDialog } from '../_components/add-expense-dialog';
+import { format } from 'date-fns';
+
+export default function ProjectExpensesPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const projectExpenses = expenses.filter(
+    (exp) => exp.projectId === params.id
+  );
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Expenses</h2>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
-        </Button>
-      </div>
-      <p>Expenses for this project will be displayed here.</p>
-    </div>
+    <>
+      <AddExpenseDialog
+        open={isAddExpenseOpen}
+        onOpenChange={setIsAddExpenseOpen}
+      />
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <CardTitle className="text-2xl">Daily Expenses</CardTitle>
+              <CardDescription>
+                Log and track daily expenses for this project.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <Select>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {budgetCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => setIsAddExpenseOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <Button variant="ghost">
+                    Date
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                   <Button variant="ghost">
+                    Category
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost">
+                    Vendor
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead>Invoice #</TableHead>
+                <TableHead className="text-right">
+                  <Button variant="ghost">
+                    Amount
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projectExpenses.map((expense) => (
+                <TableRow key={expense.id}>
+                  <TableCell>
+                    {format(new Date(expense.date), 'PP')}
+                  </TableCell>
+                  <TableCell>{expense.category}</TableCell>
+                  <TableCell>{expense.vendorName}</TableCell>
+                  <TableCell>{expense.description}</TableCell>
+                  <TableCell>{expense.paymentMethod}</TableCell>
+                  <TableCell>{expense.invoiceNumber}</TableCell>
+                  <TableCell className="text-right">
+                    {expense.amount.toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
   );
 }

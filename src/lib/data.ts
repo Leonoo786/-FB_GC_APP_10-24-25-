@@ -1,4 +1,4 @@
-import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem } from './types';
+import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
 export const teamMembers: TeamMember[] = [
@@ -137,4 +137,10 @@ export const budgetItems: BudgetItem[] = [
   { id: '6', projectId: '2', category: 'HVAC', costType: 'both', originalBudget: 800000, approvedCOBudget: 0, committedCost: 0, projectedCost: 800000 },
   { id: '7', projectId: '3', category: 'Roof', costType: 'both', originalBudget: 2000000, approvedCOBudget: 0, committedCost: 2000000, projectedCost: 2000000 },
   { id: '8', projectId: '3', category: 'Cleaning', costType: 'labor', originalBudget: 50000, approvedCOBudget: 0, committedCost: 50000, projectedCost: 50000 },
+];
+
+export const expenses: Expense[] = [
+    { id: '1', projectId: '1', date: '2024-07-30', category: 'Sitework Material', vendorName: 'Concrete Cleaning Inc.', description: 'Concrete Mix', amount: 800.00, paymentMethod: 'Company Credit Card', invoiceNumber: 'INV-124' },
+    { id: '2', projectId: '1', date: '2024-07-29', category: 'Foundation Labor', vendorName: 'A Morfin Trucking LLC', description: 'Concrete Pour Crew', amount: 3500.00, paymentMethod: 'Check', invoiceNumber: 'CHK-456' },
+    { id: '3', projectId: '1', date: '2024-07-28', category: 'Foundation Material', vendorName: 'ACT PIPE AND SUPPLY, INC.', description: 'Rebar', amount: 1500.00, paymentMethod: 'Company Credit Card', invoiceNumber: 'INV-123' },
 ];
