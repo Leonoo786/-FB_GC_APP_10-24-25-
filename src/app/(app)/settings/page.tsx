@@ -24,7 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { MoreHorizontal, User } from "lucide-react";
+import { LogOut, MoreHorizontal, User, Laptop, Smartphone } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const notificationItems = [
@@ -323,8 +323,90 @@ export default function SettingsPage() {
               </CardFooter>
             </Card>
         </TabsContent>
-        <TabsContent value="security">
-            <p className="text-muted-foreground">Security settings will be displayed here.</p>
+        <TabsContent value="security" className="mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Security Settings</CardTitle>
+                    <CardDescription>Manage your password and account security</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div>
+                        <h3 className="font-medium text-lg mb-4">Change Password</h3>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Input id="currentPassword" type="password" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="newPassword">New Password</Label>
+                                <Input id="newPassword" type="password" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Input id="confirmPassword" type="password" />
+                            </div>
+                        </div>
+                    </div>
+                     <CardFooter className="px-0 pb-0 justify-start">
+                        <Button>Update Password</Button>
+                    </CardFooter>
+                </CardContent>
+
+                <Separator />
+
+                <CardContent className="space-y-8 pt-6">
+                   <div className="flex items-center justify-between rounded-lg border p-4">
+                        <div>
+                            <h3 className="font-medium">Two-Factor Authentication</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Add an extra layer of security to your account.
+                            </p>
+                        </div>
+                        <Switch id="two-factor" />
+                    </div>
+                </CardContent>
+                
+                 <Separator />
+
+                <CardContent className="space-y-4 pt-6">
+                    <h3 className="font-medium text-lg">Session Management</h3>
+                    <p className="text-sm text-muted-foreground">You're currently signed in on these devices:</p>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between rounded-lg border p-4">
+                            <div className="flex items-center gap-4">
+                                <Laptop className="h-6 w-6 text-muted-foreground" />
+                                <div>
+                                    <p className="font-medium">Windows PC - Chrome</p>
+                                    <p className="text-sm text-muted-foreground">New York, USA • Current session</p>
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-5 w-5" />
+                                <span className="sr-only">Session options</span>
+                            </Button>
+                        </div>
+                         <div className="flex items-center justify-between rounded-lg border p-4">
+                            <div className="flex items-center gap-4">
+                                <Smartphone className="h-6 w-6 text-muted-foreground" />
+                                <div>
+                                    <p className="font-medium">iPhone 13 - Safari</p>
+                                    <p className="text-sm text-muted-foreground">New York, USA • Last active: 2 hours ago</p>
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-5 w-5" />
+                                <span className="sr-only">Session options</span>
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+                 <CardFooter className="border-t px-6 py-4">
+                    <Button variant="outline">
+                        <LogOut className="mr-2" />
+                        Sign out of all devices
+                    </Button>
+                </CardFooter>
+            </Card>
         </TabsContent>
         <TabsContent value="advanced">
             <p className="text-muted-foreground">Advanced settings will be displayed here.</p>
@@ -333,3 +415,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
