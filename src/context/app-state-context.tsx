@@ -2,13 +2,14 @@
 'use client';
 
 import React, { createContext, useState, ReactNode } from 'react';
-import type { Project, BudgetCategory } from '@/lib/types';
+import type { Project, BudgetCategory, Vendor } from '@/lib/types';
 
 type AppState = {
   companyName: string;
   companyLogoUrl: string;
   projects: Project[];
   budgetCategories: BudgetCategory[];
+  vendors: Vendor[];
 };
 
 type AppStateContextType = AppState & {
@@ -16,6 +17,7 @@ type AppStateContextType = AppState & {
   setCompanyLogoUrl: (url: string) => void;
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
+  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ type AppStateProviderProps = {
     setCompanyLogoUrl: (url: string) => void;
     setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
     setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
+    setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
   };
 };
 
@@ -38,6 +41,7 @@ export function AppStateProvider({ children, initialState, onStateChange }: AppS
     setCompanyLogoUrl: onStateChange.setCompanyLogoUrl,
     setProjects: onStateChange.setProjects,
     setBudgetCategories: onStateChange.setBudgetCategories,
+    setVendors: onStateChange.setVendors,
   };
 
   return (
