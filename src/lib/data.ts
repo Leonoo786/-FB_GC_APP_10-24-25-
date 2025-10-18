@@ -2,7 +2,11 @@
 import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
-export const teamMembers: TeamMember[] = [];
+export const teamMembers: TeamMember[] = [
+    { id: '1', name: 'John Doe', role: 'Project Manager', email: 'john.d@company.com', phone: '123-456-7890', avatarUrl: 'https://i.pravatar.cc/150?u=john' },
+    { id: '2', name: 'Jane Smith', role: 'Site Superintendent', email: 'jane.s@company.com', phone: '123-456-7891', avatarUrl: 'https://i.pravatar.cc/150?u=jane' },
+    { id: '3', name: 'Mike Johnson', role: 'Estimator', email: 'mike.j@company.com', phone: '123-456-7892', avatarUrl: 'https://i.pravatar.cc/150?u=mike' },
+];
 
 export const vendors: Vendor[] = [
     { "id": "1", "name": "A-1 Electric", "contactPerson": "Sarah Connor", "phone": "555-0101", "email": "sarah.c@a1electric.com", "trade": "Electrical" },
@@ -17,13 +21,19 @@ export const vendors: Vendor[] = [
     { "id": "10", "name": "Pym Particles Painting", "contactPerson": "Hank Pym", "phone": "555-0110", "email": "hank.p@pympainting.com", "trade": "Painting" }
 ];
 
-export const budgetCategories: BudgetCategory[] = [
-    { id: '1', name: 'Ansul System' }, { id: '2', name: 'Bathroom Partitions' }, { id: '3', name: 'Bollards/Stoppers' }, { id: '4', name: 'Change Order' }, { id: '5', name: 'Cleaning' }, { id: '6', name: 'CMU' }, { id: '7', name: 'Doors/Hardware' }, { id: '8', name: 'Electrical' }, { id: '9', name: 'Exterior panels' }, { id: '10', name: 'Fences' }, { id: '11', name: 'Floor' }, { id: '12', name: 'Foundation Labor' }, { id: '13', name: 'Foundation Material' }, { id: '14', name: 'Framing Labor' }, { id: '15', name: 'Framing Material' }, { id: '16', name: 'Fuel Canopy Labor' }, { id: '17', name: 'Fuel Canopy Material' }, { id: '18', name: 'HVAC' }, { id: '19', name: 'Millwork' }, { id: '20', name: 'Misc' }, { id: '21', name: 'Paint Labor' }, { id: '22', name: 'Paint Material' }, { id: '23', name: 'Permit' }, { id: '24', name: 'Plumbing' }, { id: '25', name: 'Roof' }, { id: '26', name: 'Sitework Labor' }, { id: '27', name: 'Sitework Material' }, { id: '28', name: 'Steel Labor' }, { id: '29', name: 'Steel Material' }, { id: '30', name: 'Store Front Glass' }, { id: '31', name: 'Striping' }, { id: '32', name: 'Stucco/Stone' }, { id: '33', name: 'Survey' }, { id: '34', name: 'Tiles Labor' }, { id: '35', name: 'Tiles Material' },
-];
+export const budgetCategories: BudgetCategory[] = [];
 
 export const projects: Project[] = [];
 
-export const tasks: Task[] = [];
+export const tasks: Task[] = [
+  { id: '1', projectId: '1', title: 'Submit plumbing submittals', status: 'To Do', priority: 'High', assigneeId: '1', dueDate: '2024-08-15' },
+  { id: '2', projectId: '1', title: 'Review structural drawings for steel quantities', status: 'To Do', priority: 'Medium', assigneeId: '2', dueDate: '2024-08-20' },
+  { id: '3', projectId: '1', title: 'Coordinate MRI delivery', status: 'To Do', priority: 'High', assigneeId: '1', dueDate: '2024-08-25' },
+  { id: '4', projectId: '1', title: 'Finalize lobby lighting package', status: 'In Progress', priority: 'High', assigneeId: '3', dueDate: '2024-08-18' },
+  { id: '5', projectId: '1', title: 'Onboard new electrical subcontractor', status: 'In Progress', priority: 'Medium', assigneeId: '1', dueDate: '2024-08-10' },
+  { id: '6', projectId: '1', title: 'Complete site safety audit', status: 'Done', priority: 'High', assigneeId: '2', dueDate: '2024-07-30' },
+  { id: '7', projectId: '1', title: 'Install nurse call system', status: 'Done', priority: 'Medium', assigneeId: '3', dueDate: '2024-08-05' },
+];
 
 export const rfis: RFI[] = [];
 

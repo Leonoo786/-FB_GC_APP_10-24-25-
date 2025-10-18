@@ -18,21 +18,23 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
-import { budgetCategories as initialBudgetCategories, vendors as initialVendors, budgetItems as initialBudgetItems } from '@/lib/data';
-import type { Project, BudgetCategory, Vendor, BudgetItem } from '@/lib/types';
+import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks } from '@/lib/data';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task } from '@/lib/types';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [companyName, setCompanyName] = useState('FancyBuilders');
     const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
     const [projects, setProjects] = useState<Project[]>([]);
-    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(initialBudgetCategories);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
     const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
-    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(initialBudgetItems);
+    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
     
     return (
         <AppStateProvider 
-            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems }}
-            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems }}
+            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems, teamMembers, tasks }}
+            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems, setTeamMembers, setTasks }}
         >
             <SidebarProvider>
                 <Sidebar>
