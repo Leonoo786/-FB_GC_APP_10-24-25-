@@ -1,70 +1,127 @@
+
+'use client';
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Upload, Download, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { User } from "lucide-react";
 
 export default function SettingsPage() {
-    return (
-        <div className="space-y-8 max-w-4xl mx-auto">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-                <p className="text-muted-foreground">
-                    Manage your account settings, data, and application preferences.
-                </p>
-            </div>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">Welcome back, Guest</p>
+      </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Profile</CardTitle>
-                    <CardDescription>Update your personal information.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" defaultValue="John Doe" />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" defaultValue="john.doe@constructai.com" />
-                        </div>
+      <Tabs defaultValue="profile">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="company">Company</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        </TabsList>
+        <TabsContent value="profile" className="mt-6">
+          <Card>
+            <CardHeader></CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-8">
+                <div className="flex flex-col items-center gap-4 md:w-1/4">
+                  <Avatar className="h-32 w-32">
+                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarFallback>
+                        <User className="h-16 w-16" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button variant="outline">Change Photo</Button>
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input id="firstName" defaultValue="Guest" />
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="role">Role</Label>
-                        <Input id="role" defaultValue="Project Manager" disabled />
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input id="lastName" defaultValue="User" />
                     </div>
-                </CardContent>
-                <CardFooter className="border-t px-6 py-4">
-                    <Button>Save</Button>
-                </CardFooter>
-            </Card>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle>Data Management</CardTitle>
-                    <CardDescription>Import existing data or delete all current data.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                        <Label>Import Data</Label>
-                        <Button variant="outline" disabled>
-                            <Upload className="mr-2 h-4 w-4" /> Import from Excel
-                        </Button>
-                        <p className="text-xs text-muted-foreground">Import projects, budgets, and expenses from an Excel file.</p>
-                    </div>
-                     <div className="flex flex-col gap-2">
-                        <Label>Delete Data</Label>
-                        <Button variant="destructive" disabled>
-                             <Trash2 className="mr-2 h-4 w-4" /> Delete All Data
-                        </Button>
-                        <p className="text-xs text-muted-foreground">Permanently delete all projects and associated data.</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-        </div>
-    );
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" defaultValue="alex.rodriguez@example.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input id="phone" defaultValue="(555) 123-4567" />
+                  </div>
+                   <div className="space-y-2">
+                    <Label htmlFor="jobTitle">Job Title</Label>
+                    <Input id="jobTitle" defaultValue="Admin" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Select defaultValue="construction">
+                      <SelectTrigger id="department">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="construction">Construction</SelectItem>
+                        <SelectItem value="estimating">Estimating</SelectItem>
+                        <SelectItem value="management">Management</SelectItem>
+                         <SelectItem value="hr">Human Resources</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      placeholder="A brief description about yourself"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t px-6 py-4 justify-end">
+                <Button>Save Changes</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="account">
+            <p className="text-muted-foreground">Account settings will be displayed here.</p>
+        </TabsContent>
+         <TabsContent value="notifications">
+            <p className="text-muted-foreground">Notifications settings will be displayed here.</p>
+        </TabsContent>
+         <TabsContent value="company">
+            <p className="text-muted-foreground">Company settings will be displayed here.</p>
+        </TabsContent>
+        <TabsContent value="security">
+            <p className="text-muted-foreground">Security settings will be displayed here.</p>
+        </TabsContent>
+        <TabsContent value="advanced">
+            <p className="text-muted-foreground">Advanced settings will be displayed here.</p>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
