@@ -24,7 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { User } from "lucide-react";
+import { MoreHorizontal, User } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const notificationItems = [
@@ -256,8 +256,72 @@ export default function SettingsPage() {
                 </CardFooter>
              </Card>
         </TabsContent>
-         <TabsContent value="company">
-            <p className="text-muted-foreground">Company settings will be displayed here.</p>
+         <TabsContent value="company" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Company Information</CardTitle>
+                <CardDescription>Manage your company details and preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2 relative">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input id="companyName" defaultValue="FancyBuilders Construction" className="pr-10"/>
+                  <Button variant="ghost" size="icon" className="absolute right-1 top-6 h-8 w-8">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="industry">Industry</Label>
+                        <Input id="industry" defaultValue="Construction" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="companySize">Company Size</Label>
+                        <Select defaultValue="51-200">
+                            <SelectTrigger id="companySize">
+                                <SelectValue placeholder="Select company size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="1-10">1-10 employees</SelectItem>
+                                <SelectItem value="11-50">11-50 employees</SelectItem>
+                                <SelectItem value="51-200">51-200 employees</SelectItem>
+                                <SelectItem value="201-500">201-500 employees</SelectItem>
+                                <SelectItem value="500+">500+ employees</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" defaultValue="123 Construction Avenue" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="space-y-2 col-span-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" defaultValue="New York" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="state">State</Label>
+                        <Input id="state" defaultValue="NY" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="zipCode">Zip Code</Label>
+                        <Input id="zipCode" defaultValue="10001" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="companyPhone">Phone</Label>
+                    <Input id="companyPhone" defaultValue="(555) 987-6543" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="companyWebsite">Website</Label>
+                    <Input id="companyWebsite" defaultValue="https://www.fancybuilders.com" />
+                </div>
+              </CardContent>
+              <CardFooter className="border-t px-6 py-4 justify-end">
+                <Button>Save Company Information</Button>
+              </CardFooter>
+            </Card>
         </TabsContent>
         <TabsContent value="security">
             <p className="text-muted-foreground">Security settings will be displayed here.</p>
