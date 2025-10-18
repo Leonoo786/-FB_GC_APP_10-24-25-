@@ -18,15 +18,18 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
+import { projects as initialProjects } from '@/lib/data';
+import type { Project } from '@/lib/types';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [companyName, setCompanyName] = useState('FancyBuilders');
     const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
+    const [projects, setProjects] = useState<Project[]>(initialProjects);
     
     return (
         <AppStateProvider 
-            initialState={{ companyName, companyLogoUrl }}
-            onStateChange={{ setCompanyName, setCompanyLogoUrl }}
+            initialState={{ companyName, companyLogoUrl, projects }}
+            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects }}
         >
             <SidebarProvider>
                 <Sidebar>

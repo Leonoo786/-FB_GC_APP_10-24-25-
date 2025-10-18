@@ -1,21 +1,18 @@
 
 'use client';
 
-import { budgetItems, projects as initialProjects, teamMembers } from "@/lib/data";
+import { budgetItems, teamMembers } from "@/lib/data";
 import { notFound, useRouter } from "next/navigation";
-import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, MoreVertical, Trash } from "lucide-react";
+import { ArrowLeft, Edit, Trash } from "lucide-react";
 import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use, Suspense, useState } from "react";
+import { use, Suspense, useContext } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-
+import { AppStateContext } from "@/context/app-state-context";
 
 function ProjectDetailLayoutContent({
     params,
@@ -26,7 +23,13 @@ function ProjectDetailLayoutContent({
 }) {
     const { toast } = useToast();
     const router = useRouter();
-    const [projects, setProjects] = useState(initialProjects);
+    const appState = useContext(AppStateContext);
+
+    if (!appState) {
+        return <div>Loading...</div>;
+    }
+
+    const { projects, setProjects } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
@@ -49,8 +52,6 @@ function ProjectDetailLayoutContent({
     };
 
     const handleDelete = () => {
-        // This is a client-side removal for demonstration.
-        // In a real app, you'd call an API to delete the project.
         setProjects(currentProjects => currentProjects.filter(p => p.id !== project.id));
         toast({
             title: "Project Deleted",

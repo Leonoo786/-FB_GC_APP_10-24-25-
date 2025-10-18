@@ -1,11 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { projects as initialProjects } from "@/lib/data";
 import { Edit, MoreVertical, PlusCircle, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,11 +13,20 @@ import { AddProjectDialog } from './_components/add-project-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AppStateContext } from '@/context/app-state-context';
+import type { Project } from '@/lib/types';
+
 
 export default function ProjectsPage() {
     const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
-    const [projects, setProjects] = useState(initialProjects);
+    const appState = useContext(AppStateContext);
     const { toast } = useToast();
+
+    if (!appState) {
+        return <div>Loading...</div>; // Or some other loading state
+    }
+    
+    const { projects, setProjects } = appState;
 
     const statusVariant = {
         'In Progress': 'default',
