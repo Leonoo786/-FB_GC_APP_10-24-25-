@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarHeader className="p-4">
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <Logo className="size-8" />
-                        <span className="text-lg font-semibold">ConstructAI</span>
+                        <span className="text-lg font-semibold">FancyBuilders</span>
                     </Link>
                 </SidebarHeader>
                 <SidebarContent>

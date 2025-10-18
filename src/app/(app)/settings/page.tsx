@@ -25,7 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, MoreHorizontal, User, Laptop, Smartphone, TriangleAlert, Download } from "lucide-react";
+import { LogOut, MoreHorizontal, User, Laptop, Smartphone, TriangleAlert, Download, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -70,6 +70,13 @@ export default function SettingsPage() {
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
+    });
+  };
+  
+    const handleCompanySaveChanges = () => {
+    toast({
+      title: "Changes Saved",
+      description: "Your company information has been updated.",
     });
   };
 
@@ -291,12 +298,24 @@ export default function SettingsPage() {
                 <CardDescription>Manage your company details and preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2 relative">
+                <div className="space-y-2">
+                  <Label>Company Logo</Label>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-20 w-20 rounded-md">
+                        <AvatarImage src="/your-logo.png" />
+                        <AvatarFallback>
+                            <User className="h-10 w-10" />
+                        </AvatarFallback>
+                    </Avatar>
+                    <Input id="logo-upload" type="file" className="hidden" accept="image/*" />
+                    <Button variant="outline" asChild>
+                        <Label htmlFor="logo-upload" className="cursor-pointer">Change Logo</Label>
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" defaultValue="FancyBuilders Construction" className="pr-10"/>
-                  <Button variant="ghost" size="icon" className="absolute right-1 top-6 h-8 w-8">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
+                  <Input id="companyName" defaultValue="FancyBuilders Construction" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -347,7 +366,7 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t px-6 py-4 justify-end">
-                <Button>Save Company Information</Button>
+                <Button onClick={handleCompanySaveChanges}>Save Company Information</Button>
               </CardFooter>
             </Card>
         </TabsContent>
