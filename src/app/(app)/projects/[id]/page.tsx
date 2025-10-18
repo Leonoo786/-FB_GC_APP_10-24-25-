@@ -1,22 +1,27 @@
 
 'use client'
-import { budgetItems, projects } from "@/lib/data";
+import { budgetItems } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useState, use } from "react";
+import { useState, use, useContext } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
+import { AppStateContext } from "@/context/app-state-context";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
-    const project = projects.find(p => p.id === params.id);
+    const appState = useContext(AppStateContext);
+
+    const project = appState?.projects.find(p => p.id === params.id);
+    
     if (!project) {
-        notFound();
+        // Let layout handle the notFound case if context is not ready or project not found
+        return null;
     }
     
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);

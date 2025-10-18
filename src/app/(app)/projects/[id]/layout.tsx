@@ -26,6 +26,7 @@ function ProjectDetailLayoutContent({
     const appState = useContext(AppStateContext);
 
     if (!appState) {
+        // This can be a loading spinner
         return <div>Loading...</div>;
     }
 
