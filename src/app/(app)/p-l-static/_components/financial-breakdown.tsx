@@ -37,14 +37,17 @@ const BreakdownItem = ({
   );
 };
 
-export function FinancialBreakdown() {
-  const bidAmount = 5770758;
-  const budget = 4920565;
-  const expenses = 0;
-  const actualProfit = bidAmount - expenses;
-  const estimatedProfit = bidAmount - budget;
+type FinancialBreakdownProps = {
+    bidAmount: number;
+    budget: number;
+    expenses: number;
+    actualProfit: number;
+    estimatedProfit: number;
+};
 
-  const maxVal = bidAmount;
+
+export function FinancialBreakdown({ bidAmount, budget, expenses, actualProfit, estimatedProfit }: FinancialBreakdownProps) {
+  const maxVal = Math.max(bidAmount, budget, expenses, actualProfit, estimatedProfit, 1);
 
   return (
     <Card>
@@ -77,13 +80,13 @@ export function FinancialBreakdown() {
           label="Total Actual Profit"
           value={actualProfit}
           total={maxVal}
-          colorClass="bg-blue-600"
+          colorClass="bg-emerald-500"
         />
         <BreakdownItem
           label="Total Estimated Profit"
           value={estimatedProfit}
           total={maxVal}
-          colorClass="bg-sky-500"
+          colorClass="bg-teal-500"
         />
       </CardContent>
     </Card>
