@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { projects } from "@/lib/data";
+import { projects as initialProjects } from "@/lib/data";
 import { Edit, MoreVertical, PlusCircle, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,9 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { AddProjectDialog } from './_components/add-project-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function ProjectsPage() {
     const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
+    const [projects, setProjects] = useState(initialProjects);
     const { toast } = useToast();
 
     const statusVariant = {
@@ -24,11 +26,19 @@ export default function ProjectsPage() {
         'Completed': 'outline',
     } as const;
 
-    const handleAction = (action: 'Edit' | 'Delete', projectName: string) => {
+    const handleEdit = (projectName: string) => {
         toast({
-            title: `Action: ${action}`,
-            description: `${action} action for project "${projectName}" was triggered.`,
-            variant: action === 'Delete' ? 'destructive' : 'default',
+            title: `Action: Edit`,
+            description: `Edit action for project "${projectName}" was triggered.`,
+        });
+    };
+    
+    const handleDelete = (projectId: string, projectName: string) => {
+        setProjects(currentProjects => currentProjects.filter(p => p.id !== projectId));
+        toast({
+            title: "Project Deleted",
+            description: `Project "${projectName}" has been removed.`,
+            variant: "destructive",
         });
     };
 
@@ -79,14 +89,36 @@ export default function ProjectsPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleAction('Edit', project.name)}>
+                                                <DropdownMenuItem onClick={() => handleEdit(project.name)}>
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     Edit
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleAction('Delete', project.name)} className="text-destructive">
-                                                    <Trash className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                                            <Trash className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This action cannot be undone. This will permanently delete the project
+                                                                &quot;{project.name}&quot;.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => handleDelete(project.id, project.name)}
+                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>

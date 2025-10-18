@@ -1,8 +1,8 @@
 
 'use client';
 
-import { budgetItems, projects, teamMembers } from "@/lib/data";
-import { notFound } from "next/navigation";
+import { budgetItems, projects as initialProjects, teamMembers } from "@/lib/data";
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -12,8 +12,9 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use, Suspense } from "react";
+import { use, Suspense, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 
 function ProjectDetailLayoutContent({
@@ -24,7 +25,10 @@ function ProjectDetailLayoutContent({
     children: React.ReactNode;
 }) {
     const { toast } = useToast();
+    const router = useRouter();
+    const [projects, setProjects] = useState(initialProjects);
     const project = projects.find(p => p.id === params.id);
+
     if (!project) {
         notFound();
     }
@@ -37,12 +41,23 @@ function ProjectDetailLayoutContent({
     const remaining = totalBudget - spentToDate;
     const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
     
-    const handleAction = (action: 'Edit' | 'Delete') => {
+    const handleEdit = () => {
         toast({
-            title: `Project ${action}`,
-            description: `The "${project.name}" project would be ${action.toLowerCase()}ed.`,
-            variant: action === 'Delete' ? 'destructive' : 'default',
+            title: `Project Edit`,
+            description: `The "${project.name}" project would be edited.`,
         });
+    };
+
+    const handleDelete = () => {
+        // This is a client-side removal for demonstration.
+        // In a real app, you'd call an API to delete the project.
+        setProjects(currentProjects => currentProjects.filter(p => p.id !== project.id));
+        toast({
+            title: "Project Deleted",
+            description: `The "${project.name}" project has been deleted.`,
+            variant: "destructive"
+        });
+        router.push('/projects');
     };
 
     return (
@@ -65,12 +80,34 @@ function ProjectDetailLayoutContent({
                         </p>
                     </div>
                      <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => handleAction('Edit')}>
+                        <Button variant="outline" onClick={handleEdit}>
                             <Edit className="mr-2 h-4 w-4" /> Edit
                         </Button>
-                        <Button variant="destructive" onClick={() => handleAction('Delete')}>
-                            <Trash className="mr-2 h-4 w-4" /> Delete
-                        </Button>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                 <Button variant="destructive">
+                                    <Trash className="mr-2 h-4 w-4" /> Delete
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the project
+                                    &quot;{project.name}&quot;.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={handleDelete}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    Delete
+                                </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
             </div>
