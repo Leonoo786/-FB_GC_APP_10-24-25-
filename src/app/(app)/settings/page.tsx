@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useToast } from "@/hooks/use-toast";
+
 
 const notificationItems = [
     { id: 'task-assignments', label: 'Task assignments and updates' },
@@ -49,6 +52,26 @@ const notificationItems = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const [photoUrl, setPhotoUrl] = useState("/placeholder-user.jpg");
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveChanges = () => {
+    toast({
+      title: "Changes Saved",
+      description: "Your profile information has been updated.",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -73,12 +96,12 @@ export default function SettingsPage() {
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex flex-col items-center gap-4 md:w-1/4">
                   <Avatar className="h-32 w-32">
-                    <AvatarImage src="/placeholder-user.jpg" />
+                    <AvatarImage src={photoUrl} />
                     <AvatarFallback>
                         <User className="h-16 w-16" />
                     </AvatarFallback>
                   </Avatar>
-                  <Input id="photo-upload" type="file" className="hidden" />
+                  <Input id="photo-upload" type="file" className="hidden" onChange={handlePhotoChange} accept="image/*" />
                   <Button variant="outline" asChild>
                     <Label htmlFor="photo-upload" className="cursor-pointer">Change Photo</Label>
                   </Button>
@@ -122,7 +145,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter className="border-t px-6 py-4 justify-end">
-                <Button>Save Changes</Button>
+                <Button onClick={handleSaveChanges}>Save Changes</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -474,7 +497,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
-
-    
