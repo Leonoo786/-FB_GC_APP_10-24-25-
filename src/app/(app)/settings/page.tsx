@@ -8,6 +8,8 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +23,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "lucide-react";
+import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
+
   return (
     <div className="space-y-6">
       <div>
@@ -106,8 +111,82 @@ export default function SettingsPage() {
             </CardFooter>
           </Card>
         </TabsContent>
-        <TabsContent value="account">
-            <p className="text-muted-foreground">Account settings will be displayed here.</p>
+        <TabsContent value="account" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Preferences</CardTitle>
+                <CardDescription>Manage your account settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Language</Label>
+                    <p className="text-sm text-muted-foreground">Select your preferred language</p>
+                  </div>
+                  <Select defaultValue="en">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Time Zone</Label>
+                    <p className="text-sm text-muted-foreground">Set your local time zone</p>
+                  </div>
+                  <Select defaultValue="est">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select time zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="est">America/New_York (EST)</SelectItem>
+                      <SelectItem value="cst">America/Chicago (CST)</SelectItem>
+                      <SelectItem value="mst">America/Denver (MST)</SelectItem>
+                      <SelectItem value="pst">America/Los_Angeles (PST)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Date Format</Label>
+                    <p className="text-sm text-muted-foreground">Choose how dates are displayed</p>
+                  </div>
+                   <Select defaultValue="mmddyyyy">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select date format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mmddyyyy">MM/DD/YYYY</SelectItem>
+                      <SelectItem value="ddmmyyyy">DD/MM/YYYY</SelectItem>
+                      <SelectItem value="yyyymmdd">YYYY-MM-DD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                 <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Theme</Label>
+                    <p className="text-sm text-muted-foreground">Choose your interface theme</p>
+                  </div>
+                   <Select value={theme} onValueChange={setTheme}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t px-6 py-4 justify-end">
+                <Button>Save Preferences</Button>
+              </CardFooter>
+            </Card>
         </TabsContent>
          <TabsContent value="notifications">
             <p className="text-muted-foreground">Notifications settings will be displayed here.</p>
