@@ -6,14 +6,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-    { name: "Reports", href: "/reports" },
+    { name: "Reports", href: "reports" },
     { name: "Budget", href: "" },
-    { name: "Expenses", href: "/expenses" },
-    { name: "Change Orders", href: "/change-orders" },
-    { name: "Drawings", href: "/drawings" },
-    { name: "Schedule", href: "/schedule" },
-    { name: "RFIs", href: "/rfis" },
-    { name: "Client Uploads", href: "/client-uploads" },
+    { name: "Expenses", href: "expenses" },
+    { name: "Change Orders", href: "change-orders" },
+    { name: "Drawings", href: "drawings" },
+    { name: "Schedule", href: "schedule" },
+    { name: "RFIs", href: "rfis" },
+    { name: "Client Uploads", href: "client-uploads" },
 ];
 
 export function ProjectTabs({ projectId }: { projectId: string }) {
@@ -24,9 +24,9 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
             <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
                     const baseHref = `/projects/${projectId}`;
-                    const href = `${baseHref}${tab.href}`;
+                    const href = tab.href ? `${baseHref}/${tab.href}` : baseHref;
                     
-                    const isActive = tab.href === '' ? pathname === href : pathname.startsWith(href);
+                    const isActive = pathname === href;
 
                     return (
                         <Link
