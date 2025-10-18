@@ -46,7 +46,7 @@ const mainNavLinks = [
 
 const estimatingLinks = [
   { href: "/estimating/job-estimator", label: "AI Job Estimator", icon: Calculator },
-  { href: "/estimating/budget-categories", label: "Budget Category", icon: Tag },
+  { href: "/estimating/budget-categories", label: "Budget Categories", icon: Tag },
   { href: "/estimating/vendors", label: "Vendors", icon: Truck },
   { href: "/estimating/team", label: "Team", icon: Users },
 ];
@@ -54,9 +54,7 @@ const estimatingLinks = [
 export function MainNav() {
   const pathname = usePathname();
 
-  const isEstimatingActive = estimatingLinks.some((link) =>
-    pathname.startsWith(link.href)
-  );
+  const isEstimatingActive = pathname.startsWith("/estimating");
 
   return (
     <SidebarMenu>
