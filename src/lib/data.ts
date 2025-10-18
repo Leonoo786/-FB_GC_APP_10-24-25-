@@ -103,7 +103,54 @@ export const vendors: Vendor[] = [
     { "id": "92", "name": "Victor Rodriguez", "contactPerson": "", "phone": "", "email": "", "trade": "" }
 ];
 
-export const budgetCategories: BudgetCategory[] = [];
+export const budgetCategories: BudgetCategory[] = [
+    { "id": "1", "name": "Ansul System" },
+    { "id": "2", "name": "Bollards/Car-stoppers" },
+    { "id": "3", "name": "Builder's Risk" },
+    { "id": "4", "name": "Cleanup" },
+    { "id": "5", "name": "Curbs Labor" },
+    { "id": "6", "name": "Curbs Material" },
+    { "id": "7", "name": "Dirtwork Labor" },
+    { "id": "8", "name": "Doors/Hardware Labor" },
+    { "id": "9", "name": "Doors/Hardware Material" },
+    { "id": "10", "name": "Electrical" },
+    { "id": "11", "name": "Floor / Tiles Labor" },
+    { "id": "12", "name": "Floor / Tiles Material" },
+    { "id": "13", "name": "Foundation Labor" },
+    { "id": "14", "name": "Foundation Material" },
+    { "id": "15", "name": "Framing Labor" },
+    { "id": "16", "name": "Framing Material" },
+    { "id": "17", "name": "Haul Off" },
+    { "id": "18", "name": "HVAC" },
+    { "id": "19", "name": "Landscape Labor" },
+    { "id": "20", "name": "Landscape Material" },
+    { "id": "21", "name": "Millwork" },
+    { "id": "22", "name": "Misc." },
+    { "id": "23", "name": "Paint Labor" },
+    { "id": "24", "name": "Paint Material" },
+    { "id": "25", "name": "Parking Lot Labor" },
+    { "id": "26", "name": "Parking Lot Material" },
+    { "id": "27", "name": "Plumbing" },
+    { "id": "28", "name": "Pollution Control Labor" },
+    { "id": "29", "name": "Pollution Control Material" },
+    { "id": "30", "name": "RENTALS" },
+    { "id": "31", "name": "Roof/Coping/Downspots/CollectorBox" },
+    { "id": "32", "name": "SideWalk Labor" },
+    { "id": "33", "name": "SideWalk Material" },
+    { "id": "34", "name": "Sitework Labor" },
+    { "id": "35", "name": "Sitework Material" },
+    { "id": "36", "name": "Steel Labor" },
+    { "id": "37", "name": "Steel Material" },
+    { "id": "38", "name": "Store front Canopy Labor" },
+    { "id": "39", "name": "Store front Canopy Material" },
+    { "id": "40", "name": "Store front GLASS" },
+    { "id": "41", "name": "Stripes Labor" },
+    { "id": "42", "name": "Stripes Material" },
+    { "id": "43", "name": "Stucco/Bricks/Burnished Blocks" },
+    { "id": "44", "name": "Survey" },
+    { "id": "45", "name": "SWPP" },
+    { "id": "46", "name": "VentHood" }
+];
 
 export const projects: Project[] = [];
 

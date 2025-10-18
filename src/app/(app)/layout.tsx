@@ -18,14 +18,14 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
-import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks } from '@/lib/data';
+import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories } from '@/lib/data';
 import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task } from '@/lib/types';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [companyName, setCompanyName] = useState('FancyBuilders');
     const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
     const [projects, setProjects] = useState<Project[]>([]);
-    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(initialBudgetCategories);
     const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
     const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);

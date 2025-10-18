@@ -45,7 +45,7 @@ export default function BudgetCategoriesPage() {
     };
 
     const handleSave = (category: BudgetCategory) => {
-        if (selectedCategory) {
+        if (selectedCategory && category.id) {
             // Edit
             setBudgetCategories(current => current.map(c => c.id === category.id ? category : c));
         } else {
