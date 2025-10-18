@@ -78,7 +78,10 @@ export default function SettingsPage() {
                         <User className="h-16 w-16" />
                     </AvatarFallback>
                   </Avatar>
-                  <Button variant="outline">Change Photo</Button>
+                  <Input id="photo-upload" type="file" className="hidden" />
+                  <Button variant="outline" asChild>
+                    <Label htmlFor="photo-upload" className="cursor-pointer">Change Photo</Label>
+                  </Button>
                 </div>
                 <div className="flex-1 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -105,17 +108,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="department">Department</Label>
-                    <Select defaultValue="construction">
-                      <SelectTrigger id="department">
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="construction">Construction</SelectItem>
-                        <SelectItem value="estimating">Estimating</SelectItem>
-                        <SelectItem value="management">Management</SelectItem>
-                         <SelectItem value="hr">Human Resources</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input id="department" defaultValue="Construction" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
@@ -481,5 +474,7 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    
 
     
