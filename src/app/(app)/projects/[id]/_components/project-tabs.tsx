@@ -24,7 +24,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
             <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
                     const baseHref = `/projects/${projectId}`;
-                    const href = tab.href ? `${baseHref}${tab.href}` : baseHref;
+                    const href = `${baseHref}${tab.href}`;
                     
                     const isActive = tab.href === '' ? pathname === href : pathname.startsWith(href);
 
