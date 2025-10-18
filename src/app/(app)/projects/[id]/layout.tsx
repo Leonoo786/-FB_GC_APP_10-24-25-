@@ -1,4 +1,6 @@
 
+'use client';
+
 import { budgetItems, projects, teamMembers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -10,16 +12,18 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use } from "react";
+import { use, Suspense } from "react";
+import { useToast } from "@/hooks/use-toast";
 
-export default function ProjectDetailLayout({
-    params: paramsProp,
+
+function ProjectDetailLayoutContent({
+    params,
     children,
 }: {
-    params: Promise<{ id: string }>;
+    params: { id: string };
     children: React.ReactNode;
 }) {
-    const params = use(paramsProp);
+    const { toast } = useToast();
     const project = projects.find(p => p.id === params.id);
     if (!project) {
         notFound();
@@ -32,6 +36,14 @@ export default function ProjectDetailLayout({
     const spentToDate = projectBudgetItems.reduce((acc, item) => acc + item.committedCost, 0);
     const remaining = totalBudget - spentToDate;
     const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
+    
+    const handleAction = (action: 'Edit' | 'Delete') => {
+        toast({
+            title: `Project ${action}`,
+            description: `The "${project.name}" project would be ${action.toLowerCase()}ed.`,
+            variant: action === 'Delete' ? 'destructive' : 'default',
+        });
+    };
 
     return (
         <div className="flex flex-col gap-6">
@@ -53,10 +65,10 @@ export default function ProjectDetailLayout({
                         </p>
                     </div>
                      <div className="flex gap-2">
-                        <Button variant="outline">
+                        <Button variant="outline" onClick={() => handleAction('Edit')}>
                             <Edit className="mr-2 h-4 w-4" /> Edit
                         </Button>
-                        <Button variant="destructive" >
+                        <Button variant="destructive" onClick={() => handleAction('Delete')}>
                             <Trash className="mr-2 h-4 w-4" /> Delete
                         </Button>
                     </div>
@@ -94,4 +106,22 @@ export default function ProjectDetailLayout({
             </div>
         </div>
     );
+}
+
+// This is a workaround because `use` is not fully compatible with client components that are not at the top-level
+export default function ProjectDetailLayout({
+    params: paramsProp,
+    children,
+}: {
+    params: Promise<{ id: string }>;
+    children: React.ReactNode;
+}) {
+    const params = use(paramsProp);
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProjectDetailLayoutContent params={params}>
+                {children}
+            </ProjectDetailLayoutContent>
+        </Suspense>
+    )
 }

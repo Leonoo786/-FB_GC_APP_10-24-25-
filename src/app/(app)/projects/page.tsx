@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,20 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { projects } from "@/lib/data";
-import { PlusCircle } from "lucide-react";
+import { Edit, MoreVertical, PlusCircle, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AddProjectDialog } from './_components/add-project-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectsPage() {
     const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
+    const { toast } = useToast();
 
     const statusVariant = {
         'In Progress': 'default',
         'Planning': 'secondary',
         'Completed': 'outline',
     } as const;
+
+    const handleAction = (action: 'Edit' | 'Delete', projectName: string) => {
+        toast({
+            title: `Action: ${action}`,
+            description: `${action} action for project "${projectName}" was triggered.`,
+        });
+    };
 
     return (
         <>
@@ -57,7 +68,27 @@ export default function ProjectsPage() {
                                     <Link href={`/projects/${project.id}`}>
                                         <CardTitle className="mb-2 text-xl hover:underline">{project.name}</CardTitle>
                                     </Link>
-                                    <Badge variant={statusVariant[project.status]}>{project.status}</Badge>
+                                    <div className="flex items-center gap-1">
+                                        <Badge variant={statusVariant[project.status]}>{project.status}</Badge>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => handleAction('Edit', project.name)}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleAction('Delete', project.name)} className="text-destructive">
+                                                    <Trash className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
                                 </div>
                                 <CardDescription className="line-clamp-2">{project.description}</CardDescription>
                             </CardContent>
