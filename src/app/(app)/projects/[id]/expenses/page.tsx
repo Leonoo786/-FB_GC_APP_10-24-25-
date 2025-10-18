@@ -69,6 +69,7 @@ export default function ProjectExpensesPage({
       <AddExpenseDialog
         open={isAddExpenseOpen}
         onOpenChange={setIsAddExpenseOpen}
+        projectId={params.id}
       />
       <Card>
         <CardHeader>
@@ -130,6 +131,7 @@ export default function ProjectExpensesPage({
                 </TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Payment</TableHead>
+                <TableHead>Reference</TableHead>
                 <TableHead>Invoice #</TableHead>
                 <TableHead className="text-right">
                   <Button variant="ghost">
@@ -150,6 +152,7 @@ export default function ProjectExpensesPage({
                   <TableCell>{expense.vendorName}</TableCell>
                   <TableCell>{expense.description}</TableCell>
                   <TableCell>{expense.paymentMethod}</TableCell>
+                  <TableCell>{expense.paymentReference}</TableCell>
                   <TableCell>{expense.invoiceNumber}</TableCell>
                   <TableCell className="text-right">
                     {expense.amount.toLocaleString('en-US', {

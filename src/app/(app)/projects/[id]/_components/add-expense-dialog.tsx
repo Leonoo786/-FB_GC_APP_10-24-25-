@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -25,8 +26,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { budgetCategories, vendors } from '@/lib/data';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -36,6 +35,9 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { useContext } from 'react';
+import { AppStateContext } from '@/context/app-state-context';
+import type { Expense, BudgetCategory, Vendor } from '@/lib/types';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
@@ -44,6 +46,7 @@ const formSchema = z.object({
   description: z.string().min(1, 'Description is required.'),
   amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
   paymentMethod: z.string({ required_error: 'Please select a payment method.' }),
+  paymentReference: z.string().optional(),
   invoiceNumber: z.string().optional(),
 });
 
@@ -52,17 +55,45 @@ type AddExpenseFormValues = z.infer<typeof formSchema>;
 export function AddExpenseDialog({
   open,
   onOpenChange,
+  projectId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectId: string;
 }) {
   const { toast } = useToast();
+  const appState = useContext(AppStateContext);
   const form = useForm<AddExpenseFormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      date: new Date(),
+      description: '',
+      paymentReference: '',
+      invoiceNumber: '',
+    }
   });
 
+  const paymentMethod = form.watch('paymentMethod');
+
   const onSubmit = (data: AddExpenseFormValues) => {
-    console.log('New expense:', data);
+    if (!appState) return;
+    const { setExpenses } = appState;
+
+    const newExpense: Expense = {
+      id: crypto.randomUUID(),
+      projectId,
+      date: format(data.date, 'yyyy-MM-dd'),
+      category: data.category,
+      vendorName: data.vendor,
+      description: data.description,
+      amount: data.amount,
+      paymentMethod: data.paymentMethod,
+      paymentReference: data.paymentReference,
+      invoiceNumber: data.invoiceNumber,
+    };
+
+    setExpenses(current => [...current, newExpense]);
+
     toast({
       title: 'Expense Added',
       description: `Successfully added expense for ${data.description}.`,
@@ -70,6 +101,9 @@ export function AddExpenseDialog({
     onOpenChange(false);
     form.reset();
   };
+
+  if (!appState) return null;
+  const { budgetCategories, vendors } = appState;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -81,7 +115,7 @@ export function AddExpenseDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
             <FormField
               control={form.control}
               name="date"
@@ -234,6 +268,23 @@ export function AddExpenseDialog({
                 </FormItem>
               )}
             />
+
+            {(paymentMethod === 'Check' || paymentMethod === 'Company Credit Card') && (
+                 <FormField
+                    control={form.control}
+                    name="paymentReference"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{paymentMethod === 'Check' ? 'Check Number' : 'Last 4 Digits'}</FormLabel>
+                        <FormControl>
+                            <Input placeholder={paymentMethod === 'Check' ? 'e.g., 12345' : 'e.g., 1234'} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
+
              <FormField
               control={form.control}
               name="invoiceNumber"
@@ -247,7 +298,7 @@ export function AddExpenseDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            <DialogFooter className="pt-4">
               <Button
                 type="button"
                 variant="ghost"
