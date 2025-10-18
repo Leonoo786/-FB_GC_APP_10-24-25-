@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,21 +26,29 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Upload } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
-  projectNumber: z.string().min(1, 'Project number is required.'),
-  ownerName: z.string().min(1, 'Owner name is required.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  client: z.string().min(1, 'Client name is required.'),
+  projectImage: z.any().optional(),
   addressStreet: z.string().optional(),
   city: z.string().optional(),
   zip: z.string().optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  status: z.enum(['Planning', 'In Progress', 'Completed']),
+  progress: z.coerce.number().min(0).max(100),
   startDate: z.date({ required_error: 'Please select a start date.' }),
   endDate: z.date({ required_error: 'Please select an end date.' }),
-  revisedContract: z.coerce.number().min(0, 'Contract amount must be a positive number.'),
 }).refine(data => data.endDate >= data.startDate, {
     message: "End date cannot be before start date.",
     path: ["endDate"],
@@ -57,6 +66,10 @@ export function AddProjectDialog({
   const { toast } = useToast();
   const form = useForm<AddProjectFormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+        status: 'Planning',
+        progress: 0,
+    }
   });
 
   const onSubmit = (data: AddProjectFormValues) => {
@@ -75,71 +88,72 @@ export function AddProjectDialog({
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
-            Fill out the details below to create a new project.
+            Fill out the details below to create a new construction project.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
+             <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Project Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Downtown Office Tower" {...field} />
+                      <Input placeholder="e.g., Riverfront Residences" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="projectNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Project Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 2024-001" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-             <FormField
-                control={form.control}
-                name="ownerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Owner Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Metropolis Holdings" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
             <FormField
               control={form.control}
-              name="description"
+              name="projectImage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Project Image</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Provide a detailed description of the project." rows={4} {...field} />
+                     <div className="flex items-center gap-4">
+                        <div className="flex h-24 w-24 items-center justify-center rounded-md border border-dashed bg-secondary">
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <div className='flex-1'>
+                             <Input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={(e) => field.onChange(e.target.files)}
+                                className='w-full'
+                             />
+                             <p className='text-xs text-muted-foreground mt-1'>Select an image file to upload.</p>
+                        </div>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+             <FormField
+                control={form.control}
+                name="client"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Client</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., ABC Development Corp" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                     control={form.control}
                     name="addressStreet"
                     render={({ field }) => (
-                    <FormItem>
+                    <FormItem className='col-span-3'>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
                         <Input placeholder="e.g., 123 Main St" {...field} />
@@ -152,10 +166,10 @@ export function AddProjectDialog({
                     control={form.control}
                     name="city"
                     render={({ field }) => (
-                    <FormItem>
+                    <FormItem className='col-span-2'>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                        <Input placeholder="e.g., Houston" {...field} />
+                        <Input placeholder="e.g., Metropolis" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -166,15 +180,68 @@ export function AddProjectDialog({
                     name="zip"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>ZIP Code</FormLabel>
+                        <FormLabel>Zip Code</FormLabel>
                         <FormControl>
-                        <Input placeholder="e.g., 77002" {...field} />
+                        <Input placeholder="e.g., 12345" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
             </div>
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Project details and scope..." rows={4} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Planning">Planning</SelectItem>
+                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="progress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Progress (%)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <FormField
@@ -254,20 +321,7 @@ export function AddProjectDialog({
                 )}
               />
             </div>
-             <FormField
-                  control={form.control}
-                  name="revisedContract"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contract Amount</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="0.00" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+            
             <DialogFooter className="pt-4">
               <Button
                 type="button"
