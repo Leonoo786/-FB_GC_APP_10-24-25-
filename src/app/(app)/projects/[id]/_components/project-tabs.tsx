@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,13 +6,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
+    { name: "Reports", href: "/reports" },
     { name: "Budget", href: "" },
     { name: "Expenses", href: "/expenses" },
     { name: "Change Orders", href: "/change-orders" },
     { name: "Drawings", href: "/drawings" },
     { name: "Schedule", href: "/schedule" },
     { name: "RFIs", href: "/rfis" },
-    { name: "Reports", href: "/reports" },
     { name: "Client Uploads", href: "/client-uploads" },
 ];
 
