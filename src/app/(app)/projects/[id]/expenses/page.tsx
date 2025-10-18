@@ -32,10 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { expenses, budgetCategories } from '@/lib/data';
-import { MoreHorizontal, PlusCircle, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload } from 'lucide-react';
 import { AddExpenseDialog } from '../_components/add-expense-dialog';
 import { format } from 'date-fns';
+import { useContext } from 'react';
+import { AppStateContext } from '@/context/app-state-context';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -44,9 +46,23 @@ export default function ProjectExpensesPage({
 }) {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const params = use(paramsProp);
+  const appState = useContext(AppStateContext);
+  const { toast } = useToast();
+
+  if (!appState) {
+    return <div>Loading...</div>;
+  }
+  const { expenses, budgetCategories } = appState;
   const projectExpenses = expenses.filter(
     (exp) => exp.projectId === params.id
   );
+
+  const handleImport = () => {
+    toast({
+      title: "Import from Excel",
+      description: "This functionality will allow you to import expenses from an Excel sheet.",
+    });
+  };
 
   return (
     <>
@@ -63,7 +79,7 @@ export default function ProjectExpensesPage({
                 Log and track daily expenses for this project.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Select>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="All Categories" />
@@ -77,6 +93,10 @@ export default function ProjectExpensesPage({
                   ))}
                 </SelectContent>
               </Select>
+               <Button variant="outline" onClick={handleImport}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+              </Button>
               <Button
                 onClick={() => setIsAddExpenseOpen(true)}
                 className="w-full sm:w-auto"

@@ -8,13 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { useState, use, useContext } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
 import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
     const appState = useContext(AppStateContext);
+    const { toast } = useToast();
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -27,6 +29,13 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const [isAddBudgetItemOpen, setIsAddBudgetItemOpen] = useState(false);
 
     const projectBudgetItems = appState.budgetItems.filter(item => item.projectId === project.id);
+    
+    const handleImport = () => {
+        toast({
+            title: "Import from Excel",
+            description: "This functionality will allow you to import budget items from an Excel sheet.",
+        });
+    };
     
     return (
         <>
@@ -43,6 +52,10 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                 <Label htmlFor="group-by-category">Group by Category</Label>
                             </div>
+                             <Button variant="outline" onClick={handleImport}>
+                                <Upload className="mr-2 h-4 w-4" />
+                                Import
+                            </Button>
                             <Button onClick={() => setIsAddBudgetItemOpen(true)}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Budget Item
