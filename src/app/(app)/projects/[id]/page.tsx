@@ -11,6 +11,8 @@ import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
 import { AddBudgetItemDialog } from "./_components/add-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
+import type { BudgetItem } from "@/lib/types";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -36,15 +38,48 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            toast({
-                title: "File Selected",
-                description: `You selected "${file.name}". Processing functionality is not yet implemented.`,
-            });
-            // Reset file input
-            if(fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
+        if (file && appState) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = e.target?.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    const newBudgetItems: BudgetItem[] = json.map((row: any) => ({
+                        id: crypto.randomUUID(),
+                        projectId: project.id,
+                        category: row['Category'] || 'Uncategorized',
+                        costType: ['labor', 'material', 'both'].includes(row['Cost Type']) ? row['Cost Type'] : 'material',
+                        notes: row['Notes'] || '',
+                        originalBudget: Number(row['Original Budget']) || 0,
+                        approvedCOBudget: 0,
+                        committedCost: 0,
+                        projectedCost: Number(row['Original Budget']) || 0,
+                    }));
+                    
+                    appState.setBudgetItems(current => [...current, ...newBudgetItems]);
+
+                    toast({
+                        title: "Import Successful",
+                        description: `${newBudgetItems.length} budget items have been imported.`,
+                    });
+                } catch (error) {
+                    console.error("Error importing budget:", error);
+                    toast({
+                        title: "Import Failed",
+                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Category, Cost Type, Notes, Original Budget).",
+                        variant: "destructive",
+                    });
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+        // Reset file input
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
         }
     };
     
