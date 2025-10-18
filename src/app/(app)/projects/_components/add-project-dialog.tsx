@@ -73,6 +73,12 @@ export function AddProjectDialog({
   const form = useForm<AddProjectFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+        name: '',
+        client: '',
+        addressStreet: '',
+        city: '',
+        zip: '',
+        description: '',
         status: 'Planning',
         progress: 0,
     }
