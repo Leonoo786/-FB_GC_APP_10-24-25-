@@ -3,9 +3,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useState, use, useContext, useRef } from "react";
+import { useState, use, useContext, useRef, useMemo } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
 import { AddEditBudgetItemDialog } from "./_components/add-edit-budget-item-dialog";
@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import type { BudgetItem } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -22,18 +23,39 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
+    const [showGroupByCategory, setShowGroupByCategory] = useState(false);
 
     const project = appState?.projects.find(p => p.id === params.id);
     
     if (!appState || !project) {
-        // Let layout handle the notFound case if context is not ready or project not found
         return null;
     }
     
     const { budgetItems, setBudgetItems } = appState;
-    const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+
+    const groupedBudgetItems = useMemo(() => {
+        if (!showGroupByCategory) return null;
+        
+        const groups: { [key: string]: BudgetItem[] } = projectBudgetItems.reduce((acc, item) => {
+            (acc[item.category] = acc[item.category] || []).push(item);
+            return acc;
+        }, {} as { [key: string]: BudgetItem[] });
+
+        return Object.entries(groups).map(([category, items]) => ({
+            category,
+            items,
+            subtotals: {
+                originalBudget: items.reduce((sum, item) => sum + item.originalBudget, 0),
+                approvedCOBudget: items.reduce((sum, item) => sum + item.approvedCOBudget, 0),
+                revisedBudget: items.reduce((sum, item) => sum + (item.originalBudget + item.approvedCOBudget), 0),
+                committedCost: items.reduce((sum, item) => sum + item.committedCost, 0),
+                projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0),
+            }
+        })).sort((a,b) => a.category.localeCompare(b.category));
+
+    }, [projectBudgetItems, showGroupByCategory]);
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -59,13 +81,12 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     };
 
     const handleSaveItem = (itemToSave: BudgetItem) => {
-        if (itemToSave.id) { // Editing existing item
+        if (itemToSave.id) {
             setBudgetItems(current => current.map(item => item.id === itemToSave.id ? itemToSave : item));
-        } else { // Adding new item
+        } else {
             setBudgetItems(current => [{...itemToSave, id: crypto.randomUUID()}, ...current]);
         }
     };
-
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -108,12 +129,19 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             };
             reader.readAsBinaryString(file);
         }
-        // Reset file input
         if(fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
     
+    const totals = useMemo(() => ({
+        originalBudget: projectBudgetItems.reduce((sum, item) => sum + item.originalBudget, 0),
+        approvedCOBudget: projectBudgetItems.reduce((sum, item) => sum + item.approvedCOBudget, 0),
+        revisedBudget: projectBudgetItems.reduce((sum, item) => sum + (item.originalBudget + item.approvedCOBudget), 0),
+        committedCost: projectBudgetItems.reduce((sum, item) => sum + item.committedCost, 0),
+        projectedCost: projectBudgetItems.reduce((sum, item) => sum + item.projectedCost, 0),
+    }), [projectBudgetItems]);
+
     return (
         <>
             <input
@@ -157,7 +185,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Category</TableHead>
+                                <TableHead className={cn(showGroupByCategory && 'w-1/4')}>{showGroupByCategory ? 'Details' : 'Category'}</TableHead>
                                 <TableHead>Cost Type</TableHead>
                                 <TableHead>Notes</TableHead>
                                 <TableHead className="text-right">Original Budget</TableHead>
@@ -168,60 +196,106 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            {projectBudgetItems.map((item, index) => {
-                                 const revisedBudget = item.originalBudget + item.approvedCOBudget;
-
-                                return (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.category}</TableCell>
-                                        <TableCell>{item.costType}</TableCell>
-                                        <TableCell>{item.notes}</TableCell>
-                                        <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right">${item.committedCost.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right">${item.projectedCost.toLocaleString()}</TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                        <span className="sr-only">Toggle menu</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action cannot be undone. This will permanently delete this budget item.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                                    Delete
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
+                        {showGroupByCategory && groupedBudgetItems ? (
+                            <TableBody>
+                                {groupedBudgetItems.map(({ category, items, subtotals }) => (
+                                    <React.Fragment key={category}>
+                                        <TableRow className="bg-secondary hover:bg-secondary">
+                                            <TableCell className="font-bold text-secondary-foreground" colSpan={3}>{category}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.committedCost.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.projectedCost.toLocaleString()}</TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                        {items.map(item => {
+                                            const revisedBudget = item.originalBudget + item.approvedCOBudget;
+                                            return (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="pl-8">{item.category}</TableCell>
+                                                    <TableCell>{item.costType}</TableCell>
+                                                    <TableCell>{item.notes}</TableCell>
+                                                    <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
+                                                    <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
+                                                    <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
+                                                    <TableCell className="text-right">${item.committedCost.toLocaleString()}</TableCell>
+                                                    <TableCell className="text-right">${item.projectedCost.toLocaleString()}</TableCell>
+                                                    <TableCell>{/* Actions column left blank for sub-items */}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </TableBody>
+                        ) : (
+                            <TableBody>
+                                {projectBudgetItems.map((item) => {
+                                    const revisedBudget = item.originalBudget + item.approvedCOBudget;
+                                    return (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="font-medium">{item.category}</TableCell>
+                                            <TableCell>{item.costType}</TableCell>
+                                            <TableCell>{item.notes}</TableCell>
+                                            <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right">${item.committedCost.toLocaleString()}</TableCell>
+                                            <TableCell className="text-right">${item.projectedCost.toLocaleString()}</TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This action cannot be undone. This will permanently delete this budget item.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        )}
+                        <TableFooter>
+                            <TableRow>
+                                <TableCell colSpan={3} className="font-bold">Totals</TableCell>
+                                <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString()}</TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                        </TableFooter>
                     </Table>
                 </CardContent>
             </Card>
         </>
     );
 }
+
+    
