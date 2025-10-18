@@ -1,3 +1,6 @@
+
+'use client'
+
 import Link from 'next/link';
 import {
     Sidebar,
@@ -13,15 +16,18 @@ import { Logo } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+    const [companyName, setCompanyName] = useState('FancyBuilders');
+    
     return (
         <SidebarProvider>
             <Sidebar>
                 <SidebarHeader className="p-4">
                     <Link href="/dashboard" className="flex items-center gap-2">
                         <Logo className="size-8" />
-                        <span className="text-lg font-semibold">FancyBuilders</span>
+                        <span className="text-lg font-semibold">{companyName}</span>
                     </Link>
                 </SidebarHeader>
                 <SidebarContent>
@@ -58,3 +64,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarProvider>
     );
 }
+
+    

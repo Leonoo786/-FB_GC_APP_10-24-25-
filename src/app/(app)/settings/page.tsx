@@ -53,7 +53,29 @@ const notificationItems = [
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const [photoUrl, setPhotoUrl] = useState("/placeholder-user.jpg");
+
+  // Profile State
+  const [photoUrl, setPhotoUrl] = useState("https://i.pravatar.cc/150?u=john");
+  const [firstName, setFirstName] = useState("John");
+  const [lastName, setLastName] = useState("Doe");
+  const [email, setEmail] = useState("john.doe@constructai.com");
+  const [phone, setPhone] = useState("(555) 123-4567");
+  const [jobTitle, setJobTitle] = useState("Admin");
+  const [department, setDepartment] = useState("Construction");
+  const [bio, setBio] = useState("");
+
+  // Company State
+  const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
+  const [companyName, setCompanyName] = useState("FancyBuilders Construction");
+  const [industry, setIndustry] = useState("Construction");
+  const [companySize, setCompanySize] = useState("51-200");
+  const [address, setAddress] = useState("123 Construction Avenue");
+  const [city, setCity] = useState("New York");
+  const [state, setState] = useState("NY");
+  const [zipCode, setZipCode] = useState("10001");
+  const [companyPhone, setCompanyPhone] = useState("(555) 987-6543");
+  const [companyWebsite, setCompanyWebsite] = useState("https://www.fancybuilders.com");
+
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -66,6 +88,17 @@ export default function SettingsPage() {
     }
   };
 
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCompanyLogoUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveChanges = () => {
     toast({
       title: "Changes Saved",
@@ -73,7 +106,7 @@ export default function SettingsPage() {
     });
   };
   
-    const handleCompanySaveChanges = () => {
+  const handleCompanySaveChanges = () => {
     toast({
       title: "Changes Saved",
       description: "Your company information has been updated.",
@@ -84,7 +117,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Welcome back, Guest</p>
+        <p className="text-muted-foreground">Welcome back, {firstName}</p>
       </div>
 
       <Tabs defaultValue="profile">
@@ -117,28 +150,28 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Guest" />
+                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="User" />
+                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue="alex.rodriguez@example.com" />
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" defaultValue="(555) 123-4567" />
+                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   </div>
                    <div className="space-y-2">
                     <Label htmlFor="jobTitle">Job Title</Label>
-                    <Input id="jobTitle" defaultValue="Admin" />
+                    <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="department">Department</Label>
-                    <Input id="department" defaultValue="Construction" />
+                    <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
@@ -146,6 +179,8 @@ export default function SettingsPage() {
                       id="bio"
                       placeholder="A brief description about yourself"
                       rows={3}
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
                     />
                   </div>
                 </div>
@@ -302,12 +337,12 @@ export default function SettingsPage() {
                   <Label>Company Logo</Label>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20 rounded-md">
-                        <AvatarImage src="/your-logo.png" />
+                        <AvatarImage src={companyLogoUrl} />
                         <AvatarFallback>
                             <User className="h-10 w-10" />
                         </AvatarFallback>
                     </Avatar>
-                    <Input id="logo-upload" type="file" className="hidden" accept="image/*" />
+                    <Input id="logo-upload" type="file" className="hidden" accept="image/*" onChange={handleLogoChange} />
                     <Button variant="outline" asChild>
                         <Label htmlFor="logo-upload" className="cursor-pointer">Change Logo</Label>
                     </Button>
@@ -315,16 +350,16 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" defaultValue="FancyBuilders Construction" />
+                  <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="industry">Industry</Label>
-                        <Input id="industry" defaultValue="Construction" />
+                        <Input id="industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="companySize">Company Size</Label>
-                        <Select defaultValue="51-200">
+                        <Select value={companySize} onValueChange={setCompanySize}>
                             <SelectTrigger id="companySize">
                                 <SelectValue placeholder="Select company size" />
                             </SelectTrigger>
@@ -340,29 +375,29 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" defaultValue="123 Construction Avenue" />
+                    <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2 col-span-2">
                         <Label htmlFor="city">City</Label>
-                        <Input id="city" defaultValue="New York" />
+                        <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="state">State</Label>
-                        <Input id="state" defaultValue="NY" />
+                        <Input id="state" value={state} onChange={(e) => setState(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="zipCode">Zip Code</Label>
-                        <Input id="zipCode" defaultValue="10001" />
+                        <Input id="zipCode" value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="companyPhone">Phone</Label>
-                    <Input id="companyPhone" defaultValue="(555) 987-6543" />
+                    <Input id="companyPhone" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="companyWebsite">Website</Label>
-                    <Input id="companyWebsite" defaultValue="https://www.fancybuilders.com" />
+                    <Input id="companyWebsite" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} />
                 </div>
               </CardContent>
               <CardFooter className="border-t px-6 py-4 justify-end">
@@ -504,7 +539,7 @@ export default function SettingsPage() {
                                <Button variant="outline">
                                     <Download className="mr-2 h-4 w-4" />
                                     Export All Data
-                                </Button>
+                                 </Button>
                             </CardContent>
                         </Card>
                     </div>
@@ -516,3 +551,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    

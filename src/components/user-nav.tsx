@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -16,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "./theme-toggle"
+import Link from "next/link"
 
 export function UserNav() {
   return (
@@ -41,14 +43,14 @@ export function UserNav() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              Profile
+            <DropdownMenuItem asChild>
+              <Link href="/settings">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               Billing
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              Settings
+            <DropdownMenuItem asChild>
+               <Link href="/settings">Settings</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
@@ -60,3 +62,5 @@ export function UserNav() {
     </div>
   )
 }
+
+    
