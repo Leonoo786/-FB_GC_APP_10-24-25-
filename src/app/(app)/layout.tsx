@@ -18,23 +18,25 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
-import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories } from '@/lib/data';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task } from '@/lib/types';
+import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses } from '@/lib/data';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense } from '@/lib/types';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
-    const [companyName, setCompanyName] = useState('FancyBuilders');
-    const [companyLogoUrl, setCompanyLogoUrl] = useState("/your-logo.png");
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(initialBudgetCategories);
-    const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
-    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [companyName, setCompanyName] = useLocalStorage('companyName', 'FancyBuilders');
+    const [companyLogoUrl, setCompanyLogoUrl] = useLocalStorage('companyLogoUrl', '/your-logo.png');
+    const [projects, setProjects] = useLocalStorage<Project[]>('projects', initialProjects);
+    const [budgetCategories, setBudgetCategories] = useLocalStorage<BudgetCategory[]>('budgetCategories', initialBudgetCategories);
+    const [vendors, setVendors] = useLocalStorage<Vendor[]>('vendors', initialVendors);
+    const [budgetItems, setBudgetItems] = useLocalStorage<BudgetItem[]>('budgetItems', initialBudgetItems);
+    const [teamMembers, setTeamMembers] = useLocalStorage<TeamMember[]>('teamMembers', initialTeamMembers);
+    const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', initialTasks);
+    const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', initialExpenses);
     
     return (
         <AppStateProvider 
-            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems, teamMembers, tasks }}
-            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems, setTeamMembers, setTasks }}
+            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems, teamMembers, tasks, expenses }}
+            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems, setTeamMembers, setTasks, setExpenses }}
         >
             <SidebarProvider>
                 <Sidebar>

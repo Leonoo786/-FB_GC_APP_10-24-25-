@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { createContext, useState, ReactNode } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task } from '@/lib/types';
+import React, { createContext, ReactNode } from 'react';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense } from '@/lib/types';
 
 type AppState = {
   companyName: string;
@@ -13,6 +13,7 @@ type AppState = {
   budgetItems: BudgetItem[];
   teamMembers: TeamMember[];
   tasks: Task[];
+  expenses: Expense[];
 };
 
 type AppStateContextType = AppState & {
@@ -24,6 +25,7 @@ type AppStateContextType = AppState & {
   setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
   setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -40,6 +42,7 @@ type AppStateProviderProps = {
     setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
     setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
     setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+    setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   };
 };
 
@@ -54,6 +57,7 @@ export function AppStateProvider({ children, initialState, onStateChange }: AppS
     setBudgetItems: onStateChange.setBudgetItems,
     setTeamMembers: onStateChange.setTeamMembers,
     setTasks: onStateChange.setTasks,
+    setExpenses: onStateChange.setExpenses,
   };
 
   return (

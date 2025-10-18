@@ -45,6 +45,7 @@ export type BudgetItem = {
   projectId: string;
   category: string;
   costType: 'labor' | 'material' | 'both';
+  notes?: string;
   originalBudget: number;
   approvedCOBudget: number;
   committedCost: number;
