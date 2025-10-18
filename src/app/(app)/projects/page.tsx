@@ -28,6 +28,7 @@ export default function ProjectsPage() {
         toast({
             title: `Action: ${action}`,
             description: `${action} action for project "${projectName}" was triggered.`,
+            variant: action === 'Delete' ? 'destructive' : 'default',
         });
     };
 
