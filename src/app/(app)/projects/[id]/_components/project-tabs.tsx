@@ -5,12 +5,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-    { name: "Overview", href: "" },
-    { name: "Budget", href: "/budget" },
-    { name: "Tasks", href: "/tasks" },
+    { name: "Budget", href: "" },
+    { name: "Expenses", href: "/expenses" },
+    { name: "Change Orders", href: "/change-orders" },
     { name: "Drawings", href: "/drawings" },
+    { name: "Schedule", href: "/schedule" },
     { name: "RFIs", href: "/rfis" },
-    { name: "Issues", href: "/issues" },
+    { name: "Client Uploads", href: "/client-uploads" },
 ];
 
 export function ProjectTabs({ projectId }: { projectId: string }) {
@@ -20,7 +21,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
         <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-6" aria-label="Tabs">
                 {tabs.map((tab) => {
-                    const href = `/projects/${projectId}${tab.href}`;
+                    const href = tab.href ? `/projects/${projectId}${tab.href}` : `/projects/${projectId}`;
                     const isActive = pathname === href;
                     return (
                         <Link

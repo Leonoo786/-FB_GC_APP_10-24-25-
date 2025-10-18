@@ -1,4 +1,4 @@
-import { projects, teamMembers } from "@/lib/data";
+import { budgetItems, projects, teamMembers } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, MoreVertical, Trash } from "lucide-react";
 import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 
 export default function ProjectDetailLayout({
     params,
@@ -22,6 +24,12 @@ export default function ProjectDetailLayout({
 
     const projectManager = teamMembers.find(tm => tm.role === 'Project Manager');
 
+    const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+    const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
+    const spentToDate = projectBudgetItems.reduce((acc, item) => acc + item.committedCost, 0);
+    const remaining = totalBudget - spentToDate;
+    const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
+
     return (
         <div className="flex flex-col gap-6">
             <div>
@@ -32,17 +40,13 @@ export default function ProjectDetailLayout({
                     </Link>
                 </Button>
 
-                <div className="relative h-64 w-full rounded-lg bg-secondary">
-                    <Image src={project.imageUrl} alt={project.name} fill className="object-cover rounded-lg" data-ai-hint={project.imageHint}/>
-                </div>
-
-                <div className="mt-[-4rem] flex flex-col items-start gap-4 px-6 sm:flex-row sm:items-end">
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold tracking-tight text-white [text-shadow:0_2px_4px_rgba(0,0,0,0.5)] sm:text-4xl">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                             {project.name}
                         </h1>
-                        <p className="text-sm text-gray-200 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
-                            {project.addressStreet}, {project.city}, {project.zip}
+                        <p className="text-sm text-muted-foreground">
+                            {project.projectNumber}
                         </p>
                     </div>
                      <div className="flex gap-2">
@@ -56,58 +60,34 @@ export default function ProjectDetailLayout({
                 </div>
             </div>
 
-            <Separator />
-
-            <div className="grid gap-6 md:grid-cols-3">
-                <div className="md:col-span-1">
-                    <h3 className="font-semibold text-lg mb-2">Project Details</h3>
-                    <div className="space-y-4 text-sm text-muted-foreground">
-                        <div className="flex justify-between">
-                            <span className="font-medium text-foreground">Project #</span>
-                            <span>{project.projectNumber}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="font-medium text-foreground">Status</span>
-                            <span>{project.status}</span>
-                        </div>
-                         <div className="flex justify-between">
-                            <span className="font-medium text-foreground">Owner</span>
-                            <span>{project.ownerName}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="font-medium text-foreground">Start Date</span>
-                            <span>{project.startDate}</span>
-                        </div>
-                         <div className="flex justify-between">
-                            <span className="font-medium text-foreground">End Date</span>
-                            <span>{project.endDate}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="font-medium text-foreground">Contract</span>
-                            <span>${project.revisedContract.toLocaleString()}</span>
-                        </div>
-                        <Separator />
-                         <div className="space-y-2">
-                             <span className="font-medium text-foreground">Project Manager</span>
-                            {projectManager && (
-                                <div className="flex items-center gap-2">
-                                    <Avatar>
-                                        <AvatarImage src={projectManager.avatarUrl} />
-                                        <AvatarFallback>{projectManager.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="font-semibold">{projectManager.name}</p>
-                                        <p className="text-xs">{projectManager.email}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+            <Card>
+                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div>
+                        <p className="text-sm text-muted-foreground">Total Budget</p>
+                        <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Category-based budgeting</p>
                     </div>
-                </div>
-                <div className="md:col-span-2">
-                    <ProjectTabs projectId={project.id} />
-                    <div className="mt-6">{children}</div>
-                </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Spent to Date</p>
+                        <p className="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{budgetUsedPercent.toFixed(2)}% of budget</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Remaining</p>
+                        <p className="text-2xl font-bold">${remaining.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">On Track</p>
+                    </div>
+                    <div>
+                        <p className="text-sm text-muted-foreground">Budget Status</p>
+                        <Progress value={budgetUsedPercent} className="h-2 mt-2" />
+                        <p className="text-xs text-muted-foreground mt-2">{budgetUsedPercent.toFixed(2)}% Used</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div>
+                <ProjectTabs projectId={project.id} />
+                <div className="mt-6">{children}</div>
             </div>
         </div>
     );
