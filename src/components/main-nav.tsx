@@ -37,6 +37,7 @@ const mainNavLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/profit-loss", label: "Profit & Loss", icon: TrendingUp },
+  { href: "/p-l-static", label: "P&L (Static)", icon: TrendingUp },
   { href: "/tasks", label: "Tasks", icon: CheckCircle2 },
   { href: "/daily-reports", label: "Daily Reports", icon: ClipboardCheck },
   { href: "/issues", label: "Issues", icon: AlertCircle },
