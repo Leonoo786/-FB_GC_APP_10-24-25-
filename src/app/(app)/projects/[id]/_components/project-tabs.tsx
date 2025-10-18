@@ -18,14 +18,13 @@ const tabs = [
 
 export function ProjectTabs({ projectId }: { projectId: string }) {
     const pathname = usePathname();
+    const baseHref = `/projects/${projectId}`;
     
     return (
         <div className="border-b">
             <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
-                    const baseHref = `/projects/${projectId}`;
                     const href = tab.href ? `${baseHref}/${tab.href}` : baseHref;
-                    
                     const isActive = pathname === href;
 
                     return (
