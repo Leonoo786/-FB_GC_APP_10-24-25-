@@ -47,6 +47,7 @@ export default function TasksPage() {
     }, [tasks]);
 
     const getInitials = (name: string) => {
+        if (!name) return '';
         return name.split(' ').map(n => n[0]).join('');
     };
 
@@ -114,7 +115,7 @@ export default function TasksPage() {
                                                         <Badge variant={priorityVariant[task.priority]}>{task.priority}</Badge>
                                                     </div>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {format(new Date(task.dueDate), 'M/dd/yyyy')}
+                                                        {task.dueDate ? format(new Date(task.dueDate), 'M/dd/yyyy') : ''}
                                                     </span>
                                                 </div>
                                             </CardContent>

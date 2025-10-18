@@ -16,7 +16,7 @@ type AppState = {
   expenses: Expense[];
 };
 
-type AppStateContextType = AppState & {
+type AppStateSetters = {
   setCompanyName: (name: string) => void;
   setCompanyLogoUrl: (url: string) => void;
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
@@ -28,36 +28,20 @@ type AppStateContextType = AppState & {
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
 };
 
+type AppStateContextType = AppState & AppStateSetters;
+
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
 
 type AppStateProviderProps = {
   children: ReactNode;
   initialState: AppState;
-  onStateChange: {
-    setCompanyName: (name: string) => void;
-    setCompanyLogoUrl: (url: string) => void;
-    setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
-    setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
-    setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
-    setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
-    setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
-    setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-    setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
-  };
+  onStateChange: AppStateSetters;
 };
 
 export function AppStateProvider({ children, initialState, onStateChange }: AppStateProviderProps) {
   const value = {
     ...initialState,
-    setCompanyName: onStateChange.setCompanyName,
-    setCompanyLogoUrl: onStateChange.setCompanyLogoUrl,
-    setProjects: onStateChange.setProjects,
-    setBudgetCategories: onStateChange.setBudgetCategories,
-    setVendors: onStateChange.setVendors,
-    setBudgetItems: onStateChange.setBudgetItems,
-    setTeamMembers: onStateChange.setTeamMembers,
-    setTasks: onStateChange.setTasks,
-    setExpenses: onStateChange.setExpenses,
+    ...onStateChange,
   };
 
   return (

@@ -104,7 +104,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.category}</TableCell>
                                         <TableCell>{item.costType}</TableCell>
-                                        <TableCell>{}</TableCell>
+                                        <TableCell>{item.notes}</TableCell>
                                         <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
                                         <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
                                         <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>

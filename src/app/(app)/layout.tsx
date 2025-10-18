@@ -16,7 +16,6 @@ import { Logo } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { AppStateProvider } from '@/context/app-state-context';
 import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses } from '@/lib/data';
 import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense } from '@/lib/types';
@@ -35,8 +34,28 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
     
     return (
         <AppStateProvider 
-            initialState={{ companyName, companyLogoUrl, projects, budgetCategories, vendors, budgetItems, teamMembers, tasks, expenses }}
-            onStateChange={{ setCompanyName, setCompanyLogoUrl, setProjects, setBudgetCategories, setVendors, setBudgetItems, setTeamMembers, setTasks, setExpenses }}
+            initialState={{ 
+                companyName, 
+                companyLogoUrl, 
+                projects, 
+                budgetCategories, 
+                vendors, 
+                budgetItems, 
+                teamMembers, 
+                tasks, 
+                expenses 
+            }}
+            onStateChange={{ 
+                setCompanyName, 
+                setCompanyLogoUrl, 
+                setProjects, 
+                setBudgetCategories, 
+                setVendors, 
+                setBudgetItems, 
+                setTeamMembers, 
+                setTasks, 
+                setExpenses 
+            }}
         >
             <SidebarProvider>
                 <Sidebar>

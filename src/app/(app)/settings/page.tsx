@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,9 +66,9 @@ export default function SettingsPage() {
   const [department, setDepartment] = useState("Construction");
   const [bio, setBio] = useState("");
 
-  // Company State
-  const [companyName, setCompanyName] = useState(appState?.companyName || "FancyBuilders Construction");
-  const [companyLogoUrl, setCompanyLogoUrl] = useState(appState?.companyLogoUrl || "/your-logo.png");
+  // Company State - Initialize from context but allow local edits
+  const [companyName, setCompanyName] = useState("");
+  const [companyLogoUrl, setCompanyLogoUrl] = useState("");
   const [industry, setIndustry] = useState("Construction");
   const [companySize, setCompanySize] = useState("51-200");
   const [address, setAddress] = useState("123 Construction Avenue");
@@ -78,6 +78,16 @@ export default function SettingsPage() {
   const [companyPhone, setCompanyPhone] = useState("(555) 987-6543");
   const [companyWebsite, setCompanyWebsite] = useState("https://www.fancybuilders.com");
 
+  useEffect(() => {
+    if (appState) {
+        setCompanyName(appState.companyName);
+        setCompanyLogoUrl(appState.companyLogoUrl);
+    }
+  }, [appState]);
+
+  if (!appState) {
+    return <div>Loading...</div>
+  }
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -97,9 +107,6 @@ export default function SettingsPage() {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setCompanyLogoUrl(result);
-        if (appState?.setCompanyLogoUrl) {
-            appState.setCompanyLogoUrl(result);
-        }
       };
       reader.readAsDataURL(file);
     }
@@ -113,12 +120,8 @@ export default function SettingsPage() {
   };
   
   const handleCompanySaveChanges = () => {
-    if(appState?.setCompanyName) {
-        appState.setCompanyName(companyName);
-    }
-    if(appState?.setCompanyLogoUrl) {
-        appState.setCompanyLogoUrl(companyLogoUrl);
-    }
+    appState.setCompanyName(companyName);
+    appState.setCompanyLogoUrl(companyLogoUrl);
     toast({
       title: "Changes Saved",
       description: "Your company information has been updated.",
