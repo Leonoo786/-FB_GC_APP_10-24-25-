@@ -68,7 +68,7 @@ export type ChangeOrder = {
   coNumber: string;
   description: string;
   totalRequest: number;
-  status: 'Submitted' | 'Approved' | 'Executed';
+  status: 'Submitted' | 'Approved' | 'Executed' | 'Rejected';
 };
 
 export type Task = {

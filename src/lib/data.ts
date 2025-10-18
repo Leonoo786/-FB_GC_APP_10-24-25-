@@ -149,4 +149,5 @@ export const changeOrders: ChangeOrder[] = [
     { id: '1', projectId: '1', coNumber: 'CO-001', description: 'Upgrade lobby lighting fixtures', totalRequest: 25000, status: 'Approved' },
     { id: '2', projectId: '1', coNumber: 'CO-002', description: 'Additional data ports on 5th floor', totalRequest: 12000, status: 'Executed' },
     { id: '3', projectId: '2', coNumber: 'CO-001', description: 'Modify parking lot layout', totalRequest: 35000, status: 'Submitted' },
+    { id: '4', projectId: '1', coNumber: 'CO-003', description: 'Unforeseen rock removal', totalRequest: 50000, status: 'Rejected' },
 ];
