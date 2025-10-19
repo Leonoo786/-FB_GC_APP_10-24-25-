@@ -45,29 +45,47 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 function parseDate(dateValue: any): Date | null {
   if (!dateValue) return null;
 
+  // If it's already a valid Date object
   if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
     return dateValue;
   }
 
-  // Handle Excel's date serial number
+  // Handle Excel's date serial number (number of days since 1900-01-01)
   if (typeof dateValue === 'number') {
-    // Excel's epoch starts on 1900-01-01, but it incorrectly thinks 1900 was a leap year.
-    // The number 25569 corresponds to days between 1900-01-01 and 1970-01-01, adjusted for the bug.
+    // Excel's epoch starts on 1899-12-30, not 1900-01-01, due to a leap year bug.
+    // The number 25569 is the number of days between 1899-12-30 and 1970-01-01.
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
     const jsDate = new Date(excelEpoch.getTime() + dateValue * 86400000);
     if (!isNaN(jsDate.getTime())) {
-        return jsDate;
+      return jsDate;
     }
   }
-  
+
+  // Handle various string formats
   if (typeof dateValue === 'string') {
+    // Attempt to parse common date formats
     const parsed = new Date(dateValue);
     if (!isNaN(parsed.getTime())) {
       return parsed;
     }
   }
-  
-  return null; // Return null if parsing fails
+
+  return null; // Return null if all parsing attempts fail
+}
+
+function parseAmount(amountValue: any): number {
+    if (typeof amountValue === 'number') {
+        return amountValue;
+    }
+    if (typeof amountValue === 'string') {
+        // Remove currency symbols, commas, and whitespace, then parse
+        const cleanedString = amountValue.replace(/[^0-9.-]+/g, "");
+        if (cleanedString) {
+            const parsed = parseFloat(cleanedString);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+    }
+    return 0;
 }
 
 
@@ -124,31 +142,31 @@ export default function ProjectExpensesPage({
     fileInputRef.current?.click();
   };
   
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+ const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && appState) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
+                // Read the file with raw:true to get string values, and cellDates:false to avoid auto-parsing
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 
-                // Get header row and normalize headers
-                const header: string[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 0 })[0] as string[];
-                const normalizedHeaders = header.map(h => h.trim().toLowerCase());
-                
-                const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+                const json: any[] = XLSX.utils.sheet_to_json(worksheet, { raw: false });
 
                 if (json.length === 0) {
                     throw new Error("Spreadsheet has no data rows.");
                 }
 
-                // Create a map from normalized header to original header
+                // Get header row and normalize headers for flexible matching
+                const headerRow: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 0 })[0] as any[];
                 const headerMap: { [key: string]: string } = {};
-                normalizedHeaders.forEach((h, i) => {
-                    headerMap[h] = header[i];
+                headerRow.forEach(h => {
+                    if (typeof h === 'string') {
+                        headerMap[h.trim().toLowerCase()] = h;
+                    }
                 });
 
                 const findHeader = (...possibleNames: string[]) => {
@@ -172,23 +190,12 @@ export default function ProjectExpensesPage({
                 };
 
                 const newExpenses: Expense[] = json.map((row: any) => {
-                    const amountValue = h.amount ? row[h.amount] : undefined;
-                    let amount = 0;
-                    if (typeof amountValue === 'string') {
-                        amount = parseFloat(amountValue.replace(/[^0-9.-]+/g,""));
-                    } else if (typeof amountValue === 'number') {
-                        amount = amountValue;
-                    }
-                    
-                    if (isNaN(amount) || amount <= 0) {
-                        return null; // Skip rows with invalid or zero amount
-                    }
+                    const amount = parseAmount(h.amount ? row[h.amount] : 0);
+                    const date = parseDate(h.date ? row[h.date] : null);
 
-                    const dateValue = h.date ? row[h.date] : null;
-                    const date = parseDate(dateValue);
-
-                    if (!date) {
-                        return null; // Skip rows with invalid date
+                    if (amount <= 0 || !date) {
+                        // Skip rows with invalid or zero amount, or invalid date
+                        return null; 
                     }
 
                     return {
@@ -200,8 +207,8 @@ export default function ProjectExpensesPage({
                       description: (h.description && row[h.description]) || 'N/A',
                       amount: amount,
                       paymentMethod: (h.paymentMethod && row[h.paymentMethod]) || 'N/A',
-                      paymentReference: (h.paymentReference && row[h.paymentReference]) || '',
-                      invoiceNumber: (h.invoiceNumber && row[h.invoiceNumber]) || '',
+                      paymentReference: String((h.paymentReference && row[h.paymentReference]) || ''),
+                      invoiceNumber: String((h.invoiceNumber && row[h.invoiceNumber]) || ''),
                     };
                   })
                   .filter((expense): expense is Expense => expense !== null);
