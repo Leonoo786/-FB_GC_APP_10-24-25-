@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AddChangeOrderDialog } from '../_components/add-change-order-dialog';
+import { AddChangeOrderDialog } from '../../_components/add-change-order-dialog';
 import type { ChangeOrder } from '@/lib/types';
 
 
