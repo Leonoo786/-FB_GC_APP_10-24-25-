@@ -41,6 +41,30 @@ import * as XLSX from 'xlsx';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+// Robust date parsing function
+function parseDate(dateValue: any): Date {
+  if (dateValue instanceof Date) {
+    return dateValue;
+  }
+  if (typeof dateValue === 'string') {
+    const parsed = new Date(dateValue);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  // Handle Excel's date serial number (number of days since 1900-01-01)
+  if (typeof dateValue === 'number') {
+    // Excel's epoch starts on 1900-01-01, but it incorrectly thinks 1900 was a leap year.
+    // The number 25569 corresponds to days between 1900-01-01 and 1970-01-01, adjusted for the bug.
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const jsDate = new Date(excelEpoch.getTime() + dateValue * 86400000);
+    if (!isNaN(jsDate.getTime())) {
+        return jsDate;
+    }
+  }
+  return new Date(); // Fallback to current date if parsing fails
+}
+
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -102,50 +126,50 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                // Use `cellDates: true` to help XLSX parse dates, but have robust parsing as backup
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const json: any[] = XLSX.utils.sheet_to_json(worksheet, {
-                  raw: false, // Use formatted text
-                  dateNF: 'yyyy-mm-dd', // Specify date format
+                  header: 1, // Get an array of arrays
+                  raw: false, // Use formatted strings
                 });
+                
+                if (json.length < 2) {
+                    throw new Error("Spreadsheet is empty or has no data rows.");
+                }
 
-                const newExpenses: Expense[] = json.map((row: any) => {
-                    // Create a case-insensitive key retrieval helper
-                    const getVal = (key: string) => {
-                        const rowKey = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
-                        return rowKey ? row[rowKey] : undefined;
-                    };
+                const headerRow = json[0] as string[];
+                const headers = headerRow.map(h => h.trim().toLowerCase());
+                const dataRows = json.slice(1);
 
-                    const amount = parseFloat(getVal('Amount'));
+                const getVal = (row: any[], key: string) => {
+                    const index = headers.indexOf(key.toLowerCase());
+                    return index !== -1 ? row[index] : undefined;
+                };
+
+                const newExpenses: Expense[] = dataRows.map((row: any[]) => {
+                    const amountStr = getVal(row, 'Amount');
+                    const amount = typeof amountStr === 'string' ? parseFloat(amountStr.replace(/[^0-9.-]+/g,"")) : parseFloat(amountStr);
+
                     if (isNaN(amount) || amount <= 0) {
                         return null;
                     }
 
-                    let date: Date;
-                    const dateValue = getVal('Date');
-                    if (dateValue instanceof Date) {
-                      date = dateValue;
-                    } else if (typeof dateValue === 'string') {
-                      date = new Date(dateValue);
-                    } else if(typeof dateValue === 'number') {
-                      // Handle Excel's date serial number
-                      date = new Date(Math.round((dateValue - 25569) * 864e5));
-                    } else {
-                      date = new Date(); // Fallback
-                    }
+                    const dateValue = getVal(row, 'Date');
+                    const date = parseDate(dateValue);
 
                     return {
                       id: crypto.randomUUID(),
                       projectId: params.id,
                       date: format(date, 'yyyy-MM-dd'),
-                      category: getVal('Category') || 'Uncategorized',
-                      vendorName: getVal('Vendor') || '',
-                      description: getVal('Description') || 'N/A',
+                      category: getVal(row, 'Category') || 'Uncategorized',
+                      vendorName: getVal(row, 'Vendor') || '',
+                      description: getVal(row, 'Description') || 'N/A',
                       amount: amount,
-                      paymentMethod: getVal('Payment Method') || 'N/A',
-                      paymentReference: getVal('Payment Reference') || '',
-                      invoiceNumber: getVal('Invoice Number') || '',
+                      paymentMethod: getVal(row, 'Payment Method') || 'N/A',
+                      paymentReference: getVal(row, 'Payment Reference') || '',
+                      invoiceNumber: getVal(row, 'Invoice Number') || '',
                     };
                   })
                   .filter((expense): expense is Expense => expense !== null);
@@ -160,14 +184,15 @@ export default function ProjectExpensesPage({
                 });
             } catch (error) {
                 console.error("Error importing expenses:", error);
+                const errorMessage = (error instanceof Error) ? error.message : "Please ensure it is a valid Excel or CSV file with the correct columns (Date, Category, Amount, etc.).";
                 toast({
                     title: "Import Failed",
-                    description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Date, Category, Vendor, Description, Amount, etc.).",
+                    description: `There was an error processing the file. ${errorMessage}`,
                     variant: "destructive",
                 });
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file); // Read as ArrayBuffer for better processing
     }
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
