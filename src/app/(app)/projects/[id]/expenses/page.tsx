@@ -76,28 +76,30 @@ export default function ProjectExpensesPage({
                     const worksheet = workbook.Sheets[sheetName];
                     const json: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-                    const newExpenses: Expense[] = json.map((row: any) => {
-                      // Handle Excel's date serial number format
-                      let date = new Date();
-                      if (typeof row['Date'] === 'number') {
-                        date = XLSX.SSF.parse_date_code(row['Date']);
-                      } else if (typeof row['Date'] === 'string') {
-                        date = new Date(row['Date']);
-                      }
+                    const newExpenses: Expense[] = json
+                      .map((row: any) => {
+                        // Handle Excel's date serial number format
+                        let date = new Date();
+                        if (typeof row['Date'] === 'number') {
+                          date = XLSX.SSF.parse_date_code(row['Date']);
+                        } else if (typeof row['Date'] === 'string') {
+                          date = new Date(row['Date']);
+                        }
 
-                      return {
-                        id: crypto.randomUUID(),
-                        projectId: params.id,
-                        date: format(date, 'yyyy-MM-dd'),
-                        category: row['Category'] || 'Uncategorized',
-                        vendorName: row['Vendor'] || '',
-                        description: row['Description'] || 'N/A',
-                        amount: Number(row['Amount']) || 0,
-                        paymentMethod: row['Payment Method'] || 'N/A',
-                        paymentReference: row['Payment Reference'] || '',
-                        invoiceNumber: row['Invoice Number'] || '',
-                      };
-                    }).filter(expense => expense.amount > 0);
+                        return {
+                          id: crypto.randomUUID(),
+                          projectId: params.id,
+                          date: format(date, 'yyyy-MM-dd'),
+                          category: row['Category'] || 'Uncategorized',
+                          vendorName: row['Vendor'] || '',
+                          description: row['Description'] || 'N/A',
+                          amount: Number(row['Amount']) || 0,
+                          paymentMethod: row['Payment Method'] || 'N/A',
+                          paymentReference: row['Payment Reference'] || '',
+                          invoiceNumber: row['Invoice Number'] || '',
+                        };
+                      })
+                      .filter(expense => expense.amount > 0);
                     
                     setExpenses(current => [...current, ...newExpenses]);
 
