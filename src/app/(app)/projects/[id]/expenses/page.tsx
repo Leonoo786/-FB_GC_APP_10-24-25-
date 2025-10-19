@@ -96,65 +96,69 @@ export default function ProjectExpensesPage({
   };
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && appState) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+    const file = event.target.files?.[0];
+    if (file && appState) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-                    const newExpenses: Expense[] = json
-                      .map((row: any) => {
-                        // Handle Excel's date serial number format
-                        let date = new Date();
-                        if (typeof row['Date'] === 'number') {
-                          date = XLSX.SSF.parse_date_code(row['Date']);
-                        } else if (typeof row['Date'] === 'string') {
-                          date = new Date(row['Date']);
-                        }
-
-                        return {
-                          id: crypto.randomUUID(),
-                          projectId: params.id,
-                          date: format(date, 'yyyy-MM-dd'),
-                          category: row['Category'] || 'Uncategorized',
-                          vendorName: row['Vendor'] || '',
-                          description: row['Description'] || 'N/A',
-                          amount: Number(row['Amount']) || 0,
-                          paymentMethod: row['Payment Method'] || 'N/A',
-                          paymentReference: row['Payment Reference'] || '',
-                          invoiceNumber: row['Invoice Number'] || '',
-                        };
-                      })
-                      .filter(expense => expense.amount > 0);
-                    
-                    if (newExpenses.length > 0) {
-                      setExpenses(current => [...current, ...newExpenses]);
+                const newExpenses: Expense[] = json
+                  .map((row: any) => {
+                    let date: Date;
+                    if (row.Date instanceof Date) {
+                      date = row.Date;
+                    } else if (typeof row.Date === 'string') {
+                      date = new Date(row.Date);
+                    } else if(typeof row.Date === 'number') {
+                      // Handle Excel's date serial number
+                      date = new Date(Math.round((row.Date - 25569) * 864e5));
+                    } else {
+                      date = new Date(); // Fallback
                     }
 
-                    toast({
-                        title: "Import Successful",
-                        description: `${newExpenses.length} expenses have been imported.`,
-                    });
-                } catch (error) {
-                    console.error("Error importing expenses:", error);
-                    toast({
-                        title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Date, Category, Vendor, Description, Amount, etc.).",
-                        variant: "destructive",
-                    });
+                    return {
+                      id: crypto.randomUUID(),
+                      projectId: params.id,
+                      date: format(date, 'yyyy-MM-dd'),
+                      category: row['Category'] || 'Uncategorized',
+                      vendorName: row['Vendor'] || '',
+                      description: row['Description'] || 'N/A',
+                      amount: Number(row['Amount']) || 0,
+                      paymentMethod: row['Payment Method'] || 'N/A',
+                      paymentReference: row['Payment Reference'] || '',
+                      invoiceNumber: row['Invoice Number'] || '',
+                    };
+                  })
+                  .filter(expense => expense.amount > 0);
+                
+                if (newExpenses.length > 0) {
+                  setExpenses(current => [...current, ...newExpenses]);
                 }
-            };
-            reader.readAsBinaryString(file);
-        }
-        if(fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-    };
+
+                toast({
+                    title: "Import Successful",
+                    description: `${newExpenses.length} expenses have been imported.`,
+                });
+            } catch (error) {
+                console.error("Error importing expenses:", error);
+                toast({
+                    title: "Import Failed",
+                    description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Date, Category, Vendor, Description, Amount, etc.).",
+                    variant: "destructive",
+                });
+            }
+        };
+        reader.readAsBinaryString(file);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+};
 
 
   return (
