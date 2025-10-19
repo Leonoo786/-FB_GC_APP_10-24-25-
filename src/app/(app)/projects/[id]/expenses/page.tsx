@@ -82,7 +82,7 @@ export default function ProjectExpensesPage({
   };
 
   const handleSaveExpense = (expense: Expense) => {
-    if (selectedExpense) {
+    if (selectedExpense && expense.id) {
         // Edit
         setExpenses(current => current.map(e => e.id === expense.id ? expense : e));
     } else {
@@ -105,18 +105,32 @@ export default function ProjectExpensesPage({
                 const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+                const json: any[] = XLSX.utils.sheet_to_json(worksheet, {
+                  raw: false, // Use formatted text
+                  dateNF: 'yyyy-mm-dd', // Specify date format
+                });
 
-                const newExpenses: Expense[] = json
-                  .map((row: any) => {
+                const newExpenses: Expense[] = json.map((row: any) => {
+                    // Create a case-insensitive key retrieval helper
+                    const getVal = (key: string) => {
+                        const rowKey = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
+                        return rowKey ? row[rowKey] : undefined;
+                    };
+
+                    const amount = parseFloat(getVal('Amount'));
+                    if (isNaN(amount) || amount <= 0) {
+                        return null;
+                    }
+
                     let date: Date;
-                    if (row.Date instanceof Date) {
-                      date = row.Date;
-                    } else if (typeof row.Date === 'string') {
-                      date = new Date(row.Date);
-                    } else if(typeof row.Date === 'number') {
+                    const dateValue = getVal('Date');
+                    if (dateValue instanceof Date) {
+                      date = dateValue;
+                    } else if (typeof dateValue === 'string') {
+                      date = new Date(dateValue);
+                    } else if(typeof dateValue === 'number') {
                       // Handle Excel's date serial number
-                      date = new Date(Math.round((row.Date - 25569) * 864e5));
+                      date = new Date(Math.round((dateValue - 25569) * 864e5));
                     } else {
                       date = new Date(); // Fallback
                     }
@@ -125,16 +139,16 @@ export default function ProjectExpensesPage({
                       id: crypto.randomUUID(),
                       projectId: params.id,
                       date: format(date, 'yyyy-MM-dd'),
-                      category: row['Category'] || 'Uncategorized',
-                      vendorName: row['Vendor'] || '',
-                      description: row['Description'] || 'N/A',
-                      amount: Number(row['Amount']) || 0,
-                      paymentMethod: row['Payment Method'] || 'N/A',
-                      paymentReference: row['Payment Reference'] || '',
-                      invoiceNumber: row['Invoice Number'] || '',
+                      category: getVal('Category') || 'Uncategorized',
+                      vendorName: getVal('Vendor') || '',
+                      description: getVal('Description') || 'N/A',
+                      amount: amount,
+                      paymentMethod: getVal('Payment Method') || 'N/A',
+                      paymentReference: getVal('Payment Reference') || '',
+                      invoiceNumber: getVal('Invoice Number') || '',
                     };
                   })
-                  .filter(expense => expense.amount > 0);
+                  .filter((expense): expense is Expense => expense !== null);
                 
                 if (newExpenses.length > 0) {
                   setExpenses(current => [...current, ...newExpenses]);
@@ -308,3 +322,5 @@ export default function ProjectExpensesPage({
     </>
   );
 }
+
+    
