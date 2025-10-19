@@ -33,12 +33,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload } from 'lucide-react';
-import { AddExpenseDialog } from '../_components/add-expense-dialog';
+import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
 import { format } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import type { Expense } from '@/lib/types';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 export default function ProjectExpensesPage({
@@ -46,7 +47,8 @@ export default function ProjectExpensesPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -59,6 +61,35 @@ export default function ProjectExpensesPage({
   const projectExpenses = expenses ? expenses.filter(
     (exp) => exp.projectId === params.id
   ) : [];
+
+  const handleNewExpense = () => {
+    setSelectedExpense(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteExpense = (expenseId: string) => {
+    setExpenses(current => current.filter(exp => exp.id !== expenseId));
+    toast({
+        title: "Expense Deleted",
+        description: "The expense has been successfully deleted.",
+        variant: "destructive"
+    });
+  };
+
+  const handleSaveExpense = (expense: Expense) => {
+    if (selectedExpense) {
+        // Edit
+        setExpenses(current => current.map(e => e.id === expense.id ? expense : e));
+    } else {
+        // Add
+        setExpenses(current => [{...expense, id: crypto.randomUUID()}, ...current]);
+    }
+  };
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -101,7 +132,9 @@ export default function ProjectExpensesPage({
                       })
                       .filter(expense => expense.amount > 0);
                     
-                    setExpenses(current => [...current, ...newExpenses]);
+                    if (newExpenses.length > 0) {
+                      setExpenses(current => [...current, ...newExpenses]);
+                    }
 
                     toast({
                         title: "Import Successful",
@@ -133,10 +166,12 @@ export default function ProjectExpensesPage({
         onChange={handleFileChange}
         accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
       />
-      <AddExpenseDialog
-        open={isAddExpenseOpen}
-        onOpenChange={setIsAddExpenseOpen}
+      <AddEditExpenseDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
         projectId={params.id}
+        expense={selectedExpense}
+        onSave={handleSaveExpense}
       />
       <Card>
         <CardHeader>
@@ -166,7 +201,7 @@ export default function ProjectExpensesPage({
                   Import
               </Button>
               <Button
-                onClick={() => setIsAddExpenseOpen(true)}
+                onClick={handleNewExpense}
                 className="w-full sm:w-auto"
               >
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
@@ -237,8 +272,26 @@ export default function ProjectExpensesPage({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Delete</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditExpense(expense)}>Edit</DropdownMenuItem>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this expense.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteExpense(expense.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

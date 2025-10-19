@@ -38,7 +38,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useContext, useEffect } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
-import type { Expense, BudgetCategory, Vendor } from '@/lib/types';
+import type { Expense } from '@/lib/types';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
@@ -340,4 +340,3 @@ export function AddEditExpenseDialog({
     </Dialog>
   );
 }
-
