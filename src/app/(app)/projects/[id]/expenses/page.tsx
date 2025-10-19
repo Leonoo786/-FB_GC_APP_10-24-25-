@@ -41,54 +41,6 @@ import * as XLSX from 'xlsx';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-// Robust date parsing function
-function parseDate(dateValue: any): Date | null {
-  if (!dateValue) return null;
-
-  // If it's already a valid Date object
-  if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
-    return dateValue;
-  }
-
-  // Handle Excel's date serial number (number of days since 1900-01-01)
-  if (typeof dateValue === 'number') {
-    // Excel's epoch starts on 1899-12-30, not 1900-01-01, due to a leap year bug.
-    // The number 25569 is the number of days between 1899-12-30 and 1970-01-01.
-    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-    const jsDate = new Date(excelEpoch.getTime() + dateValue * 86400000);
-    if (!isNaN(jsDate.getTime())) {
-      return jsDate;
-    }
-  }
-
-  // Handle various string formats
-  if (typeof dateValue === 'string') {
-    // Attempt to parse common date formats
-    const parsed = new Date(dateValue);
-    if (!isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-
-  return null; // Return null if all parsing attempts fail
-}
-
-function parseAmount(amountValue: any): number {
-    if (typeof amountValue === 'number') {
-        return amountValue;
-    }
-    if (typeof amountValue === 'string') {
-        // Remove currency symbols, commas, and whitespace, then parse
-        const cleanedString = amountValue.replace(/[^0-9.-]+/g, "");
-        if (cleanedString) {
-            const parsed = parseFloat(cleanedString);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-    }
-    return 0;
-}
-
-
 export default function ProjectExpensesPage({
   params: paramsProp,
 }: {
@@ -149,52 +101,31 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                // Read the file with raw:true to get string values, and cellDates:false to avoid auto-parsing
-                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 
-                const json: any[] = XLSX.utils.sheet_to_json(worksheet, { raw: false });
-
-                if (json.length === 0) {
-                    throw new Error("Spreadsheet has no data rows.");
-                }
-
-                // Get header row and normalize headers for flexible matching
-                const headerRow: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 0 })[0] as any[];
-                const headerMap: { [key: string]: string } = {};
-                headerRow.forEach(h => {
-                    if (typeof h === 'string') {
-                        headerMap[h.trim().toLowerCase()] = h;
-                    }
-                });
-
-                const findHeader = (...possibleNames: string[]) => {
-                    for (const name of possibleNames) {
-                        if (headerMap[name.toLowerCase()]) {
-                            return headerMap[name.toLowerCase()];
-                        }
-                    }
-                    return null;
-                };
-
-                const h = {
-                    date: findHeader('Date'),
-                    category: findHeader('Category'),
-                    vendor: findHeader('Vendor', 'Vendor Name'),
-                    description: findHeader('Description'),
-                    amount: findHeader('Amount'),
-                    paymentMethod: findHeader('Payment Method', 'Payment'),
-                    paymentReference: findHeader('Payment Reference', 'Reference'),
-                    invoiceNumber: findHeader('Invoice Number', 'Invoice #'),
-                };
+                const json: any[] = XLSX.utils.sheet_to_json(worksheet);
 
                 const newExpenses: Expense[] = json.map((row: any) => {
-                    const amount = parseAmount(h.amount ? row[h.amount] : 0);
-                    const date = parseDate(h.date ? row[h.date] : null);
+                    // Similar to budget import, we assume specific column names
+                    // and handle potential missing values with defaults.
+                    const amount = Number(row['Amount']) || 0;
+                    
+                    // The 'cellDates: true' option should parse dates, but we add a fallback.
+                    let date = new Date();
+                    if (row['Date']) {
+                      if (row['Date'] instanceof Date) {
+                        date = row['Date'];
+                      } else if (typeof row['Date'] === 'number') {
+                         // Handle Excel serial date number
+                        date = XLSX.SSF.parse_date_code(row['Date']);
+                      } else {
+                        date = new Date(row['Date']);
+                      }
+                    }
 
-                    if (amount <= 0 || !date) {
-                        // Skip rows with invalid or zero amount, or invalid date
+                    if (amount <= 0 || isNaN(date.getTime())) {
                         return null; 
                     }
 
@@ -202,13 +133,13 @@ export default function ProjectExpensesPage({
                       id: crypto.randomUUID(),
                       projectId: params.id,
                       date: format(date, 'yyyy-MM-dd'),
-                      category: (h.category && row[h.category]) || 'Uncategorized',
-                      vendorName: (h.vendor && row[h.vendor]) || '',
-                      description: (h.description && row[h.description]) || 'N/A',
+                      category: row['Category'] || 'Uncategorized',
+                      vendorName: row['Vendor'] || '',
+                      description: row['Description'] || 'N/A',
                       amount: amount,
-                      paymentMethod: (h.paymentMethod && row[h.paymentMethod]) || 'N/A',
-                      paymentReference: String((h.paymentReference && row[h.paymentReference]) || ''),
-                      invoiceNumber: String((h.invoiceNumber && row[h.invoiceNumber]) || ''),
+                      paymentMethod: row['Payment Method'] || 'N/A',
+                      paymentReference: String(row['Payment Reference'] || ''),
+                      invoiceNumber: String(row['Invoice Number'] || ''),
                     };
                   })
                   .filter((expense): expense is Expense => expense !== null);
@@ -223,7 +154,7 @@ export default function ProjectExpensesPage({
                 });
             } catch (error) {
                 console.error("Error importing expenses:", error);
-                const errorMessage = (error instanceof Error) ? error.message : "Please ensure it is a valid Excel or CSV file.";
+                const errorMessage = (error instanceof Error) ? error.message : "Please check file format and column headers.";
                 toast({
                     title: "Import Failed",
                     description: `There was an error processing the file. ${errorMessage}`,
@@ -231,7 +162,7 @@ export default function ProjectExpensesPage({
                 });
             }
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsBinaryString(file);
     }
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
