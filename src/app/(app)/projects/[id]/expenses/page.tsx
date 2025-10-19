@@ -42,17 +42,14 @@ import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 // Robust date parsing function
-function parseDate(dateValue: any): Date {
-  if (dateValue instanceof Date) {
+function parseDate(dateValue: any): Date | null {
+  if (!dateValue) return null;
+
+  if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
     return dateValue;
   }
-  if (typeof dateValue === 'string') {
-    const parsed = new Date(dateValue);
-    if (!isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-  // Handle Excel's date serial number (number of days since 1900-01-01)
+
+  // Handle Excel's date serial number
   if (typeof dateValue === 'number') {
     // Excel's epoch starts on 1900-01-01, but it incorrectly thinks 1900 was a leap year.
     // The number 25569 corresponds to days between 1900-01-01 and 1970-01-01, adjusted for the bug.
@@ -62,7 +59,15 @@ function parseDate(dateValue: any): Date {
         return jsDate;
     }
   }
-  return new Date(); // Fallback to current date if parsing fails
+  
+  if (typeof dateValue === 'string') {
+    const parsed = new Date(dateValue);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  
+  return null; // Return null if parsing fails
 }
 
 
@@ -126,50 +131,77 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                // Use `cellDates: true` to help XLSX parse dates, but have robust parsing as backup
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json: any[] = XLSX.utils.sheet_to_json(worksheet, {
-                  header: 1, // Get an array of arrays
-                  raw: false, // Use formatted strings
-                });
                 
-                if (json.length < 2) {
-                    throw new Error("Spreadsheet is empty or has no data rows.");
+                // Get header row and normalize headers
+                const header: string[] = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 0 })[0] as string[];
+                const normalizedHeaders = header.map(h => h.trim().toLowerCase());
+                
+                const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+                if (json.length === 0) {
+                    throw new Error("Spreadsheet has no data rows.");
                 }
 
-                const headerRow = json[0] as string[];
-                const headers = headerRow.map(h => h.trim().toLowerCase());
-                const dataRows = json.slice(1);
+                // Create a map from normalized header to original header
+                const headerMap: { [key: string]: string } = {};
+                normalizedHeaders.forEach((h, i) => {
+                    headerMap[h] = header[i];
+                });
 
-                const getVal = (row: any[], key: string) => {
-                    const index = headers.indexOf(key.toLowerCase());
-                    return index !== -1 ? row[index] : undefined;
+                const findHeader = (...possibleNames: string[]) => {
+                    for (const name of possibleNames) {
+                        if (headerMap[name.toLowerCase()]) {
+                            return headerMap[name.toLowerCase()];
+                        }
+                    }
+                    return null;
                 };
 
-                const newExpenses: Expense[] = dataRows.map((row: any[]) => {
-                    const amountStr = getVal(row, 'Amount');
-                    const amount = typeof amountStr === 'string' ? parseFloat(amountStr.replace(/[^0-9.-]+/g,"")) : parseFloat(amountStr);
+                const h = {
+                    date: findHeader('Date'),
+                    category: findHeader('Category'),
+                    vendor: findHeader('Vendor', 'Vendor Name'),
+                    description: findHeader('Description'),
+                    amount: findHeader('Amount'),
+                    paymentMethod: findHeader('Payment Method', 'Payment'),
+                    paymentReference: findHeader('Payment Reference', 'Reference'),
+                    invoiceNumber: findHeader('Invoice Number', 'Invoice #'),
+                };
 
+                const newExpenses: Expense[] = json.map((row: any) => {
+                    const amountValue = h.amount ? row[h.amount] : undefined;
+                    let amount = 0;
+                    if (typeof amountValue === 'string') {
+                        amount = parseFloat(amountValue.replace(/[^0-9.-]+/g,""));
+                    } else if (typeof amountValue === 'number') {
+                        amount = amountValue;
+                    }
+                    
                     if (isNaN(amount) || amount <= 0) {
-                        return null;
+                        return null; // Skip rows with invalid or zero amount
                     }
 
-                    const dateValue = getVal(row, 'Date');
+                    const dateValue = h.date ? row[h.date] : null;
                     const date = parseDate(dateValue);
+
+                    if (!date) {
+                        return null; // Skip rows with invalid date
+                    }
 
                     return {
                       id: crypto.randomUUID(),
                       projectId: params.id,
                       date: format(date, 'yyyy-MM-dd'),
-                      category: getVal(row, 'Category') || 'Uncategorized',
-                      vendorName: getVal(row, 'Vendor') || '',
-                      description: getVal(row, 'Description') || 'N/A',
+                      category: (h.category && row[h.category]) || 'Uncategorized',
+                      vendorName: (h.vendor && row[h.vendor]) || '',
+                      description: (h.description && row[h.description]) || 'N/A',
                       amount: amount,
-                      paymentMethod: getVal(row, 'Payment Method') || 'N/A',
-                      paymentReference: getVal(row, 'Payment Reference') || '',
-                      invoiceNumber: getVal(row, 'Invoice Number') || '',
+                      paymentMethod: (h.paymentMethod && row[h.paymentMethod]) || 'N/A',
+                      paymentReference: (h.paymentReference && row[h.paymentReference]) || '',
+                      invoiceNumber: (h.invoiceNumber && row[h.invoiceNumber]) || '',
                     };
                   })
                   .filter((expense): expense is Expense => expense !== null);
@@ -184,7 +216,7 @@ export default function ProjectExpensesPage({
                 });
             } catch (error) {
                 console.error("Error importing expenses:", error);
-                const errorMessage = (error instanceof Error) ? error.message : "Please ensure it is a valid Excel or CSV file with the correct columns (Date, Category, Amount, etc.).";
+                const errorMessage = (error instanceof Error) ? error.message : "Please ensure it is a valid Excel or CSV file.";
                 toast({
                     title: "Import Failed",
                     description: `There was an error processing the file. ${errorMessage}`,
@@ -192,7 +224,7 @@ export default function ProjectExpensesPage({
                 });
             }
         };
-        reader.readAsArrayBuffer(file); // Read as ArrayBuffer for better processing
+        reader.readAsArrayBuffer(file);
     }
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -275,7 +307,7 @@ export default function ProjectExpensesPage({
                   </Button>
                 </TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Payment</TableHead>
+                <TableHead>Payment Method</TableHead>
                 <TableHead>Reference</TableHead>
                 <TableHead>Invoice #</TableHead>
                 <TableHead className="text-right">
@@ -347,5 +379,3 @@ export default function ProjectExpensesPage({
     </>
   );
 }
-
-    
