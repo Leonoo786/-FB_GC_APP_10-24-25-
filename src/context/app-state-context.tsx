@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, ReactNode } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense } from '@/lib/types';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder } from '@/lib/types';
 
 type AppState = {
   companyName: string;
@@ -14,6 +14,7 @@ type AppState = {
   teamMembers: TeamMember[];
   tasks: Task[];
   expenses: Expense[];
+  changeOrders: ChangeOrder[];
 };
 
 type AppStateSetters = {
@@ -26,6 +27,7 @@ type AppStateSetters = {
   setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
+  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
 };
 
 type AppStateContextType = AppState & AppStateSetters;

@@ -17,8 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppStateProvider } from '@/context/app-state-context';
-import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses } from '@/lib/data';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense } from '@/lib/types';
+import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses, changeOrders as initialChangeOrders } from '@/lib/data';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
@@ -31,6 +31,7 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [teamMembers, setTeamMembers] = useLocalStorage<TeamMember[]>('teamMembers', initialTeamMembers);
     const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', initialTasks);
     const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', initialExpenses);
+    const [changeOrders, setChangeOrders] = useLocalStorage<ChangeOrder[]>('changeOrders', initialChangeOrders);
     
     return (
         <AppStateProvider 
@@ -43,7 +44,8 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
                 budgetItems, 
                 teamMembers, 
                 tasks, 
-                expenses 
+                expenses,
+                changeOrders
             }}
             onStateChange={{ 
                 setCompanyName, 
@@ -54,7 +56,8 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
                 setBudgetItems, 
                 setTeamMembers, 
                 setTasks, 
-                setExpenses 
+                setExpenses,
+                setChangeOrders
             }}
         >
             <SidebarProvider>
