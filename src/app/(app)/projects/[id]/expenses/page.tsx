@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext } from 'react';
+import { useState, use, useContext, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,13 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MoreHorizontal, PlusCircle, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload } from 'lucide-react';
 import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
 import { format } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import * as XLSX from 'xlsx';
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -50,6 +51,7 @@ export default function ProjectExpensesPage({
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!appState) {
     return <div>Loading...</div>;
@@ -88,8 +90,67 @@ export default function ProjectExpensesPage({
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && appState) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                const newExpenses: Expense[] = json.map((row: any) => ({
+                    id: crypto.randomUUID(),
+                    projectId: params.id,
+                    date: row['Date'] ? format(new Date(row['Date']), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+                    category: row['Category'] || 'Uncategorized',
+                    vendorName: row['Vendor'] || '',
+                    description: row['Description'] || 'N/A',
+                    amount: Number(row['Amount']) || 0,
+                    paymentMethod: row['Payment Method'] || 'N/A',
+                    paymentReference: row['Payment Reference'] || '',
+                    invoiceNumber: row['Invoice Number'] || '',
+                }));
+                
+                appState.setExpenses(current => [...current, ...newExpenses]);
+
+                toast({
+                    title: "Import Successful",
+                    description: `${newExpenses.length} expenses have been imported.`,
+                });
+            } catch (error) {
+                console.error("Error importing expenses:", error);
+                toast({
+                    title: "Import Failed",
+                    description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns.",
+                    variant: "destructive",
+                });
+            }
+        };
+        reader.readAsBinaryString(file);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  };
+
+
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileChange}
+        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+      />
       <AddEditExpenseDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -120,6 +181,10 @@ export default function ProjectExpensesPage({
                   ))}
                 </SelectContent>
               </Select>
+               <Button variant="outline" onClick={handleImportClick}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+              </Button>
               <Button
                 onClick={handleNewExpense}
                 className="w-full sm:w-auto"
