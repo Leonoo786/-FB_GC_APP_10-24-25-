@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useContext } from 'react';
 import { notFound } from 'next/navigation';
 import {
   Card,
@@ -18,37 +18,41 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { budgetItems, expenses, projects } from '@/lib/data';
-import type { BudgetItem, Expense } from '@/lib/types';
-import { TransactionsDialog } from '../_components/transactions-dialog';
+import { AppStateContext } from '@/context/app-state-context';
+import { TransactionsDialog } from '../../_components/transactions-dialog';
 import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export default function ProjectReportsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const [showGroupByCategory, setShowGroupByCategory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const project = projects.find((p) => p.id === params.id);
-  if (!project) {
+  
+  const appState = useContext(AppStateContext);
+  
+  const project = appState?.projects.find((p) => p.id === params.id);
+
+  const projectBudgetItems = useMemo(() => 
+    appState?.budgetItems.filter((item) => item.projectId === params.id) || [],
+    [appState?.budgetItems, params.id]
+  );
+  
+  const projectExpenses = useMemo(() =>
+    appState?.expenses.filter((expense) => expense.projectId === params.id) || [],
+    [appState?.expenses, params.id]
+  );
+
+  if (!project || !appState) {
     notFound();
   }
 
-  const projectBudgetItems = budgetItems.filter(
-    (item) => item.projectId === project.id
-  );
-
   const getExpensesForCategory = (category: string) => {
-    return expenses.filter(
-      (expense) =>
-        expense.projectId === project.id && expense.category === category
-    );
+    return projectExpenses.filter((expense) => expense.category === category);
   };
 
   const handleTransactionsClick = (category: string) => {
@@ -67,6 +71,34 @@ export default function ProjectReportsPage({
     'bg-pink-500',
   ];
 
+  const categorySpending = useMemo(() => {
+    const spendingMap: {[key: string]: {budget: number, spent: number}} = {};
+
+    projectBudgetItems.forEach(item => {
+        if (!spendingMap[item.category]) {
+            spendingMap[item.category] = { budget: 0, spent: 0 };
+        }
+        spendingMap[item.category].budget += item.originalBudget + item.approvedCOBudget;
+    });
+
+    projectExpenses.forEach(expense => {
+        if (!spendingMap[expense.category]) {
+            spendingMap[expense.category] = { budget: 0, spent: 0 };
+        }
+        spendingMap[expense.category].spent += expense.amount;
+    });
+
+    return Object.entries(spendingMap).map(([category, { budget, spent }]) => ({
+        category,
+        budget,
+        spent,
+        balance: budget - spent,
+        progress: budget > 0 ? (spent / budget) * 100 : 0,
+        transactions: getExpensesForCategory(category)
+    })).sort((a, b) => b.spent - a.spent);
+
+  }, [projectBudgetItems, projectExpenses]);
+
 
   return (
     <>
@@ -78,14 +110,6 @@ export default function ProjectReportsPage({
               <CardDescription>
                 A summary of spending by budget category for this project.
               </CardDescription>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="group-by-category"
-                checked={showGroupByCategory}
-                onCheckedChange={setShowGroupByCategory}
-              />
-              <Label htmlFor="group-by-category">Group by Category</Label>
             </div>
           </div>
         </CardHeader>
@@ -102,18 +126,8 @@ export default function ProjectReportsPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projectBudgetItems.map((item, index) => {
-                const budget = item.originalBudget + item.approvedCOBudget;
-                const spent = getExpensesForCategory(item.category).reduce(
-                  (acc, exp) => acc + exp.amount,
-                  0
-                );
-                const balance = budget - spent;
-                const progress = budget > 0 ? (spent / budget) * 100 : 0;
-                const transactions = getExpensesForCategory(item.category);
-
-                return (
-                  <TableRow key={item.id}>
+              {categorySpending.map((item, index) => (
+                  <TableRow key={item.category}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                          <span className={cn("h-2.5 w-2.5 rounded-full", categoryColors[index % categoryColors.length])} />
@@ -121,27 +135,27 @@ export default function ProjectReportsPage({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      {budget.toLocaleString('en-US', {
+                      {item.budget.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
                     <TableCell className="text-right text-red-600">
-                      {spent.toLocaleString('en-US', {
+                      {item.spent.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      {balance.toLocaleString('en-US', {
+                      {item.balance.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
                     <TableCell>
                       <div className='flex items-center gap-2'>
-                        <Progress value={progress} className="h-2" />
-                        <span className='text-xs text-muted-foreground'>{progress.toFixed(1)}%</span>
+                        <Progress value={item.progress} className="h-2" />
+                        <span className='text-xs text-muted-foreground'>{item.progress.toFixed(1)}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -149,14 +163,13 @@ export default function ProjectReportsPage({
                         variant="outline"
                         size="sm"
                         onClick={() => handleTransactionsClick(item.category)}
-                        disabled={transactions.length === 0}
+                        disabled={item.transactions.length === 0}
                       >
-                        {transactions.length} items
+                        {item.transactions.length} items
                       </Button>
                     </TableCell>
                   </TableRow>
-                );
-              })}
+                ))}
             </TableBody>
           </Table>
         </CardContent>

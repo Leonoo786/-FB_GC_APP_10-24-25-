@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useContext } from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -27,11 +27,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { tasks, teamMembers, projects } from '@/lib/data';
 import { notFound } from 'next/navigation';
-import { AddScheduleItemDialog } from '../_components/add-schedule-item-dialog';
+import { AddScheduleItemDialog } from '../../_components/add-schedule-item-dialog';
 import { format } from 'date-fns';
 import type { Task } from '@/lib/types';
+import { AppStateContext } from '@/context/app-state-context';
 
 
 export default function ProjectSchedulePage({
@@ -41,10 +41,19 @@ export default function ProjectSchedulePage({
 }) {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const params = use(paramsProp);
+  const appState = useContext(AppStateContext);
+  
+  if (!appState) {
+    return <div>Loading...</div>;
+  }
+
+  const { projects, tasks, teamMembers } = appState;
+  
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();
   }
+
   const projectTasks = tasks.filter((t) => t.projectId === params.id);
   
   const statusVariant: Record<Task['status'], 'default' | 'secondary' | 'outline'> = {

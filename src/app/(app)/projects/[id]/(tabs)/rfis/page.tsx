@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   MoreHorizontal,
@@ -32,9 +32,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { rfis, projects } from '@/lib/data';
 import { notFound } from 'next/navigation';
-import { AddRfiDialog } from '../_components/add-rfi-dialog';
+import { AddRfiDialog } from '../../_components/add-rfi-dialog';
 import { format } from 'date-fns';
 import type { RFI } from '@/lib/types';
 import {
@@ -43,9 +42,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { AppStateContext } from '@/context/app-state-context';
 
 export default function ProjectRFIsPage({ params }: { params: { id: string } }) {
   const [isAddRfiOpen, setIsAddRfiOpen] = useState(false);
+  const appState = useContext(AppStateContext);
+
+  if (!appState) {
+    return <div>Loading...</div>
+  }
+  const { projects, rfis } = appState;
+
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();
