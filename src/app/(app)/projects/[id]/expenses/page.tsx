@@ -114,13 +114,14 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                const workbook = XLSX.read(data, { type: 'binary' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { raw: false }) as any[];
 
                 const newExpenses: Expense[] = json.map((row: any) => {
-                    const date = row['Date'] instanceof Date && isValid(row['Date']) ? row['Date'] : null;
+                    const dateCandidate = new Date(row['Date']);
+                    const date = isValid(dateCandidate) ? dateCandidate : null;
                     const amount = Number(String(row['Amount']).replace(/[^0-9.-]+/g,"")) || 0;
                     
                     if (!date || !amount) return null;
