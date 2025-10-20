@@ -34,49 +34,13 @@ import {
 } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
 import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
-import { format, isValid, parse, parseISO } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
-
-// Function to parse amount, removing currency symbols and commas
-const parseAmount = (value: any): number => {
-    if (value === null || value === undefined) return 0;
-    if (typeof value === 'number') return value;
-    const stringValue = String(value).replace(/[^0-9.-]+/g, "");
-    const numberValue = parseFloat(stringValue);
-    return isNaN(numberValue) ? 0 : numberValue;
-};
-
-// Function to parse date, handling Excel's numeric format and various string formats
-const parseDate = (value: any): Date => {
-  if (!value) return new Date();
-  if (value instanceof Date && isValid(value)) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    // Excel stores dates as number of days since 1899-12-30.
-    // 25569 is the diff between 1970-01-01 and 1900-01-01 plus Excel's leap year bug.
-    const excelDate = new Date((value - 25569) * 86400 * 1000);
-    if (isValid(excelDate)) return excelDate;
-  }
-  if (typeof value === 'string') {
-    // Clean up string, remove trailing dots for example.
-    const cleanedValue = value.replace(/\.$/, '');
-    // Try parsing common formats
-    const formats = ['M/d/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'M-d-yyyy'];
-    for (const fmt of formats) {
-        const parsed = parse(cleanedValue, fmt, new Date());
-        if(isValid(parsed)) return parsed;
-    }
-    const isoParsed = parseISO(cleanedValue);
-    if (isValid(isoParsed)) return isoParsed;
-  }
-  return new Date(); // Default to today if all parsing fails
-};
 
 
 export default function ProjectExpensesPage({
@@ -156,9 +120,11 @@ export default function ProjectExpensesPage({
                 const json = XLSX.utils.sheet_to_json(worksheet, { raw: false }) as any[];
 
                 const newExpenses: Expense[] = json.map((row: any) => {
-                    const date = parseDate(row['Date']);
-                    const amount = parseAmount(row['Amount']);
+                    const date = row['Date'] instanceof Date && isValid(row['Date']) ? row['Date'] : null;
+                    const amount = Number(String(row['Amount']).replace(/[^0-9.-]+/g,"")) || 0;
                     
+                    if (!date || !amount) return null;
+
                     return {
                         id: crypto.randomUUID(),
                         projectId: params.id,
@@ -171,7 +137,7 @@ export default function ProjectExpensesPage({
                         paymentReference: row['Reference'] || '',
                         invoiceNumber: row['Invoice #'] || '',
                     };
-                }).filter(exp => exp.amount > 0 || exp.description !== 'N/A');
+                }).filter((exp): exp is Expense => exp !== null);
                 
                 if (newExpenses.length === 0 && json.length > 0) {
                      toast({
