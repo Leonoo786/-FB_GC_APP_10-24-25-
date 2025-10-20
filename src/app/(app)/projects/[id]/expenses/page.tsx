@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
 import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
 import { format } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
@@ -40,6 +40,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from 'xlsx';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -48,6 +49,7 @@ export default function ProjectExpensesPage({
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -80,6 +82,16 @@ export default function ProjectExpensesPage({
     });
   };
 
+  const handleDeleteSelected = () => {
+    setExpenses(current => current.filter(exp => !selectedRowKeys.includes(exp.id)));
+    toast({
+        title: `${selectedRowKeys.length} Expenses Deleted`,
+        description: "The selected expenses have been successfully deleted.",
+        variant: "destructive"
+    });
+    setSelectedRowKeys([]);
+  }
+
   const handleSaveExpense = (expense: Expense) => {
     if (selectedExpense && expense.id) {
         // Edit
@@ -101,23 +113,35 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                const workbook = XLSX.read(data, { type: 'binary' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet);
+                const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
-                const newExpenses: Expense[] = json.map((row: any) => ({
-                    id: crypto.randomUUID(),
-                    projectId: params.id,
-                    date: row['Date'] ? format(new Date(row['Date']), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
-                    category: row['Category'] || 'Uncategorized',
-                    vendorName: row['Vendor'] || '',
-                    description: row['Description'] || 'N/A',
-                    amount: Number(row['Amount']) || 0,
-                    paymentMethod: row['Payment Method'] || 'N/A',
-                    paymentReference: row['Payment Reference'] || '',
-                    invoiceNumber: row['Invoice Number'] || '',
-                }));
+                const newExpenses: Expense[] = json.map((row: any) => {
+                    let date = new Date();
+                    if (row['Date']) {
+                        // Handle Excel's numeric date format
+                        if (typeof row['Date'] === 'number') {
+                            date = new Date(Math.round((row['Date'] - 25569) * 86400 * 1000));
+                        } else {
+                            date = new Date(row['Date']);
+                        }
+                    }
+
+                    return {
+                        id: crypto.randomUUID(),
+                        projectId: params.id,
+                        date: format(date, 'yyyy-MM-dd'),
+                        category: row['Category'] || 'Uncategorized',
+                        vendorName: row['Vendor'] || '',
+                        description: row['Description'] || 'N/A',
+                        amount: Number(String(row['Amount']).replace(/[^0-9.-]+/g,"")) || 0,
+                        paymentMethod: row['Payment Method'] || 'N/A',
+                        paymentReference: row['Payment Reference'] || '',
+                        invoiceNumber: row['Invoice Number'] || '',
+                    };
+                });
                 
                 appState.setExpenses(current => [...current, ...newExpenses]);
 
@@ -168,23 +192,50 @@ export default function ProjectExpensesPage({
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Select>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {budgetCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-               <Button variant="outline" onClick={handleImportClick}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import
-              </Button>
+              {selectedRowKeys.length > 0 ? (
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete ({selectedRowKeys.length})
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete {selectedRowKeys.length} expense(s).
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <>
+                   <Select>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {budgetCategories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" onClick={handleImportClick}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import
+                  </Button>
+                </>
+              )}
               <Button
                 onClick={handleNewExpense}
                 className="w-full sm:w-auto"
@@ -198,6 +249,19 @@ export default function ProjectExpensesPage({
           <Table>
             <TableHeader>
               <TableRow>
+                 <TableHead className="w-[40px]">
+                    <Checkbox
+                        checked={selectedRowKeys.length > 0 && selectedRowKeys.length === projectExpenses.length}
+                        onCheckedChange={(checked) => {
+                            if (checked) {
+                                setSelectedRowKeys(projectExpenses.map(exp => exp.id));
+                            } else {
+                                setSelectedRowKeys([]);
+                            }
+                        }}
+                        aria-label="Select all rows"
+                    />
+                 </TableHead>
                 <TableHead>
                   <Button variant="ghost">
                     Date
@@ -231,7 +295,20 @@ export default function ProjectExpensesPage({
             </TableHeader>
             <TableBody>
               {projectExpenses.map((expense) => (
-                <TableRow key={expense.id}>
+                <TableRow key={expense.id} data-state={selectedRowKeys.includes(expense.id) && "selected"}>
+                  <TableCell>
+                      <Checkbox
+                          checked={selectedRowKeys.includes(expense.id)}
+                          onCheckedChange={(checked) => {
+                              if (checked) {
+                                  setSelectedRowKeys(prev => [...prev, expense.id]);
+                              } else {
+                                  setSelectedRowKeys(prev => prev.filter(id => id !== expense.id));
+                              }
+                          }}
+                          aria-label="Select row"
+                      />
+                  </TableCell>
                   <TableCell>
                     {format(new Date(expense.date), 'PP')}
                   </TableCell>
@@ -282,6 +359,13 @@ export default function ProjectExpensesPage({
                   </TableCell>
                 </TableRow>
               ))}
+               {projectExpenses.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center h-24">
+                    No expenses recorded for this project yet.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -289,3 +373,5 @@ export default function ProjectExpensesPage({
     </>
   );
 }
+
+    
