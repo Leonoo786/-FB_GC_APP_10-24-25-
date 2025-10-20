@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
 import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
-import { format, isValid, parseISO } from 'date-fns';
+import { format, isValid, parse, parseISO } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
@@ -53,25 +53,29 @@ const parseAmount = (value: any): number => {
 
 // Function to parse date, handling Excel's numeric format and various string formats
 const parseDate = (value: any): Date => {
-  if (value instanceof Date) {
-    return isValid(value) ? value : new Date();
+  if (!value) return new Date();
+  if (value instanceof Date && isValid(value)) {
+    return value;
   }
   if (typeof value === 'number') {
-    // Excel stores dates as number of days since 1899-12-30 (not 1900-01-01 because of a Lotus 1-2-3 bug)
-    // 25569 is the number of days between 1970-01-01 and 1900-01-01
-    const excelEpoch = new Date(1899, 11, 30);
-    const excelDate = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+    // Excel stores dates as number of days since 1899-12-30.
+    // 25569 is the diff between 1970-01-01 and 1900-01-01 plus Excel's leap year bug.
+    const excelDate = new Date((value - 25569) * 86400 * 1000);
     if (isValid(excelDate)) return excelDate;
   }
   if (typeof value === 'string') {
-    const parsed = parseISO(value);
-    if(isValid(parsed)) return parsed;
-    
-    // Fallback for other common formats if needed, e.g. MM/DD/YYYY
-    const otherParsed = new Date(value);
-     if (isValid(otherParsed)) return otherParsed;
+    // Clean up string, remove trailing dots for example.
+    const cleanedValue = value.replace(/\.$/, '');
+    // Try parsing common formats
+    const formats = ['M/d/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'M-d-yyyy'];
+    for (const fmt of formats) {
+        const parsed = parse(cleanedValue, fmt, new Date());
+        if(isValid(parsed)) return parsed;
+    }
+    const isoParsed = parseISO(cleanedValue);
+    if (isValid(isoParsed)) return isoParsed;
   }
-  return new Date(); // Default to today if parsing fails
+  return new Date(); // Default to today if all parsing fails
 };
 
 
@@ -146,11 +150,10 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                // Read with raw:true to get raw cell values, and cellDates:false to prevent auto-parsing
-                const workbook = XLSX.read(data, { type: 'binary', cellDates: false, raw: true });
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet, { raw: true }) as any[];
+                const json = XLSX.utils.sheet_to_json(worksheet, { raw: false }) as any[];
 
                 const newExpenses: Expense[] = json.map((row: any) => {
                     const date = parseDate(row['Date']);
@@ -164,11 +167,11 @@ export default function ProjectExpensesPage({
                         vendorName: row['Vendor'] || '',
                         description: row['Description'] || 'N/A',
                         amount: amount,
-                        paymentMethod: row['Payment Method'] || 'N/A',
-                        paymentReference: row['Payment Reference'] || '',
-                        invoiceNumber: row['Invoice Number'] || '',
+                        paymentMethod: row['Payment Method'] || row['Payment\nMethod'] || 'N/A',
+                        paymentReference: row['Reference'] || '',
+                        invoiceNumber: row['Invoice #'] || '',
                     };
-                }).filter(exp => exp.amount > 0 || exp.description !== 'N/A'); // Filter out potentially empty rows
+                }).filter(exp => exp.amount > 0 || exp.description !== 'N/A');
                 
                 if (newExpenses.length === 0 && json.length > 0) {
                      toast({
