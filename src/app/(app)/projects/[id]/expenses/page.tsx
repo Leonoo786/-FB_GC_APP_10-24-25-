@@ -34,13 +34,46 @@ import {
 } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
 import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
+
+// Function to parse amount, removing currency symbols and commas
+const parseAmount = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    const stringValue = String(value).replace(/[^0-9.-]+/g, "");
+    const numberValue = parseFloat(stringValue);
+    return isNaN(numberValue) ? 0 : numberValue;
+};
+
+// Function to parse date, handling Excel's numeric format and various string formats
+const parseDate = (value: any): Date => {
+  if (value instanceof Date) {
+    return isValid(value) ? value : new Date();
+  }
+  if (typeof value === 'number') {
+    // Excel stores dates as number of days since 1899-12-30 (not 1900-01-01 because of a Lotus 1-2-3 bug)
+    // 25569 is the number of days between 1970-01-01 and 1900-01-01
+    const excelEpoch = new Date(1899, 11, 30);
+    const excelDate = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+    if (isValid(excelDate)) return excelDate;
+  }
+  if (typeof value === 'string') {
+    const parsed = parseISO(value);
+    if(isValid(parsed)) return parsed;
+    
+    // Fallback for other common formats if needed, e.g. MM/DD/YYYY
+    const otherParsed = new Date(value);
+     if (isValid(otherParsed)) return otherParsed;
+  }
+  return new Date(); // Default to today if parsing fails
+};
+
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -113,23 +146,16 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                // Read with raw:true to get raw cell values, and cellDates:false to prevent auto-parsing
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: false, raw: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+                const json = XLSX.utils.sheet_to_json(worksheet, { raw: true }) as any[];
 
                 const newExpenses: Expense[] = json.map((row: any) => {
-                    let date = new Date();
-                    // Handle both Excel's numeric date format and string dates
-                    if (row['Date']) {
-                        if (typeof row['Date'] === 'number') {
-                            // Excel stores dates as number of days since 1900-01-01
-                            date = new Date(Math.round((row['Date'] - 25569) * 86400 * 1000));
-                        } else {
-                            date = new Date(row['Date']);
-                        }
-                    }
-
+                    const date = parseDate(row['Date']);
+                    const amount = parseAmount(row['Amount']);
+                    
                     return {
                         id: crypto.randomUUID(),
                         projectId: params.id,
@@ -137,13 +163,22 @@ export default function ProjectExpensesPage({
                         category: row['Category'] || 'Uncategorized',
                         vendorName: row['Vendor'] || '',
                         description: row['Description'] || 'N/A',
-                        amount: Number(String(row['Amount']).replace(/[^0-9.-]+/g,"")) || 0,
+                        amount: amount,
                         paymentMethod: row['Payment Method'] || 'N/A',
                         paymentReference: row['Payment Reference'] || '',
                         invoiceNumber: row['Invoice Number'] || '',
                     };
-                });
+                }).filter(exp => exp.amount > 0 || exp.description !== 'N/A'); // Filter out potentially empty rows
                 
+                if (newExpenses.length === 0 && json.length > 0) {
+                     toast({
+                        title: "Import Warning",
+                        description: `Could not import any valid expenses. Please check your file's format and column headers.`,
+                        variant: "destructive",
+                    });
+                    return;
+                }
+
                 appState.setExpenses(current => [...current, ...newExpenses]);
 
                 toast({
