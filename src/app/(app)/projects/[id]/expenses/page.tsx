@@ -113,16 +113,17 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
+                const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
                 const newExpenses: Expense[] = json.map((row: any) => {
                     let date = new Date();
+                    // Handle both Excel's numeric date format and string dates
                     if (row['Date']) {
-                        // Handle Excel's numeric date format
                         if (typeof row['Date'] === 'number') {
+                            // Excel stores dates as number of days since 1900-01-01
                             date = new Date(Math.round((row['Date'] - 25569) * 86400 * 1000));
                         } else {
                             date = new Date(row['Date']);
@@ -251,7 +252,7 @@ export default function ProjectExpensesPage({
               <TableRow>
                  <TableHead className="w-[40px]">
                     <Checkbox
-                        checked={selectedRowKeys.length > 0 && selectedRowKeys.length === projectExpenses.length}
+                        checked={selectedRowKeys.length > 0 && projectExpenses.length > 0 && selectedRowKeys.length === projectExpenses.length}
                         onCheckedChange={(checked) => {
                             if (checked) {
                                 setSelectedRowKeys(projectExpenses.map(exp => exp.id));
@@ -373,5 +374,3 @@ export default function ProjectExpensesPage({
     </>
   );
 }
-
-    
