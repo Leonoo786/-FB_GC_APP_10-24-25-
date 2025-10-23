@@ -1,4 +1,5 @@
 
+
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import React, { useState, use, useContext, useRef, useMemo } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, Upload } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Upload, Trash2 } from "lucide-react";
 import { AddEditBudgetItemDialog } from "../_components/add-edit-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,7 @@ import type { BudgetItem } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { TransactionsDialog } from "../_components/transactions-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -27,6 +29,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -36,7 +39,11 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     
     const { budgetItems, setBudgetItems, expenses } = appState;
     
-    const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+    const projectBudgetItems = useMemo(() => 
+        budgetItems.filter(item => item.projectId === project.id),
+        [budgetItems, project.id]
+    );
+
     const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
 
     const groupedBudgetItems = useMemo(() => {
@@ -91,6 +98,16 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             description: "The item has been removed from the budget.",
             variant: "destructive"
         });
+    };
+
+    const handleDeleteSelected = () => {
+        setBudgetItems(current => current.filter(item => !selectedRowKeys.includes(item.id)));
+        toast({
+            title: `${selectedRowKeys.length} Budget Item(s) Deleted`,
+            description: "The selected items have been removed from the budget.",
+            variant: "destructive"
+        });
+        setSelectedRowKeys([]);
     };
 
     const handleSaveItem = (itemToSave: BudgetItem) => {
@@ -197,15 +214,42 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                             <CardTitle className="text-2xl">Project Budget</CardTitle>
                             <CardDescription>Detailed cost breakdown for {project.name}.</CardDescription>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center space-x-2">
-                                <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
-                                <Label htmlFor="group-by-category">Group by Category</Label>
-                            </div>
-                             <Button variant="outline" onClick={handleImportClick}>
-                                <Upload className="mr-2 h-4 w-4" />
-                                Import
-                            </Button>
+                        <div className="flex items-center gap-2">
+                             {selectedRowKeys.length > 0 ? (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                    <Button variant="destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete ({selectedRowKeys.length})
+                                    </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete {selectedRowKeys.length} budget item(s).
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            ) : (
+                                <>
+                                    <div className="flex items-center space-x-2">
+                                        <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
+                                        <Label htmlFor="group-by-category">Group by Category</Label>
+                                    </div>
+                                    <Button variant="outline" onClick={handleImportClick}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Import
+                                    </Button>
+                                </>
+                            )}
                             <Button onClick={handleNewItem}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Budget Item
@@ -217,6 +261,20 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[40px]">
+                                    <Checkbox
+                                        checked={selectedRowKeys.length > 0 && projectBudgetItems.length > 0 && selectedRowKeys.length === projectBudgetItems.length}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                setSelectedRowKeys(projectBudgetItems.map(item => item.id));
+                                            } else {
+                                                setSelectedRowKeys([]);
+                                            }
+                                        }}
+                                        aria-label="Select all rows"
+                                        disabled={showGroupByCategory}
+                                    />
+                                </TableHead>
                                 <TableHead className={cn(showGroupByCategory && 'w-1/4')}>{showGroupByCategory ? 'Details' : 'Category'}</TableHead>
                                 {!showGroupByCategory && <TableHead>Cost Type</TableHead>}
                                 {!showGroupByCategory && <TableHead>Notes</TableHead>}
@@ -233,6 +291,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 {groupedBudgetItems.map(({ category, items, subtotals }) => (
                                     <React.Fragment key={category}>
                                         <TableRow className="bg-secondary hover:bg-secondary">
+                                            <TableCell></TableCell>
                                             <TableCell className="font-bold text-secondary-foreground">{category}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -256,7 +315,20 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         .filter(exp => exp.category === item.category)
                                         .reduce((sum, exp) => sum + exp.amount, 0);
                                     return (
-                                        <TableRow key={item.id}>
+                                        <TableRow key={item.id} data-state={selectedRowKeys.includes(item.id) && "selected"}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedRowKeys.includes(item.id)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSelectedRowKeys(prev => [...prev, item.id]);
+                                                        } else {
+                                                            setSelectedRowKeys(prev => prev.filter(id => id !== item.id));
+                                                        }
+                                                    }}
+                                                    aria-label="Select row"
+                                                />
+                                            </TableCell>
                                             <TableCell className="font-medium">{item.category}</TableCell>
                                             <TableCell>{item.costType}</TableCell>
                                             <TableCell>{item.notes}</TableCell>
@@ -309,7 +381,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         )}
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={showGroupByCategory ? 1: 3} className="font-bold">Totals</TableCell>
+                                <TableCell colSpan={showGroupByCategory ? 2 : 4} className="font-bold">Totals</TableCell>
                                 <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -324,3 +396,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
+    
