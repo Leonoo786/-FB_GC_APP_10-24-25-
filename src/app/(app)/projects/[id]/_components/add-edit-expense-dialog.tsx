@@ -77,7 +77,7 @@ export function AddEditExpenseDialog({
 
   useEffect(() => {
     if (open) {
-      if (isEditing) {
+      if (isEditing && expense) {
         form.reset({
           date: new Date(expense.date),
           category: expense.category,
@@ -172,7 +172,9 @@ export function AddEditExpenseDialog({
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date);
+                          if (date) {
+                            field.onChange(date);
+                          }
                           setIsDatePickerOpen(false);
                         }}
                         disabled={(date) =>
