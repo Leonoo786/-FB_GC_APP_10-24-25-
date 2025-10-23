@@ -34,6 +34,32 @@ type DataType =
   | 'budgetItems'
   | 'expenses';
 
+// Helper function to robustly parse amounts
+const parseAmount = (value: any): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^0-9.-]+/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
+
+// Helper function to find a column by multiple possible names (case-insensitive)
+const findColumn = (row: any, keys: string[]): any => {
+    const rowKeys = Object.keys(row);
+    for (const key of keys) {
+        const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/\s+/g, '') === key.toLowerCase().replace(/\s+/g, ''));
+        if (foundKey) {
+            return row[foundKey];
+        }
+    }
+    return undefined;
+};
+
+
 export default function ImportExportPage() {
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -76,7 +102,7 @@ export default function ImportExportPage() {
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet, {
@@ -89,44 +115,47 @@ export default function ImportExportPage() {
           case 'expenses':
             const newExpenses = json
               .map((row): Expense | null => {
-                const date = row.Date;
-                const amount = Number(String(row.Amount || '0').replace(/[^0-9.-]+/g, ''));
+                const date = findColumn(row, ['Date']);
+                const amount = parseAmount(findColumn(row, ['Amount']));
 
-                if (!isValid(date) || !amount) return null;
+                if (!isValid(new Date(date)) || !amount) {
+                    return null;
+                }
 
                 count++;
                 return {
                   id: crypto.randomUUID(),
-                  projectId: row.ProjectId || 'proj-1', // Default for now
-                  date: format(date, 'yyyy-MM-dd'),
-                  category: row.Category,
-                  vendorName: row.Vendor,
-                  description: row.Description,
+                  projectId: 'proj-4', // Default for now
+                  date: format(new Date(date), 'yyyy-MM-dd'),
+                  category: findColumn(row, ['Category']) || 'Uncategorized',
+                  vendorName: findColumn(row, ['Vendor']),
+                  description: findColumn(row, ['Description']) || 'N/A',
                   amount: amount,
-                  paymentMethod: row['Payment Method'] || row['Payment\nMethod'],
-                  paymentReference: row.Reference,
-                  invoiceNumber: row['Invoice #'],
+                  paymentMethod: findColumn(row, ['Payment Method', 'Payment\nMethod']) || 'N/A',
+                  paymentReference: findColumn(row, ['Reference']),
+                  invoiceNumber: findColumn(row, ['Invoice #']),
                 };
               })
               .filter((i): i is Expense => i !== null);
             setExpenses((current) => [...current, ...newExpenses]);
+            count = newExpenses.length;
             break;
             // Add cases for other data types here
         }
-
-        if (count === 0 && json.length > 0) {
+        
+        if (count > 0) {
+            toast({
+              title: 'Import Successful',
+              description: `${count} ${importType} record(s) have been imported.`,
+            });
+        } else {
             toast({
                 title: 'Import Warning',
                 description: `Could not import any valid ${importType}. Please check your file's format and column headers.`,
                 variant: 'destructive',
             });
-            return;
         }
 
-        toast({
-          title: 'Import Successful',
-          description: `${count} ${importType} record(s) have been imported.`,
-        });
       } catch (error) {
         console.error(`Error importing ${importType}:`, error);
         toast({
