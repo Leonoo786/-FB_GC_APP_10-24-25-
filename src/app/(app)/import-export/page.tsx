@@ -62,24 +62,30 @@ export default function ImportExportPage() {
   } = appState;
 
   const parseDate = (dateInput: string | number): Date | null => {
+    // Handle Excel's serial date format (numbers)
     if (typeof dateInput === 'number') {
-      // Handle Excel's serial date format
-      const excelEpoch = new Date(1899, 11, 30);
+      // Excel's epoch starts on 1899-12-30 for compatibility with Lotus 1-2-3.
+      // The number represents days since this epoch.
+      // JavaScript's epoch is 1970-01-01.
+      // So, we calculate milliseconds from Excel's number.
+      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
       const millisecondsPerDay = 24 * 60 * 60 * 1000;
-      const date = new Date(
-        excelEpoch.getTime() + dateInput * millisecondsPerDay
-      );
-      if (isValid(date)) return date;
+      // Subtract 1 because Excel's date system has a bug where it considers 1900 a leap year.
+      // This is not needed if the date is after Feb 1900, but it's a common adjustment.
+      const date = new Date(excelEpoch.getTime() + (dateInput - 1) * millisecondsPerDay);
+      if (isValid(date)) {
+        return date;
+      }
     }
+    
+    // Handle string dates (ISO, common formats)
     if (typeof dateInput === 'string') {
-      // Handle ISO strings or common date formats
-      const parsedDate = parseISO(dateInput);
-      if (isValid(parsedDate)) return parsedDate;
+        const cleanedDateString = dateInput.trim().replace(/\.$/, ''); // Clean trailing dots
+        let date = parseISO(cleanedDateString);
+        if (isValid(date)) return date;
 
-      // Handle "M/D/YYYY" format, even with extra characters
-      const cleanedDateString = dateInput.replace(/[^0-9/]/g, '');
-      const date = new Date(cleanedDateString);
-      if (isValid(date)) return date;
+        date = new Date(cleanedDateString);
+        if (isValid(date)) return date;
     }
 
     return null;
@@ -100,7 +106,7 @@ export default function ImportExportPage() {
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet, {
@@ -118,12 +124,13 @@ export default function ImportExportPage() {
                 const amount = parseFloat(
                   String(row.Amount || '0').replace(/[^0-9.-]+/g, '')
                 );
+
                 if (!date || !amount) return null;
 
                 count++;
                 return {
                   id: crypto.randomUUID(),
-                  projectId: row.ProjectId,
+                  projectId: row.ProjectId || 'proj-1', // Default for now
                   date: format(date, 'yyyy-MM-dd'),
                   category: row.Category,
                   vendorName: row.Vendor,
@@ -140,9 +147,18 @@ export default function ImportExportPage() {
             // Add cases for other data types here
         }
 
+        if (count === 0 && json.length > 0) {
+            toast({
+                title: 'Import Warning',
+                description: `Could not import any valid ${importType}. Please check your file's format and column headers.`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
         toast({
           title: 'Import Successful',
-          description: `${count} ${importType} records have been imported.`,
+          description: `${count} ${importType} record(s) have been imported.`,
         });
       } catch (error) {
         console.error(`Error importing ${importType}:`, error);
@@ -154,7 +170,7 @@ export default function ImportExportPage() {
         });
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -327,4 +343,3 @@ export default function ImportExportPage() {
     </div>
   );
 }
-
