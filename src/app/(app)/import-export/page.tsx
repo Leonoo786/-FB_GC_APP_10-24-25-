@@ -14,7 +14,7 @@ import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { format, isValid, parseISO } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import type {
   Project,
   BudgetItem,
@@ -61,36 +61,6 @@ export default function ImportExportPage() {
     setExpenses,
   } = appState;
 
-  const parseDate = (dateInput: string | number): Date | null => {
-    // Handle Excel's serial date format (numbers)
-    if (typeof dateInput === 'number') {
-      // Excel's epoch starts on 1899-12-30 for compatibility with Lotus 1-2-3.
-      // The number represents days since this epoch.
-      // JavaScript's epoch is 1970-01-01.
-      // So, we calculate milliseconds from Excel's number.
-      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-      const millisecondsPerDay = 24 * 60 * 60 * 1000;
-      // Subtract 1 because Excel's date system has a bug where it considers 1900 a leap year.
-      // This is not needed if the date is after Feb 1900, but it's a common adjustment.
-      const date = new Date(excelEpoch.getTime() + (dateInput - 1) * millisecondsPerDay);
-      if (isValid(date)) {
-        return date;
-      }
-    }
-    
-    // Handle string dates (ISO, common formats)
-    if (typeof dateInput === 'string') {
-        const cleanedDateString = dateInput.trim().replace(/\.$/, ''); // Clean trailing dots
-        let date = parseISO(cleanedDateString);
-        if (isValid(date)) return date;
-
-        date = new Date(cleanedDateString);
-        if (isValid(date)) return date;
-    }
-
-    return null;
-  };
-
   const handleImportClick = (type: DataType) => {
     currentImportType.current = type;
     fileInputRef.current?.click();
@@ -110,7 +80,6 @@ export default function ImportExportPage() {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet, {
-          raw: false,
           defval: '',
         }) as any[];
 
@@ -120,12 +89,10 @@ export default function ImportExportPage() {
           case 'expenses':
             const newExpenses = json
               .map((row): Expense | null => {
-                const date = parseDate(row.Date);
-                const amount = parseFloat(
-                  String(row.Amount || '0').replace(/[^0-9.-]+/g, '')
-                );
+                const date = row.Date;
+                const amount = Number(String(row.Amount || '0').replace(/[^0-9.-]+/g, ''));
 
-                if (!date || !amount) return null;
+                if (!isValid(date) || !amount) return null;
 
                 count++;
                 return {
