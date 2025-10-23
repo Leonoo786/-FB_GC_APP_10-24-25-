@@ -51,6 +51,7 @@ export default function ProjectExpensesPage({
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc'});
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -66,6 +67,11 @@ export default function ProjectExpensesPage({
 
   const sortedExpenses = useMemo(() => {
     let sortableItems = [...projectExpenses];
+    
+    if (categoryFilter !== 'all') {
+      sortableItems = sortableItems.filter(exp => exp.category === categoryFilter);
+    }
+    
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -82,7 +88,7 @@ export default function ProjectExpensesPage({
       });
     }
     return sortableItems;
-  }, [projectExpenses, sortConfig]);
+  }, [projectExpenses, sortConfig, categoryFilter]);
 
   const requestSort = (key: keyof Expense) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -281,7 +287,7 @@ export default function ProjectExpensesPage({
                 </AlertDialog>
               ) : (
                 <>
-                   <Select>
+                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
