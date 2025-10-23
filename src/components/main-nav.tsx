@@ -18,6 +18,7 @@ import {
   Users,
   ChevronDown,
   TrendingUp,
+  Database,
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -106,6 +107,19 @@ export function MainNav() {
           </SidebarMenuSub>
         </CollapsibleContent>
       </Collapsible>
+
+      <SidebarMenuItem>
+        <SidebarMenuButton
+            asChild
+            isActive={pathname === "/import-export"}
+            tooltip="Import/Export"
+        >
+            <Link href="/import-export">
+                <Database />
+                <span>Import / Export</span>
+            </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
       
       <SidebarMenuItem className="mt-auto">
         <SidebarMenuButton
@@ -122,3 +136,4 @@ export function MainNav() {
     </SidebarMenu>
   );
 }
+
