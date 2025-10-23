@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -28,10 +28,17 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { FinancialBreakdownChart } from './_components/financial-breakdown-chart';
-import { projects, budgetItems, expenses as allExpenses } from '@/lib/data';
+import { AppStateContext } from '@/context/app-state-context';
 
 export default function ProfitLossPage() {
   const [selectedProjectId, setSelectedProjectId] = useState('all');
+  const appState = useContext(AppStateContext);
+
+  if (!appState) {
+    return <div>Loading...</div>;
+  }
+
+  const { projects, budgetItems, expenses: allExpenses } = appState;
 
   const financialData = useMemo(() => {
     const relevantProjects =
@@ -65,7 +72,7 @@ export default function ProfitLossPage() {
 
 
     return { bidAmount, budget, expenses, profitLoss, estimatedProfit };
-  }, [selectedProjectId]);
+  }, [selectedProjectId, projects, budgetItems, allExpenses]);
 
   return (
     <div className="space-y-6">
