@@ -88,14 +88,24 @@ export default function ProjectReportsPage({
         spendingMap[expense.category].spent += expense.amount;
     });
 
-    return Object.entries(spendingMap).map(([category, { budget, spent }]) => ({
-        category,
-        budget,
-        spent,
-        balance: budget - spent,
-        progress: budget > 0 ? (spent / budget) * 100 : 0,
-        transactions: getExpensesForCategory(category)
-    })).sort((a, b) => b.spent - a.spent);
+    return Object.entries(spendingMap).map(([category, { budget, spent }]) => {
+        let progress = 0;
+        if (budget > 0) {
+            progress = (spent / budget) * 100;
+        } else if (spent > 0) {
+            progress = 100; // Over budget
+        }
+
+        return {
+            category,
+            budget,
+            spent,
+            balance: budget - spent,
+            progress,
+            isOverBudget: budget === 0 && spent > 0,
+            transactions: getExpensesForCategory(category)
+        }
+    }).sort((a, b) => b.spent - a.spent);
 
   }, [projectBudgetItems, projectExpenses]);
 
@@ -154,8 +164,8 @@ export default function ProjectReportsPage({
                     </TableCell>
                     <TableCell>
                       <div className='flex items-center gap-2'>
-                        <Progress value={item.progress} className="h-2" />
-                        <span className='text-xs text-muted-foreground'>{item.progress.toFixed(1)}%</span>
+                        <Progress value={item.progress} className={cn("h-2", item.isOverBudget && "[&>div]:bg-red-600")} />
+                        <span className='text-xs text-muted-foreground'>{item.progress > 0 ? item.progress.toFixed(1) : '0.0'}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
