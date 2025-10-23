@@ -14,7 +14,7 @@ import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import type {
   Project,
   BudgetItem,
@@ -40,6 +40,7 @@ const parseAmount = (value: any): number => {
     return value;
   }
   if (typeof value === 'string') {
+    // Remove currency symbols, commas, and whitespace
     const cleaned = value.replace(/[^0-9.-]+/g, '');
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
@@ -47,17 +48,30 @@ const parseAmount = (value: any): number => {
   return 0;
 };
 
-// Helper function to find a column by multiple possible names (case-insensitive)
-const findColumn = (row: any, keys: string[]): any => {
-    const rowKeys = Object.keys(row);
-    for (const key of keys) {
-        const foundKey = rowKeys.find(rk => rk.toLowerCase().replace(/\s+/g, '') === key.toLowerCase().replace(/\s+/g, ''));
-        if (foundKey) {
-            return row[foundKey];
-        }
+// Helper function to robustly parse dates
+const parseDate = (value: any): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date && isValid(value)) {
+        return value;
     }
-    return undefined;
-};
+    // Handle Excel's numeric date format
+    if (typeof value === 'number') {
+        // Excel's epoch starts on 1900-01-01, but has a bug treating 1900 as a leap year.
+        // The adjustment is to subtract 2 (one for the bug, one for the 0-based vs 1-based day).
+        // This formula works for dates after Feb 1900.
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const date = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+        if (isValid(date)) return date;
+    }
+    // Handle string dates (e.g., 'MM/DD/YYYY' or 'YYYY-MM-DD')
+    if (typeof value === 'string') {
+        // Remove extra characters that might interfere, like trailing periods.
+        const cleanedValue = value.replace(/[.,]/g, '');
+        const date = new Date(cleanedValue);
+        if (isValid(date)) return date;
+    }
+    return null;
+}
 
 
 export default function ImportExportPage() {
@@ -102,38 +116,48 @@ export default function ImportExportPage() {
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet, {
-          defval: '',
-        }) as any[];
+        // Convert to array of arrays, ignoring headers
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
+        if (rows.length < 2) {
+            toast({
+                title: 'Import Warning',
+                description: 'The file is empty or only contains a header row.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        // Remove header row
+        const dataRows = rows.slice(1);
         let count = 0;
 
         switch (importType) {
           case 'expenses':
-            const newExpenses = json
+            const newExpenses = dataRows
               .map((row): Expense | null => {
-                const date = findColumn(row, ['Date']);
-                const amount = parseAmount(findColumn(row, ['Amount']));
+                const date = parseDate(row[0]);
+                const amount = parseAmount(row[7]);
 
-                if (!isValid(new Date(date)) || !amount) {
-                    return null;
+                if (!date || !amount) {
+                    return null; // Skip invalid rows
                 }
 
                 count++;
                 return {
                   id: crypto.randomUUID(),
                   projectId: 'proj-4', // Default for now
-                  date: format(new Date(date), 'yyyy-MM-dd'),
-                  category: findColumn(row, ['Category']) || 'Uncategorized',
-                  vendorName: findColumn(row, ['Vendor']),
-                  description: findColumn(row, ['Description']) || 'N/A',
+                  date: format(date, 'yyyy-MM-dd'),
+                  category: row[1] || 'Uncategorized',
+                  vendorName: row[2] || '',
+                  description: row[3] || 'N/A',
                   amount: amount,
-                  paymentMethod: findColumn(row, ['Payment Method', 'Payment\nMethod']) || 'N/A',
-                  paymentReference: findColumn(row, ['Reference']),
-                  invoiceNumber: findColumn(row, ['Invoice #']),
+                  paymentMethod: row[4] || 'N/A',
+                  paymentReference: row[5] || '',
+                  invoiceNumber: row[6] || '',
                 };
               })
               .filter((i): i is Expense => i !== null);
@@ -151,7 +175,7 @@ export default function ImportExportPage() {
         } else {
             toast({
                 title: 'Import Warning',
-                description: `Could not import any valid ${importType}. Please check your file's format and column headers.`,
+                description: `Could not import any valid ${importType}. Please check your file's format and column content.`,
                 variant: 'destructive',
             });
         }
@@ -161,7 +185,7 @@ export default function ImportExportPage() {
         toast({
           title: 'Import Failed',
           description:
-            'There was an error processing the file. Please check the file format and column headers.',
+            'There was an error processing the file. Please check the file format.',
           variant: 'destructive',
         });
       }
