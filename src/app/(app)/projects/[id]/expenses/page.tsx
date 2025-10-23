@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext, useRef } from 'react';
+import { useState, use, useContext, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -42,41 +42,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// Helper function to robustly parse amounts
-const parseAmount = (value: any): number => {
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'string') {
-    const cleaned = value.replace(/[^0-9.-]+/g, '');
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? 0 : num;
-  }
-  return 0;
-};
-
-// Helper function to robustly parse dates
-const parseDate = (value: any): Date | null => {
-    if (!value) return null;
-    if (value instanceof Date && isValid(value)) {
-        return value;
-    }
-    // Handle Excel's numeric date format
-    if (typeof value === 'number') {
-        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-        const date = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
-        if (isValid(date)) return date;
-    }
-    // Handle string dates
-    if (typeof value === 'string') {
-        const cleanedValue = value.replace(/[.,]/g, '');
-        const date = new Date(cleanedValue);
-        if (isValid(date)) return date;
-    }
-    return null;
-}
-
-
 export default function ProjectExpensesPage({
   params: paramsProp,
 }: {
@@ -85,6 +50,7 @@ export default function ProjectExpensesPage({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc'});
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -97,6 +63,35 @@ export default function ProjectExpensesPage({
   const projectExpenses = expenses ? expenses.filter(
     (exp) => exp.projectId === params.id
   ) : [];
+
+  const sortedExpenses = useMemo(() => {
+    let sortableItems = [...projectExpenses];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue === undefined || bValue === undefined) return 0;
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [projectExpenses, sortConfig]);
+
+  const requestSort = (key: keyof Expense) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
 
   const handleNewExpense = () => {
     setSelectedExpense(null);
@@ -143,78 +138,94 @@ export default function ProjectExpensesPage({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && appState) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+    if (!file || !appState) return;
 
-                if (rows.length < 2) {
-                    toast({
-                        title: 'Import Warning',
-                        description: 'The file is empty or only contains a header row.',
-                        variant: 'destructive',
-                    });
-                    return;
-                }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        // Convert to array of arrays, ignoring headers
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
-                const dataRows = rows.slice(1);
-                
-                const newExpenses = dataRows.map((row): Expense | null => {
-                    // Assuming columns are in a fixed order:
-                    // Date, Category, Vendor, Description, Payment Method, Reference, Invoice #, Amount
-                    const date = parseDate(row[0]);
-                    const amount = parseAmount(row[7]);
+        if (rows.length < 2) {
+            toast({
+                title: 'Import Warning',
+                description: 'The file is empty or only contains a header row.',
+                variant: 'destructive',
+            });
+            return;
+        }
 
-                    if (!date || !amount) {
-                        return null; // Skip invalid rows
-                    }
-
-                    return {
-                        id: crypto.randomUUID(),
-                        projectId: params.id,
-                        date: format(date, 'yyyy-MM-dd'),
-                        category: row[1] || 'Uncategorized',
-                        vendorName: row[2] || '',
-                        description: row[3] || 'N/A',
-                        paymentMethod: row[4] || 'N/A',
-                        paymentReference: row[5] || '',
-                        invoiceNumber: row[6] || '',
-                        amount: amount,
-                    };
-                }).filter((item): item is Expense => item !== null);
-                
-                if (newExpenses.length > 0) {
-                    setExpenses((current) => [...current, ...newExpenses]);
-                    toast({
-                        title: 'Import Successful',
-                        description: `${newExpenses.length} expenses have been imported.`,
-                    });
-                } else {
-                    toast({
-                        title: 'Import Warning',
-                        description: `Could not import any valid expenses. Please check your file's format and column content.`,
-                        variant: 'destructive',
-                    });
-                }
-
-            } catch (error) {
-                console.error("Error importing expenses:", error);
-                toast({
-                    title: "Import Failed",
-                    description: "There was an error processing the file.",
-                    variant: "destructive",
-                });
+        const dataRows = rows.slice(1);
+        
+        const parseAmount = (value: any): number => {
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+              const cleaned = value.replace(/[^0-9.-]+/g, '');
+              const num = parseFloat(cleaned);
+              return isNaN(num) ? 0 : num;
             }
+            return 0;
         };
-        reader.readAsArrayBuffer(file);
-    }
-    if(fileInputRef.current) {
-        fileInputRef.current.value = "";
+
+        const parseDate = (value: any): Date | null => {
+            if (!value) return null;
+            const date = new Date(value);
+            return isValid(date) ? date : null;
+        }
+
+        const newExpenses = dataRows.map((row): Expense | null => {
+            const date = parseDate(row[0]);
+            const amount = parseAmount(row[7]);
+            
+            if (!date || !amount) {
+                return null; // Skip invalid rows
+            }
+
+            return {
+                id: crypto.randomUUID(),
+                projectId: params.id,
+                date: format(date, 'yyyy-MM-dd'),
+                category: row[1] || 'Uncategorized',
+                vendorName: row[2] || '',
+                description: row[3] || 'N/A',
+                paymentMethod: row[4] || 'N/A',
+                paymentReference: row[5] || '',
+                invoiceNumber: row[6] || '',
+                amount: amount,
+            };
+        }).filter((item): item is Expense => item !== null);
+        
+        if (newExpenses.length > 0) {
+            setExpenses((current) => [...current, ...newExpenses]);
+            toast({
+                title: 'Import Successful',
+                description: `${newExpenses.length} expenses have been imported.`,
+            });
+        } else {
+            toast({
+                title: 'Import Warning',
+                description: `Could not import any valid expenses. Please check your file's format and column content.`,
+                variant: 'destructive',
+            });
+        }
+
+      } catch (error) {
+        console.error("Error importing expenses:", error);
+        toast({
+            title: "Import Failed",
+            description: "There was an error processing the file.",
+            variant: "destructive",
+        });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
     }
   };
 
@@ -304,10 +315,10 @@ export default function ProjectExpensesPage({
               <TableRow>
                  <TableHead className="w-[40px]">
                     <Checkbox
-                        checked={selectedRowKeys.length > 0 && projectExpenses.length > 0 && selectedRowKeys.length === projectExpenses.length}
+                        checked={selectedRowKeys.length > 0 && sortedExpenses.length > 0 && selectedRowKeys.length === sortedExpenses.length}
                         onCheckedChange={(checked) => {
                             if (checked) {
-                                setSelectedRowKeys(projectExpenses.map(exp => exp.id));
+                                setSelectedRowKeys(sortedExpenses.map(exp => exp.id));
                             } else {
                                 setSelectedRowKeys([]);
                             }
@@ -316,19 +327,19 @@ export default function ProjectExpensesPage({
                     />
                  </TableHead>
                 <TableHead>
-                  <Button variant="ghost">
+                  <Button variant="ghost" onClick={() => requestSort('date')}>
                     Date
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                   <Button variant="ghost">
+                   <Button variant="ghost" onClick={() => requestSort('category')}>
                     Category
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost">
+                  <Button variant="ghost" onClick={() => requestSort('vendorName')}>
                     Vendor
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
@@ -338,7 +349,7 @@ export default function ProjectExpensesPage({
                 <TableHead>Reference</TableHead>
                 <TableHead>Invoice #</TableHead>
                 <TableHead className="text-right">
-                  <Button variant="ghost">
+                  <Button variant="ghost" onClick={() => requestSort('amount')}>
                     Amount
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
@@ -347,7 +358,7 @@ export default function ProjectExpensesPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projectExpenses.map((expense) => (
+              {sortedExpenses.map((expense) => (
                 <TableRow key={expense.id} data-state={selectedRowKeys.includes(expense.id) && "selected"}>
                   <TableCell>
                       <Checkbox
@@ -412,7 +423,7 @@ export default function ProjectExpensesPage({
                   </TableCell>
                 </TableRow>
               ))}
-               {projectExpenses.length === 0 && (
+               {sortedExpenses.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center h-24">
                     No expenses recorded for this project yet.

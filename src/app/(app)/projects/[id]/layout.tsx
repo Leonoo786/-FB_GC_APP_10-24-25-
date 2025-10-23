@@ -29,7 +29,7 @@ function ProjectDetailLayoutContent({
         return <div>Loading...</div>;
     }
 
-    const { projects, setProjects, budgetItems } = appState;
+    const { projects, setProjects, budgetItems, expenses } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
@@ -37,8 +37,10 @@ function ProjectDetailLayoutContent({
     }
 
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+    const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
+
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
-    const spentToDate = projectBudgetItems.reduce((acc, item) => acc + item.committedCost, 0);
+    const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
     const remaining = totalBudget - spentToDate;
     const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
     
