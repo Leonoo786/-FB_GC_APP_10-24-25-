@@ -42,6 +42,40 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
 
+// Helper function to robustly parse amounts
+const parseAmount = (value: any): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[^0-9.-]+/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+};
+
+// Helper function to robustly parse dates
+const parseDate = (value: any): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date && isValid(value)) {
+        return value;
+    }
+    // Handle Excel's numeric date format
+    if (typeof value === 'number') {
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const date = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+        if (isValid(date)) return date;
+    }
+    // Handle string dates
+    if (typeof value === 'string') {
+        const cleanedValue = value.replace(/[.,]/g, '');
+        const date = new Date(cleanedValue);
+        if (isValid(date)) return date;
+    }
+    return null;
+}
+
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -114,57 +148,70 @@ export default function ProjectExpensesPage({
         reader.onload = (e) => {
             try {
                 const data = e.target?.result;
-                const workbook = XLSX.read(data, { type: 'binary' });
+                const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet, { raw: false }) as any[];
+                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
-                const newExpenses: Expense[] = json.map((row: any) => {
-                    const dateCandidate = new Date(row['Date']);
-                    const date = isValid(dateCandidate) ? dateCandidate : null;
-                    const amount = Number(String(row['Amount']).replace(/[^0-9.-]+/g,"")) || 0;
-                    
-                    if (!date || !amount) return null;
+                if (rows.length < 2) {
+                    toast({
+                        title: 'Import Warning',
+                        description: 'The file is empty or only contains a header row.',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+
+                const dataRows = rows.slice(1);
+                
+                const newExpenses = dataRows.map((row): Expense | null => {
+                    // Assuming columns are in a fixed order:
+                    // Date, Category, Vendor, Description, Payment Method, Reference, Invoice #, Amount
+                    const date = parseDate(row[0]);
+                    const amount = parseAmount(row[7]);
+
+                    if (!date || !amount) {
+                        return null; // Skip invalid rows
+                    }
 
                     return {
                         id: crypto.randomUUID(),
                         projectId: params.id,
                         date: format(date, 'yyyy-MM-dd'),
-                        category: row['Category'] || 'Uncategorized',
-                        vendorName: row['Vendor'] || '',
-                        description: row['Description'] || 'N/A',
+                        category: row[1] || 'Uncategorized',
+                        vendorName: row[2] || '',
+                        description: row[3] || 'N/A',
+                        paymentMethod: row[4] || 'N/A',
+                        paymentReference: row[5] || '',
+                        invoiceNumber: row[6] || '',
                         amount: amount,
-                        paymentMethod: row['Payment Method'] || row['Payment\nMethod'] || 'N/A',
-                        paymentReference: row['Reference'] || '',
-                        invoiceNumber: row['Invoice #'] || '',
                     };
-                }).filter((exp): exp is Expense => exp !== null);
+                }).filter((item): item is Expense => item !== null);
                 
-                if (newExpenses.length === 0 && json.length > 0) {
-                     toast({
-                        title: "Import Warning",
-                        description: `Could not import any valid expenses. Please check your file's format and column headers.`,
-                        variant: "destructive",
+                if (newExpenses.length > 0) {
+                    setExpenses((current) => [...current, ...newExpenses]);
+                    toast({
+                        title: 'Import Successful',
+                        description: `${newExpenses.length} expenses have been imported.`,
                     });
-                    return;
+                } else {
+                    toast({
+                        title: 'Import Warning',
+                        description: `Could not import any valid expenses. Please check your file's format and column content.`,
+                        variant: 'destructive',
+                    });
                 }
 
-                appState.setExpenses(current => [...current, ...newExpenses]);
-
-                toast({
-                    title: "Import Successful",
-                    description: `${newExpenses.length} expenses have been imported.`,
-                });
             } catch (error) {
                 console.error("Error importing expenses:", error);
                 toast({
                     title: "Import Failed",
-                    description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns.",
+                    description: "There was an error processing the file.",
                     variant: "destructive",
                 });
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     }
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
