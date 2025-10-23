@@ -41,7 +41,7 @@ import type { Expense } from '@/lib/types';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
-  category: z.string({ required_error: 'Please select a category.' }),
+  category: z.string().optional(),
   vendor: z.string().optional(),
   description: z.string().min(1, 'Description is required.'),
   amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
@@ -110,7 +110,7 @@ export function AddEditExpenseDialog({
       id: expense?.id || '',
       projectId,
       date: format(data.date, 'yyyy-MM-dd'),
-      category: data.category,
+      category: data.category || 'Uncategorized',
       vendorName: data.vendor,
       description: data.description,
       amount: data.amount,
