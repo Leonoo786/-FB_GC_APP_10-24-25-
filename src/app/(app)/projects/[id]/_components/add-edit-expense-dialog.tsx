@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense } from '@/lib/types';
 
@@ -46,7 +46,7 @@ const formSchema = z.object({
   description: z.string().min(1, 'Description is required.'),
   amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
   paymentMethod: z.string({ required_error: 'Please select a payment method.' }),
-  paymentReference: z.string().optional(),
+  paymentReference: z.any().optional(),
   invoiceNumber: z.string().optional(),
 });
 
@@ -67,7 +67,6 @@ export function AddEditExpenseDialog({
 }) {
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const form = useForm<AddExpenseFormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -148,7 +147,7 @@ export function AddEditExpenseDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
-                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                  <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -171,12 +170,7 @@ export function AddEditExpenseDialog({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={(date) => {
-                          if (date) {
-                            field.onChange(date);
-                          }
-                          setIsDatePickerOpen(false);
-                        }}
+                        onSelect={field.onChange}
                         disabled={(date) =>
                           date > new Date() || date < new Date('1900-01-01')
                         }
@@ -293,6 +287,10 @@ export function AddEditExpenseDialog({
                        <SelectItem value="ACH">ACH</SelectItem>
                       <SelectItem value="Wire Transfer">Wire Transfer</SelectItem>
                       <SelectItem value="Cash">Cash</SelectItem>
+                      <SelectItem value="Groundbreaking">Groundbreaking</SelectItem>
+                      <SelectItem value="to be paid">To be paid</SelectItem>
+                      <SelectItem value="Bank ACH">Bank ACH</SelectItem>
+                      <SelectItem value="Karim's Card">Karim&apos;s Card</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
