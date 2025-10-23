@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense } from '@/lib/types';
 
@@ -67,6 +67,7 @@ export function AddEditExpenseDialog({
 }) {
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const form = useForm<AddExpenseFormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -147,7 +148,7 @@ export function AddEditExpenseDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
-                  <Popover>
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -170,7 +171,10 @@ export function AddEditExpenseDialog({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setIsDatePickerOpen(false);
+                        }}
                         disabled={(date) =>
                           date > new Date() || date < new Date('1900-01-01')
                         }
