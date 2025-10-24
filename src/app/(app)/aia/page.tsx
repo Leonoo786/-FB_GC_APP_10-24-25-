@@ -71,6 +71,7 @@ export default function AIAPage() {
     if (selectedProjectId && appState) {
         const project = appState.projects.find(p => p.id === selectedProjectId);
         if (project) {
+            // Reset some fields when project changes to avoid carrying over old data
             setValue('totalCompletedAndStored', 0);
             setValue('previousCertificates', 0);
         }
@@ -86,19 +87,19 @@ export default function AIAPage() {
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
   const projectChangeOrders: ChangeOrder[] = selectedProject
-    ? changeOrders.filter(co => co.projectId === selectedProject.id)
+    ? changeOrders.filter(co => co.projectId === selectedProject.id && (co.status === 'Approved' || co.status === 'Executed'))
     : [];
 
-  const totalAdditions = projectChangeOrders.reduce((sum, co) => co.status === 'Approved' || co.status === 'Executed' ? sum + co.totalRequest : sum, 0);
-  const totalDeductions = 0; // Assuming deductions aren't tracked this way, adjust if they are.
-  const netChangeByChangeOrders = totalAdditions - totalDeductions;
+  const totalAdditions = projectChangeOrders.reduce((sum, co) => co.totalRequest > 0 ? sum + co.totalRequest : sum, 0);
+  const totalDeductions = projectChangeOrders.reduce((sum, co) => co.totalRequest < 0 ? sum + co.totalRequest : sum, 0);
+  const netChangeByChangeOrders = totalAdditions + totalDeductions;
 
   const originalContractSum = selectedProject?.revisedContract ?? 0;
   const contractSumToDate = originalContractSum + netChangeByChangeOrders;
   const totalCompletedAndStored = formValues.totalCompletedAndStored || 0;
   
   const retainageOfCompletedWork = totalCompletedAndStored * (formValues.retainagePercentage / 100);
-  const retainageOfStoredMaterial = 0; // Assuming 0 for now
+  const retainageOfStoredMaterial = 0; // Assuming 0 for now, can be an input later
   const totalRetainage = retainageOfCompletedWork + retainageOfStoredMaterial;
   
   const totalEarnedLessRetainage = totalCompletedAndStored - totalRetainage;
@@ -126,7 +127,7 @@ export default function AIAPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            AIA G702/G703 Application for Payment
+            AIA G702 Application for Payment
           </h1>
           <p className="text-muted-foreground">
             Create and manage your payment applications.
@@ -144,7 +145,7 @@ export default function AIAPage() {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
                 <Label>Select Project</Label>
-                 <Select onValueChange={setSelectedProjectId}>
+                 <Select onValueChange={setSelectedProjectId} value={selectedProjectId || undefined}>
                     <SelectTrigger>
                         <SelectValue placeholder="Select a project to auto-fill details" />
                     </SelectTrigger>
@@ -206,7 +207,7 @@ export default function AIAPage() {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {field.value && isValid(field.value) ? format(field.value, 'PP') : <span>Pick a date</span>}
+                                    {field.value && isValid(new Date(field.value)) ? format(new Date(field.value), 'PP') : <span>Pick a date</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
@@ -256,11 +257,13 @@ export default function AIAPage() {
                                     type="number" 
                                     className="w-16 h-6 inline-block ml-2 px-1 text-center"
                                     {...field}
+                                    value={field.value || 0}
                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                                 />
                             )}
                         />
                     )}
+                     <span className={cn('ml-1', !row.isRetainageInput && 'hidden')}>%</span>
                   </TableCell>
                   <TableCell className="text-right">
                     {row.isInput ? (
@@ -272,6 +275,7 @@ export default function AIAPage() {
                                     type="number" 
                                     className="w-48 h-8 ml-auto text-right"
                                     {...field}
+                                    value={field.value || 0}
                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                                 />
                             )}
@@ -299,7 +303,8 @@ export default function AIAPage() {
                     <TableRow>
                         <TableHead>CO #</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">ADDITIONS</TableHead>
+                        <TableHead className="text-right">DEDUCTIONS</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -307,14 +312,20 @@ export default function AIAPage() {
                         <TableRow key={co.id}>
                             <TableCell>{co.coNumber}</TableCell>
                             <TableCell>{co.description}</TableCell>
-                            <TableCell className="text-right">{co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                            <TableCell className="text-right">{co.totalRequest > 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
+                             <TableCell className="text-right">{co.totalRequest < 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
                         </TableRow>
                     ))}
-                    {projectChangeOrders.length === 0 && <TableRow><TableCell colSpan={3} className="text-center h-24">No approved change orders for this project.</TableCell></TableRow>}
+                    {projectChangeOrders.length === 0 && <TableRow><TableCell colSpan={4} className="text-center h-24">No approved change orders for this project.</TableCell></TableRow>}
                 </TableBody>
                 <TableFooter>
                      <TableRow>
-                        <TableCell colSpan={2} className="font-bold text-right">Net Change by Change Orders</TableCell>
+                        <TableCell colSpan={2} className="font-bold text-right">TOTALS</TableCell>
+                        <TableCell className="text-right font-bold">{(totalAdditions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                        <TableCell className="text-right font-bold">{(totalDeductions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                    </TableRow>
+                     <TableRow>
+                        <TableCell colSpan={3} className="font-bold text-right">NET CHANGE BY CHANGE ORDERS</TableCell>
                         <TableCell className="text-right font-bold">{(netChangeByChangeOrders).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                     </TableRow>
                 </TableFooter>
@@ -340,6 +351,7 @@ export default function AIAPage() {
                                 type="number" 
                                 placeholder="$0.00" 
                                 {...field}
+                                value={field.value || 0}
                                 onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                            />
                         )}
