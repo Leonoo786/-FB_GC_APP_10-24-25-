@@ -251,14 +251,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                         <Label htmlFor="group-by-category">Group by Category</Label>
                                     </div>
-                                    <Button variant="outline" onClick={() => setPasteDialogOpen(true)}>
-                                        <ClipboardPaste className="mr-2 h-4 w-4" />
-                                        Paste
-                                    </Button>
-                                    <Button variant="outline" onClick={handleImportClick}>
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        Import
-                                    </Button>
                                 </>
                             )}
                             <Button onClick={handleNewItem}>
