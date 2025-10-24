@@ -48,21 +48,24 @@ export default function ProfitLossPage() {
 
     const projectIds = relevantProjects.map((p) => p.id);
 
-    // Budget is the total contract value
-    const budget = relevantProjects.reduce(
-      (acc, p) => acc + p.revisedContract,
+    const relevantBudgetItems = budgetItems.filter((item) =>
+      projectIds.includes(item.projectId)
+    );
+
+    const budget = relevantBudgetItems.reduce(
+      (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
       0
     );
 
     const relevantExpenses = allExpenses.filter((expense) =>
-        projectIds.includes(expense.projectId)
+      projectIds.includes(expense.projectId)
     );
     const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
 
     const profitLoss = budget - expenses;
 
     return { budget, expenses, profitLoss };
-  }, [selectedProjectId, projects, allExpenses]);
+  }, [selectedProjectId, projects, allExpenses, budgetItems]);
 
   return (
     <div className="space-y-6">
@@ -117,7 +120,7 @@ export default function ProfitLossPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Total contract value</p>
+                <p className="text-xs text-muted-foreground">Total of all budget line items</p>
               </CardContent>
             </Card>
             <Card>
