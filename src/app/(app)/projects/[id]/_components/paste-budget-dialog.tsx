@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useContext } from 'react';
@@ -56,10 +57,10 @@ export function PasteBudgetDialog({
           return null;
         }
 
-        const category = columns[0].trim() || 'Uncategorized';
+        const category = columns[0].trim();
         const originalBudget = parseAmount(columns[1]);
         
-        if (category === 'Uncategorized' || originalBudget === 0) {
+        if (!category || originalBudget === 0) {
             return null;
         }
 
@@ -68,7 +69,7 @@ export function PasteBudgetDialog({
           projectId: projectId,
           category,
           costType: 'material', // Default value
-          notes: 'Pasted from spreadsheet',
+          notes: '',
           originalBudget,
           approvedCOBudget: 0,
           committedCost: 0,

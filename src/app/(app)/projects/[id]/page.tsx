@@ -1,4 +1,5 @@
 
+
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -293,9 +294,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         disabled={showGroupByCategory}
                                     />
                                 </TableHead>
-                                <TableHead className={cn(showGroupByCategory && 'w-1/4')}>{showGroupByCategory ? 'Details' : 'Category'}</TableHead>
-                                <TableHead>Cost Type</TableHead>
-                                <TableHead>Notes</TableHead>
+                                <TableHead className={cn(showGroupByCategory && 'w-1/4')}>Category</TableHead>
                                 <TableHead className="text-right">Original Budget</TableHead>
                                 <TableHead className="text-right">Approved COs</TableHead>
                                 <TableHead className="text-right">Revised Budget</TableHead>
@@ -310,7 +309,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                     <React.Fragment key={category}>
                                         <TableRow className="bg-secondary hover:bg-secondary">
                                             <TableCell></TableCell>
-                                            <TableCell className="font-bold text-secondary-foreground" colSpan={3}>{category}</TableCell>
+                                            <TableCell className="font-bold text-secondary-foreground" colSpan={1}>{category}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString()}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString()}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString()}</TableCell>
@@ -324,8 +323,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                                 <TableRow key={item.id}>
                                                      <TableCell></TableCell>
                                                     <TableCell className="pl-8">{item.category}</TableCell>
-                                                    <TableCell>{item.costType}</TableCell>
-                                                    <TableCell>{item.notes}</TableCell>
                                                     <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
                                                     <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
                                                     <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
@@ -358,8 +355,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                                 />
                                             </TableCell>
                                             <TableCell className="font-medium">{item.category}</TableCell>
-                                            <TableCell>{item.costType}</TableCell>
-                                            <TableCell>{item.notes}</TableCell>
                                             <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
                                             <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
                                             <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
@@ -405,7 +400,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         )}
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={4} className="font-bold">Totals</TableCell>
+                                <TableCell colSpan={2} className="font-bold">Totals</TableCell>
                                 <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString()}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString()}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString()}</TableCell>
