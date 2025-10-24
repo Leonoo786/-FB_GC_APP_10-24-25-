@@ -17,6 +17,18 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const parseAmount = (value: any): number => {
+    if (typeof value === 'number') {
+        return value;
+    }
+    if (typeof value === 'string') {
+        const cleaned = value.replace(/[^0-9.-]+/g, '');
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? 0 : num;
+    }
+    return 0;
+};
+
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
     const appState = useContext(AppStateContext);
@@ -107,22 +119,26 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             reader.onload = (e) => {
                 try {
                     const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const json: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-                    const newBudgetItems: BudgetItem[] = json.map((row: any) => ({
-                        id: crypto.randomUUID(),
-                        projectId: project.id,
-                        category: row['Category'] || 'Uncategorized',
-                        costType: ['labor', 'material', 'both'].includes(row['Cost Type']) ? row['Cost Type'] : 'material',
-                        notes: row['Notes'] || '',
-                        originalBudget: Number(row['Original Budget']) || 0,
-                        approvedCOBudget: 0,
-                        committedCost: 0,
-                        projectedCost: Number(row['Original Budget']) || 0,
-                    }));
+                    const newBudgetItems: BudgetItem[] = json.map((row: any) => {
+                        const originalBudget = parseAmount(row['Original Budget']);
+                        
+                        return {
+                            id: crypto.randomUUID(),
+                            projectId: project.id,
+                            category: row['Category'] || 'Uncategorized',
+                            costType: ['labor', 'material', 'both'].includes(row['Cost Type']?.toLowerCase()) ? row['Cost Type'].toLowerCase() : 'material',
+                            notes: row['Notes'] || '',
+                            originalBudget: originalBudget,
+                            approvedCOBudget: 0,
+                            committedCost: 0,
+                            projectedCost: originalBudget,
+                        }
+                    });
                     
                     appState.setBudgetItems(current => [...current, ...newBudgetItems]);
 
@@ -139,7 +155,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     });
                 }
             };
-            reader.readAsBinaryString(file);
+            reader.readAsArrayBuffer(file);
         }
         if(fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -365,6 +381,8 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
+    
 
     
 
