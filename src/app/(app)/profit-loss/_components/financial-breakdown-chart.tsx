@@ -14,10 +14,6 @@ const chartConfig = {
   value: {
     label: "Amount",
   },
-  bid: {
-    label: "Bid Amount",
-    color: "hsl(var(--chart-1))",
-  },
   budget: {
     label: "Budget",
     color: "hsl(var(--chart-2))",
@@ -30,29 +26,21 @@ const chartConfig = {
     label: "Actual Profit",
     color: "hsl(var(--chart-4))",
   },
-  estimatedProfit: {
-    label: "Estimated Profit",
-    color: "hsl(var(--chart-5))",
-  },
 } as const;
 
 type FinancialBreakdownChartProps = {
     data: {
-        bidAmount: number;
         budget: number;
         expenses: number;
         actualProfit: number;
-        estimatedProfit: number;
     }
 }
 
 export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) {
   const chartData = useMemo(() => [
-      { name: "Bid Amount", value: data.bidAmount, fill: "var(--color-bid)" },
       { name: "Budget", value: data.budget, fill: "var(--color-budget)" },
       { name: "Expenses", value: data.expenses, fill: "var(--color-expenses)" },
       { name: "Actual Profit", value: data.actualProfit, fill: "var(--color-actualProfit)" },
-      { name: "Estimated Profit", value: data.estimatedProfit, fill: "var(--color-estimatedProfit)" },
   ], [data]);
 
   return (

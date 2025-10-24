@@ -48,18 +48,10 @@ export default function ProfitLossStaticPage() {
 
         const projectIds = relevantProjects.map((p) => p.id);
         
-        const relevantBudgetItems = budgetItems.filter((item) =>
-          projectIds.includes(item.projectId)
-        );
-
-        const bidAmount = relevantProjects.reduce(
+        // Budget is the total contract value
+        const budget = relevantProjects.reduce(
           (acc, p) => acc + p.revisedContract,
           0
-        );
-
-        const budget = relevantBudgetItems.reduce(
-        (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
-        0
         );
 
         const relevantExpenses = allExpenses.filter((expense) =>
@@ -67,11 +59,10 @@ export default function ProfitLossStaticPage() {
         );
         const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
 
-        const actualProfitLoss = bidAmount - expenses;
-        const estimatedProfitLoss = bidAmount - budget;
+        const actualProfitLoss = budget - expenses;
 
-        return { bidAmount, budget, expenses, actualProfitLoss, estimatedProfitLoss };
-    }, [selectedProjectId, projects, budgetItems, allExpenses]);
+        return { budget, expenses, actualProfitLoss };
+    }, [selectedProjectId, projects, allExpenses]);
 
 
   return (
@@ -111,24 +102,7 @@ export default function ProfitLossStaticPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="summary" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Bid Amount
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {financialData.bidAmount.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Agreed contract value</p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
@@ -141,7 +115,7 @@ export default function ProfitLossStaticPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Planned internal cost</p>
+                <p className="text-xs text-muted-foreground">Total contract value</p>
               </CardContent>
             </Card>
             <Card>
@@ -177,34 +151,15 @@ export default function ProfitLossStaticPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Current actual profit (Bid - Expenses)</p>
-              </CardContent>
-            </Card>
-             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Estimated Profit/Loss
-                </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {financialData.estimatedProfitLoss.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Expected profit at completion (Bid - Budget)</p>
+                <p className="text-xs text-muted-foreground">Budget - Expenses</p>
               </CardContent>
             </Card>
           </div>
           <div className="mt-6">
             <FinancialBreakdown 
-                bidAmount={financialData.bidAmount}
                 budget={financialData.budget}
                 expenses={financialData.expenses}
                 actualProfit={financialData.actualProfitLoss}
-                estimatedProfit={financialData.estimatedProfitLoss}
             />
           </div>
         </TabsContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ const BreakdownItem = ({
   total,
   colorClass,
 }: BreakdownItemProps) => {
-  const percentage = total > 0 ? (value / total) * 100 : 0;
+  const percentage = total > 0 ? (Math.abs(value) / total) * 100 : 0;
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
@@ -38,32 +39,24 @@ const BreakdownItem = ({
 };
 
 type FinancialBreakdownProps = {
-    bidAmount: number;
     budget: number;
     expenses: number;
     actualProfit: number;
-    estimatedProfit: number;
 };
 
 
-export function FinancialBreakdown({ bidAmount, budget, expenses, actualProfit, estimatedProfit }: FinancialBreakdownProps) {
-  const maxVal = Math.max(bidAmount, budget, expenses, actualProfit, estimatedProfit, 1);
+export function FinancialBreakdown({ budget, expenses, actualProfit }: FinancialBreakdownProps) {
+  const maxVal = Math.max(budget, expenses, Math.abs(actualProfit), 1);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Financial Breakdown</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Visual comparison of bid amount, expenses, and profit
+          Visual comparison of budget, expenses, and profit
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <BreakdownItem
-          label="Total Bid Amount"
-          value={bidAmount}
-          total={maxVal}
-          colorClass="bg-blue-600"
-        />
         <BreakdownItem
           label="Total Budget"
           value={budget}
@@ -80,13 +73,7 @@ export function FinancialBreakdown({ bidAmount, budget, expenses, actualProfit, 
           label="Total Actual Profit"
           value={actualProfit}
           total={maxVal}
-          colorClass="bg-emerald-500"
-        />
-        <BreakdownItem
-          label="Total Estimated Profit"
-          value={estimatedProfit}
-          total={maxVal}
-          colorClass="bg-teal-500"
+          colorClass={actualProfit >= 0 ? "bg-emerald-500" : "bg-red-500"}
         />
       </CardContent>
     </Card>
