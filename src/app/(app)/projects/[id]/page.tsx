@@ -1,5 +1,4 @@
 
-
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +17,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from "@/lib/utils";
 import { TransactionsDialog } from "./_components/transactions-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -30,6 +31,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+    const [categoryFilter, setCategoryFilter] = useState('all');
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -37,12 +39,15 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         return null;
     }
     
-    const { budgetItems, setBudgetItems, expenses } = appState;
+    const { budgetItems, setBudgetItems, expenses, budgetCategories } = appState;
     
-    const projectBudgetItems = useMemo(() => 
-        budgetItems.filter(item => item.projectId === project.id),
-        [budgetItems, project.id]
-    );
+    const projectBudgetItems = useMemo(() => {
+        let items = budgetItems.filter(item => item.projectId === project.id);
+        if (categoryFilter !== 'all') {
+            items = items.filter(item => item.category === categoryFilter);
+        }
+        return items;
+    }, [budgetItems, project.id, categoryFilter]);
 
     const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
 
@@ -147,17 +152,24 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     };
 
                     const newBudgetItems: BudgetItem[] = rows.map((row: any[]): BudgetItem | null => {
-                        if (!row || row.length === 0) {
+                        if (!row || row.length === 0) return null;
+                    
+                        const notes = row[0] ? String(row[0]).trim() : '';
+                        const category = row[1] ? String(row[1]).trim() : '';
+                    
+                        // Strictest validation: Only import if the first column has text.
+                        if (notes === '') {
                             return null;
                         }
 
-                        const notes = row[0] ? String(row[0]).trim() : '';
-                        const category = row[1] ? String(row[1]).trim() : '';
-                        const originalBudget = parseAmount(row[3]); // Column 4 is index 3
-
-                        // Strictest validation yet: Only import if the first column has text.
-                        if (notes === '') {
-                            return null;
+                        // Scan for the first valid number starting from the 3rd column (index 2)
+                        let originalBudget = 0;
+                        for (let i = 2; i < row.length; i++) {
+                            const parsed = parseAmount(row[i]);
+                            if (parsed > 0) { // Take the first non-zero number
+                                originalBudget = parsed;
+                                break;
+                            }
                         }
 
                         let costType: 'labor' | 'material' | 'both' = 'both';
@@ -250,12 +262,12 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             )}
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <CardTitle className="text-2xl">Project Budget</CardTitle>
                             <CardDescription>Detailed cost breakdown for {project.name}.</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                              {selectedRowKeys.length > 0 ? (
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -285,6 +297,19 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                         <Label htmlFor="group-by-category">Group by Category</Label>
                                     </div>
+                                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                                        <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="All Categories" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                        <SelectItem value="all">All Categories</SelectItem>
+                                        {budgetCategories.map((category) => (
+                                            <SelectItem key={category.id} value={category.name}>
+                                            {category.name}
+                                            </SelectItem>
+                                        ))}
+                                        </SelectContent>
+                                    </Select>
                                     <Button variant="outline" onClick={handleImportClick}>
                                         <Upload className="mr-2 h-4 w-4" />
                                         Import
@@ -293,7 +318,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                             )}
                             <Button onClick={handleNewItem}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Budget Item
+                                Add Item
                             </Button>
                         </div>
                     </div>
@@ -437,3 +462,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
+    
