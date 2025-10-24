@@ -51,16 +51,13 @@ export function PasteBudgetDialog({
       
       const newBudgetItems: BudgetItem[] = rows.map(row => {
         const columns = row.split('\t'); // Assuming tab-separated from spreadsheet
-        const category = columns[0] || 'Uncategorized';
-        let originalBudget = 0;
-
-        for(let i = 1; i < columns.length; i++) {
-          const parsed = parseAmount(columns[i]);
-          if (parsed > 0) {
-            originalBudget = parsed;
-            break;
-          }
+        
+        if (columns.length < 2) {
+          return null;
         }
+
+        const category = columns[0].trim() || 'Uncategorized';
+        const originalBudget = parseAmount(columns[1]);
         
         if (category === 'Uncategorized' || originalBudget === 0) {
             return null;
@@ -70,7 +67,7 @@ export function PasteBudgetDialog({
           id: crypto.randomUUID(),
           projectId: projectId,
           category,
-          costType: 'material',
+          costType: 'material', // Default value
           notes: 'Pasted from spreadsheet',
           originalBudget,
           approvedCOBudget: 0,
@@ -88,7 +85,7 @@ export function PasteBudgetDialog({
       } else {
         toast({
             title: "Import Warning",
-            description: "No valid budget items could be found in the pasted data.",
+            description: "No valid budget items could be found in the pasted data. Please ensure the first column is the category and the second is the amount.",
             variant: "destructive"
         });
       }
@@ -114,7 +111,7 @@ export function PasteBudgetDialog({
         <DialogHeader>
           <DialogTitle>Paste from Spreadsheet</DialogTitle>
           <DialogDescription>
-            Copy data from your spreadsheet (e.g., Excel, Google Sheets) and paste it below. The first column should be the category and at least one other column should have the budget amount.
+            Copy data from your spreadsheet (e.g., Excel, Google Sheets) and paste it below. The first column should be the category and the second column should be the budget amount.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -122,7 +119,7 @@ export function PasteBudgetDialog({
             <Textarea 
                 id="paste-area"
                 rows={10}
-                placeholder="Category Name  |  Budget Amount&#10;Framing         |  50000.00&#10;Electrical      |  25000.00"
+                placeholder="Framing	50000.00&#10;Electrical	25000.00"
                 value={pasteData}
                 onChange={(e) => setPasteData(e.target.value)}
             />
