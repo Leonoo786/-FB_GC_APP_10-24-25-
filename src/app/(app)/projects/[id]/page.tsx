@@ -16,20 +16,9 @@ import * as XLSX from 'xlsx';
 import type { BudgetItem } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { TransactionsDialog } from "./_components/transactions-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PasteBudgetDialog } from "./_components/paste-budget-dialog";
-
-const parseAmount = (value: any): number => {
-    if (typeof value === 'number') {
-        return value;
-    }
-    if (typeof value === 'string') {
-        const cleaned = value.replace(/[^0-9.-]+/g, '');
-        const num = parseFloat(cleaned);
-        return isNaN(num) ? 0 : num;
-    }
-    return 0;
-};
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -37,7 +26,9 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [transactionsDialogOpen, setTransactionsDialogOpen] = useState(false);
     const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -48,9 +39,14 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         return null;
     }
     
-    const { budgetItems, setBudgetItems } = appState;
+    const { budgetItems, setBudgetItems, expenses } = appState;
     
-    const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+    const projectBudgetItems = useMemo(() => 
+        budgetItems.filter(item => item.projectId === project.id),
+        [budgetItems, project.id]
+    );
+
+    const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
 
     const groupedBudgetItems = useMemo(() => {
         if (!showGroupByCategory) return null;
@@ -60,19 +56,28 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             return acc;
         }, {} as { [key: string]: BudgetItem[] });
 
-        return Object.entries(groups).map(([category, items]) => ({
-            category,
-            items,
-            subtotals: {
-                originalBudget: items.reduce((sum, item) => sum + item.originalBudget, 0),
-                approvedCOBudget: items.reduce((sum, item) => sum + item.approvedCOBudget, 0),
-                revisedBudget: items.reduce((sum, item) => sum + (item.originalBudget + item.approvedCOBudget), 0),
-                committedCost: items.reduce((sum, item) => sum + item.committedCost, 0),
-                projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0),
-            }
-        })).sort((a,b) => a.category.localeCompare(b.category));
+        return Object.entries(groups).map(([category, items]) => {
+            const committedCost = projectExpenses
+                .filter(exp => exp.category === category)
+                .reduce((sum, exp) => sum + exp.amount, 0);
 
-    }, [projectBudgetItems, showGroupByCategory]);
+            const originalBudget = items.reduce((sum, item) => sum + item.originalBudget, 0);
+            const approvedCOBudget = items.reduce((sum, item) => sum + item.approvedCOBudget, 0);
+
+            return {
+                category,
+                items,
+                subtotals: {
+                    originalBudget,
+                    approvedCOBudget,
+                    revisedBudget: originalBudget + approvedCOBudget,
+                    committedCost: committedCost,
+                    projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0),
+                }
+            }
+        }).sort((a,b) => a.category.localeCompare(b.category));
+
+    }, [projectBudgetItems, showGroupByCategory, projectExpenses]);
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -114,6 +119,11 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             setBudgetItems(current => [{...itemToSave, id: crypto.randomUUID()}, ...current]);
         }
     };
+    
+    const handleTransactionsClick = (category: string) => {
+        setSelectedCategory(category);
+        setTransactionsDialogOpen(true);
+    };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -122,172 +132,58 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             reader.onload = (e) => {
                 try {
                     const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    const workbook = XLSX.read(data, { type: 'binary' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
+                    const json = XLSX.utils.sheet_to_json(worksheet);
 
-                    if (rows.length < 1) {
-                         toast({
-                            title: 'Import Warning',
-                            description: 'The file is empty.',
-                            variant: 'destructive',
-                        });
-                        return;
-                    }
-
-                    const dataRows = rows;
-
-                    const newBudgetItems: BudgetItem[] = dataRows.map((row: any) => {
-                        const category = row[0] || 'Uncategorized';
-                        const originalBudget = parseAmount(row[1]);
-
-                        return {
-                            id: crypto.randomUUID(),
-                            projectId: project.id,
-                            category: category,
-                            costType: 'material', // Default
-                            notes: '',
-                            originalBudget: originalBudget,
-                            approvedCOBudget: 0,
-                            committedCost: 0,
-                            projectedCost: originalBudget,
-                        };
-                    });
+                    const newBudgetItems: BudgetItem[] = json.map((row: any) => ({
+                        id: crypto.randomUUID(),
+                        projectId: project.id,
+                        category: row['Category'] || 'Uncategorized',
+                        costType: ['labor', 'material', 'both'].includes(row['Cost Type']) ? row['Cost Type'] : 'material',
+                        notes: row['Notes'] || '',
+                        originalBudget: Number(row['Original Budget']) || 0,
+                        approvedCOBudget: 0,
+                        committedCost: 0,
+                        projectedCost: Number(row['Original Budget']) || 0,
+                    }));
                     
-                    if (newBudgetItems.length > 0) {
-                        appState.setBudgetItems(current => [...current, ...newBudgetItems]);
-                        toast({
-                            title: "Import Successful",
-                            description: `${newBudgetItems.length} budget items have been imported.`,
-                        });
-                    } else {
-                        toast({
-                            title: "Import Warning",
-                            description: "No valid budget items could be found in the file.",
-                            variant: "destructive"
-                        });
-                    }
+                    appState.setBudgetItems(current => [...current, ...newBudgetItems]);
 
+                    toast({
+                        title: "Import Successful",
+                        description: `${newBudgetItems.length} budget items have been imported.`,
+                    });
                 } catch (error) {
                     console.error("Error importing budget:", error);
                     toast({
                         title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file.",
+                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Category, Cost Type, Notes, Original Budget).",
                         variant: "destructive",
                     });
                 }
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsBinaryString(file);
         }
         if(fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
     
-    const totals = useMemo(() => ({
-        originalBudget: projectBudgetItems.reduce((sum, item) => sum + item.originalBudget, 0),
-        approvedCOBudget: projectBudgetItems.reduce((sum, item) => sum + item.approvedCOBudget, 0),
-        revisedBudget: projectBudgetItems.reduce((sum, item) => sum + (item.originalBudget + item.approvedCOBudget), 0),
-        committedCost: projectBudgetItems.reduce((sum, item) => sum + item.committedCost, 0),
-        projectedCost: projectBudgetItems.reduce((sum, item) => sum + item.projectedCost, 0),
-    }), [projectBudgetItems]);
+    const totals = useMemo(() => {
+        const committedCost = projectExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const originalBudget = projectBudgetItems.reduce((sum, item) => sum + item.originalBudget, 0);
+        const approvedCOBudget = projectBudgetItems.reduce((sum, item) => sum + item.approvedCOBudget, 0);
 
-    const budgetTableBody = () => {
-        if (showGroupByCategory && groupedBudgetItems) {
-            return groupedBudgetItems.flatMap(({ category, items, subtotals }) => [
-                <TableRow key={category} className="bg-secondary hover:bg-secondary">
-                    <TableCell></TableCell>
-                    <TableCell className="font-bold text-secondary-foreground" colSpan={3}>{category}</TableCell>
-                    <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.committedCost.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.projectedCost.toLocaleString()}</TableCell>
-                    <TableCell></TableCell>
-                </TableRow>,
-                ...items.map(item => {
-                    const revisedBudget = item.originalBudget + item.approvedCOBudget;
-                    return (
-                        <TableRow key={item.id}>
-                                <TableCell></TableCell>
-                            <TableCell className="pl-8">{item.notes}</TableCell>
-                            <TableCell>{item.costType}</TableCell>
-                            <TableCell>{/* Notes column left blank for sub-items */}</TableCell>
-                            <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
-                            <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">${item.committedCost.toLocaleString()}</TableCell>
-                            <TableCell className="text-right">${item.projectedCost.toLocaleString()}</TableCell>
-                            <TableCell>{/* Actions column left blank for sub-items */}</TableCell>
-                        </TableRow>
-                    );
-                })
-            ]);
+        return {
+            originalBudget,
+            approvedCOBudget,
+            revisedBudget: originalBudget + approvedCOBudget,
+            committedCost,
+            projectedCost: projectBudgetItems.reduce((sum, item) => sum + item.projectedCost, 0),
         }
-        
-        return projectBudgetItems.map((item) => {
-            const revisedBudget = item.originalBudget + item.approvedCOBudget;
-            return (
-                <TableRow key={item.id} data-state={selectedRowKeys.includes(item.id) && "selected"}>
-                    <TableCell>
-                        <Checkbox
-                            checked={selectedRowKeys.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                                if (checked) {
-                                    setSelectedRowKeys(prev => [...prev, item.id]);
-                                } else {
-                                    setSelectedRowKeys(prev => prev.filter(id => id !== item.id));
-                                }
-                            }}
-                            aria-label="Select row"
-                        />
-                    </TableCell>
-                    <TableCell className="font-medium">{item.category}</TableCell>
-                    <TableCell>{item.costType}</TableCell>
-                    <TableCell>{item.notes}</TableCell>
-                    <TableCell className="text-right">${item.originalBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">${item.approvedCOBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">${item.committedCost.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">${item.projectedCost.toLocaleString()}</TableCell>
-                    <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete this budget item.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableCell>
-                </TableRow>
-            );
-        })
-    }
+    }, [projectBudgetItems, projectExpenses]);
 
     return (
         <>
@@ -305,11 +201,19 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                 budgetItem={selectedBudgetItem}
                 onSave={handleSaveItem}
             />
-            <PasteBudgetDialog 
+             <PasteBudgetDialog 
                 open={pasteDialogOpen}
                 onOpenChange={setPasteDialogOpen}
                 projectId={project.id}
             />
+             {selectedCategory && (
+                <TransactionsDialog
+                    open={transactionsDialogOpen}
+                    onOpenChange={setTransactionsDialogOpen}
+                    category={selectedCategory}
+                    expenses={projectExpenses.filter(exp => exp.category === selectedCategory)}
+                />
+            )}
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
@@ -382,7 +286,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         disabled={showGroupByCategory}
                                     />
                                 </TableHead>
-                                <TableHead>Category</TableHead>
+                                <TableHead className={cn(showGroupByCategory && 'w-1/4')}>Category</TableHead>
                                 <TableHead>Cost Type</TableHead>
                                 <TableHead>Notes</TableHead>
                                 <TableHead className="text-right">Original Budget</TableHead>
@@ -393,17 +297,108 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                 <TableHead className="w-[50px]"></TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            {budgetTableBody()}
-                        </TableBody>
+                        {showGroupByCategory && groupedBudgetItems ? (
+                            <TableBody>
+                                {groupedBudgetItems.map(({ category, items, subtotals }) => (
+                                    <React.Fragment key={category}>
+                                        <TableRow className="bg-secondary hover:bg-secondary">
+                                            <TableCell></TableCell>
+                                            <TableCell className="font-bold text-secondary-foreground">{category}</TableCell>
+                                            <TableCell colSpan={2}></TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">
+                                                <Button variant="link" className="p-0 h-auto text-secondary-foreground" onClick={() => handleTransactionsClick(category)}>
+                                                    ${subtotals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell></TableCell>
+                                        </TableRow>
+                                    </React.Fragment>
+                                ))}
+                            </TableBody>
+                        ) : (
+                            <TableBody>
+                                {projectBudgetItems.map((item) => {
+                                    const revisedBudget = item.originalBudget + item.approvedCOBudget;
+                                    const committedCost = projectExpenses
+                                        .filter(exp => exp.category === item.category)
+                                        .reduce((sum, exp) => sum + exp.amount, 0);
+                                    return (
+                                        <TableRow key={item.id} data-state={selectedRowKeys.includes(item.id) && "selected"}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedRowKeys.includes(item.id)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSelectedRowKeys(prev => [...prev, item.id]);
+                                                        } else {
+                                                            setSelectedRowKeys(prev => prev.filter(id => id !== item.id));
+                                                        }
+                                                    }}
+                                                    aria-label="Select row"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="font-medium">{item.category}</TableCell>
+                                            <TableCell>{item.costType}</TableCell>
+                                            <TableCell>{item.notes}</TableCell>
+                                            <TableCell className="text-right">${item.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right">${item.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="link" className="p-0 h-auto" onClick={() => handleTransactionsClick(item.category)}>
+                                                    ${committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell className="text-right">${item.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                        <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This action cannot be undone. This will permanently delete this budget item.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        )}
                         <TableFooter>
                             <TableRow>
                                 <TableCell colSpan={4} className="font-bold">Totals</TableCell>
-                                <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString()}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString()}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableFooter>
@@ -413,9 +408,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
-
-
-
-
 
     
