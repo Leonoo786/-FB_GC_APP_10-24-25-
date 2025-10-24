@@ -1,7 +1,9 @@
 
+
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     Sidebar,
     SidebarContent,
@@ -73,7 +75,11 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
                 <Sidebar>
                     <SidebarHeader className="p-4">
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <Logo className="size-8" />
+                            {companyLogoUrl ? (
+                                <Image src={companyLogoUrl} alt={companyName} width={32} height={32} className="rounded-sm object-contain" />
+                            ) : (
+                                <Logo className="size-8" />
+                            )}
                             <span className="text-lg font-semibold">{companyName}</span>
                         </Link>
                     </SidebarHeader>
