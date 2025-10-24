@@ -61,7 +61,7 @@ export type Expense = {
   description: string;
   amount: number;
   paymentMethod: string;
-  paymentReference?: string;
+  paymentReference?: any;
   invoiceNumber?: string;
 };
 

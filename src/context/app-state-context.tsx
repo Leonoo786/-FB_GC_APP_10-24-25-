@@ -17,6 +17,7 @@ type AppState = {
   changeOrders: ChangeOrder[];
   userName: string;
   userAvatarUrl: string;
+  userEmail: string;
 };
 
 type AppStateSetters = {
@@ -32,6 +33,7 @@ type AppStateSetters = {
   setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   setUserName: React.Dispatch<React.SetStateAction<string>>;
   setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
+  setUserEmail: React.Dispatch<React.SetStateAction<string>>;
 };
 
 type AppStateContextType = AppState & AppStateSetters;

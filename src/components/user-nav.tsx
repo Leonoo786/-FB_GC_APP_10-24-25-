@@ -28,7 +28,7 @@ export function UserNav() {
     return null;
   }
 
-  const { userName, userAvatarUrl } = appState;
+  const { userName, userAvatarUrl, userEmail } = appState;
   const initials = userName.split(' ').map(n => n[0]).join('');
 
 
@@ -49,7 +49,7 @@ export function UserNav() {
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">{userName}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                john.doe@constructai.com
+                {userEmail}
               </p>
             </div>
           </DropdownMenuLabel>

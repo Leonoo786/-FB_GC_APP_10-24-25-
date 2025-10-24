@@ -59,7 +59,7 @@ export default function SettingsPage() {
   // Profile State
   const [photoUrl, setPhotoUrl] = useState("");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("john.doe@constructai.com");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("(555) 123-4567");
   const [jobTitle, setJobTitle] = useState("Admin");
   const [department, setDepartment] = useState("Construction");
@@ -83,6 +83,7 @@ export default function SettingsPage() {
         setCompanyLogoUrl(appState.companyLogoUrl);
         setName(appState.userName);
         setPhotoUrl(appState.userAvatarUrl);
+        setEmail(appState.userEmail);
     }
   }, [appState]);
 
@@ -118,6 +119,7 @@ export default function SettingsPage() {
   const handleSaveChanges = () => {
     appState.setUserName(name);
     appState.setUserAvatarUrl(photoUrl);
+    appState.setUserEmail(email);
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
