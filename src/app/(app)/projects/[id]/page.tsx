@@ -125,19 +125,36 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json<any>(worksheet);
+                    const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
 
-                    const newBudgetItems: BudgetItem[] = json.map((row: any) => {
+                    if (rows.length < 1) {
+                         toast({
+                            title: 'Import Warning',
+                            description: 'The file is empty.',
+                            variant: 'destructive',
+                        });
+                        return;
+                    }
+
+                    // Skip header row if it looks like a header
+                    const firstRow = rows[0];
+                    const likelyHeader = typeof firstRow[0] === 'string' && typeof firstRow[1] === 'string' && isNaN(parseAmount(firstRow[1]));
+                    const dataRows = likelyHeader ? rows.slice(1) : rows;
+
+                    const newBudgetItems: BudgetItem[] = dataRows.map((row: any) => {
+                        const category = row[0] || 'Uncategorized';
+                        const originalBudget = parseAmount(row[1]);
+
                         return {
                             id: crypto.randomUUID(),
                             projectId: project.id,
-                            category: row['Category'] || 'Uncategorized',
-                            costType: ['labor', 'material', 'both'].includes(row['Cost Type']?.toLowerCase()) ? row['Cost Type'].toLowerCase() : 'material',
-                            notes: row['Notes'] || '',
-                            originalBudget: parseAmount(row['Original Budget']),
-                            approvedCOBudget: parseAmount(row['Approved CO Budget']),
-                            committedCost: parseAmount(row['Committed Cost']),
-                            projectedCost: parseAmount(row['Projected Cost']) || parseAmount(row['Original Budget']),
+                            category: category,
+                            costType: 'material', // Default
+                            notes: '',
+                            originalBudget: originalBudget,
+                            approvedCOBudget: 0,
+                            committedCost: 0,
+                            projectedCost: originalBudget,
                         };
                     });
                     
@@ -159,7 +176,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     console.error("Error importing budget:", error);
                     toast({
                         title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns.",
+                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file.",
                         variant: "destructive",
                     });
                 }
@@ -399,5 +416,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
 
 
