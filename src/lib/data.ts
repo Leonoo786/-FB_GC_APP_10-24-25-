@@ -82,7 +82,7 @@ export const vendors: Vendor[] = [
   { id: 'vendor-71', name: 'Rodolfo Ladesma', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'General Labor' },
   { id: 'vendor-72', name: 'Rodrigos Concrete Cuts & Cores', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Concrete' },
   { id: 'vendor-73', name: 'Roto Rooter', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Plumbing' },
-  { id: 'vendor-74', name: 'Sam\'s Club', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Supplier' },
+  { id: 'vendor-74', name: "Sam's Club", contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Supplier' },
   { id: 'vendor-75', name: 'Sandra Cruz', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'General Labor' },
   { id: 'vendor-76', name: 'Sapo Engineering', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Engineering' },
   { id: 'vendor-77', name: 'Sherwin Williams', contactPerson: 'N/A', phone: 'N/A', email: 'N/A', trade: 'Painting' },
@@ -358,4 +358,5 @@ export const changeOrders: ChangeOrder[] = [
     { id: 'co-2', projectId: 'proj-1', coNumber: 'CO-002', description: 'Owner requested change to lobby finishes.', totalRequest: 75000, status: 'Submitted' },
     { id: 'co-3', projectId: 'proj-3', coNumber: 'CO-001', description: 'Add outdoor kitchen to patio.', totalRequest: 50000, status: 'Executed' },
 ];
+
 
