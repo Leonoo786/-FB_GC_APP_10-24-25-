@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import React, { useState, use, useContext, useRef, useMemo } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, Upload, Trash2, ClipboardPaste } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Upload, Trash2 } from "lucide-react";
 import { AddEditBudgetItemDialog } from "./_components/add-edit-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
@@ -72,7 +72,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     approvedCOBudget,
                     revisedBudget: originalBudget + approvedCOBudget,
                     committedCost: committedCost,
-                    projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0),
+                    projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0), // This might need adjustment based on desired logic
                 }
             }
         }).sort((a,b) => a.category.localeCompare(b.category));
@@ -132,39 +132,81 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
             reader.onload = (e) => {
                 try {
                     const data = e.target?.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
-                    const newBudgetItems: BudgetItem[] = json.map((row: any) => ({
-                        id: crypto.randomUUID(),
-                        projectId: project.id,
-                        category: row['Category'] || 'Uncategorized',
-                        costType: ['labor', 'material', 'both'].includes(row['Cost Type']) ? row['Cost Type'] : 'material',
-                        notes: row['Notes'] || '',
-                        originalBudget: Number(row['Original Budget']) || 0,
-                        approvedCOBudget: 0,
-                        committedCost: 0,
-                        projectedCost: Number(row['Original Budget']) || 0,
-                    }));
+                    const parseAmount = (value: any): number | null => {
+                        if (value === null || value === undefined) return null;
+                        if (typeof value === 'number') return value;
+                        if (typeof value === 'string') {
+                          const cleaned = value.replace(/[^0-9.-]+/g, '');
+                          const num = parseFloat(cleaned);
+                          return isNaN(num) ? null : num;
+                        }
+                        return null;
+                    };
+
+                    const newBudgetItems: BudgetItem[] = rows.slice(0).map((row: any) => {
+                        if (!row || row.length === 0 || row.every(cell => cell === null || cell === '')) return null;
+
+                        const notes = row[0] || '';
+                        const category = row[1] || 'Uncategorized';
+                        
+                        let originalBudget = 0;
+                        for (let i = 2; i < row.length; i++) {
+                            const amount = parseAmount(row[i]);
+                            if (amount !== null) {
+                                originalBudget = amount;
+                                break;
+                            }
+                        }
+
+                        let costType: 'labor' | 'material' | 'both' = 'both';
+                        const notesLower = String(notes).toLowerCase();
+                        if (notesLower.includes('labor')) {
+                            costType = 'labor';
+                        } else if (notesLower.includes('material')) {
+                            costType = 'material';
+                        }
+                        
+                        return {
+                            id: crypto.randomUUID(),
+                            projectId: project.id,
+                            category: category,
+                            costType: costType,
+                            notes: notes,
+                            originalBudget: originalBudget,
+                            approvedCOBudget: 0,
+                            committedCost: 0,
+                            projectedCost: originalBudget,
+                        };
+                    }).filter((item): item is BudgetItem => item !== null);
                     
-                    appState.setBudgetItems(current => [...current, ...newBudgetItems]);
-
-                    toast({
-                        title: "Import Successful",
-                        description: `${newBudgetItems.length} budget items have been imported.`,
-                    });
+                    if (newBudgetItems.length > 0) {
+                        appState.setBudgetItems(current => [...current, ...newBudgetItems]);
+                        toast({
+                            title: "Import Successful",
+                            description: `${newBudgetItems.length} budget items have been imported.`,
+                        });
+                    } else {
+                        toast({
+                            title: "Import Warning",
+                            description: "No valid data found to import.",
+                            variant: 'destructive'
+                        });
+                    }
                 } catch (error) {
                     console.error("Error importing budget:", error);
                     toast({
                         title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Category, Cost Type, Notes, Original Budget).",
+                        description: "There was an error processing the file. Please ensure it's a valid XLSX file.",
                         variant: "destructive",
                     });
                 }
             };
-            reader.readAsBinaryString(file);
+            reader.readAsArrayBuffer(file);
         }
         if(fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -251,6 +293,10 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                         <Label htmlFor="group-by-category">Group by Category</Label>
                                     </div>
+                                    <Button variant="outline" onClick={handleImportClick}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        Import
+                                    </Button>
                                 </>
                             )}
                             <Button onClick={handleNewItem}>
@@ -400,5 +446,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
+    
 
     
