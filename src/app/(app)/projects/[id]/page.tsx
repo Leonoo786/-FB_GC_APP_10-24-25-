@@ -133,7 +133,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false }) as any[][];
 
                     const parseAmount = (value: any): number | null => {
                         if (value === null || value === undefined) return null;
@@ -146,25 +146,18 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         return null;
                     };
 
-                    const newBudgetItems: BudgetItem[] = rows.map((row: any) => {
-                        if (!Array.isArray(row) || typeof row[1] !== 'string' || row[1].trim() === '') {
+                    const newBudgetItems: BudgetItem[] = rows.slice(1) // Skip header row
+                      .map((row: any[]): BudgetItem | null => {
+                        if (!Array.isArray(row) || typeof row[0] !== 'string' || row[0].trim() === '') {
                             return null;
                         }
                         
-                        const notes = row[0] || '';
-                        const category = row[1] || 'Uncategorized';
-                        
-                        let originalBudget = 0;
-                        for (let i = 2; i < row.length; i++) {
-                            const amount = parseAmount(row[i]);
-                            if (amount !== null) {
-                                originalBudget = amount;
-                                break;
-                            }
-                        }
+                        const notes = row[0]?.trim() || '';
+                        const category = row[1]?.trim() || 'Uncategorized';
+                        const originalBudget = parseAmount(row[3]) ?? 0;
 
                         let costType: 'labor' | 'material' | 'both' = 'both';
-                        const notesLower = String(notes).toLowerCase();
+                        const notesLower = notes.toLowerCase();
                         if (notesLower.includes('labor')) {
                             costType = 'labor';
                         } else if (notesLower.includes('material')) {
@@ -193,7 +186,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     } else {
                         toast({
                             title: "Import Warning",
-                            description: "No valid data found to import. Please ensure your file has at least two columns with data.",
+                            description: "No valid data found to import. Please ensure your file has data in the first column.",
                             variant: 'destructive'
                         });
                     }
@@ -441,5 +434,3 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
-
-    
