@@ -52,17 +52,10 @@ export default function ProfitLossPage() {
       projectIds.includes(item.projectId)
     );
 
-    const initialContract = relevantProjects.reduce(
+    const bidAmount = relevantProjects.reduce(
       (acc, p) => acc + p.revisedContract,
       0
     );
-
-    const approvedCOs = relevantBudgetItems.reduce(
-      (acc, item) => acc + item.approvedCOBudget,
-      0
-    );
-    
-    const bidAmount = initialContract + approvedCOs;
 
     const budget = relevantBudgetItems.reduce(
       (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
