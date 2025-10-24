@@ -135,34 +135,29 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const worksheet = workbook.Sheets[sheetName];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false }) as any[][];
 
-                    const parseAmount = (value: any): number | null => {
-                        if (value === null || value === undefined) return null;
+                    const parseAmount = (value: any): number => {
+                        if (value === null || value === undefined) return 0;
                         if (typeof value === 'number') return value;
                         if (typeof value === 'string') {
                           const cleaned = value.replace(/[^0-9.-]+/g, '');
                           const num = parseFloat(cleaned);
-                          return isNaN(num) ? null : num;
+                          return isNaN(num) ? 0 : num;
                         }
-                        return null;
+                        return 0;
                     };
 
                     const newBudgetItems: BudgetItem[] = rows.map((row: any[]): BudgetItem | null => {
-                        const notes = row[0] ? String(row[0]).trim() : '';
-                        const category = row[1] ? String(row[1]).trim() : '';
-                        
-                        // Strict validation: only import if the first two columns have text.
-                        if (notes === '' || category === '') {
+                        if (!row || row.length === 0) {
                             return null;
                         }
 
-                        let originalBudget = 0;
-                        // Scan from the 3rd column onwards for the first valid number
-                        for (let i = 2; i < row.length; i++) {
-                            const parsed = parseAmount(row[i]);
-                            if (parsed !== null) {
-                                originalBudget = parsed;
-                                break;
-                            }
+                        const notes = row[0] ? String(row[0]).trim() : '';
+                        const category = row[1] ? String(row[1]).trim() : '';
+                        const originalBudget = parseAmount(row[3]); // Column 4 is index 3
+
+                        // Strictest validation yet: Only import if the first column has text.
+                        if (notes === '') {
+                            return null;
                         }
 
                         let costType: 'labor' | 'material' | 'both' = 'both';
@@ -195,7 +190,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     } else {
                         toast({
                             title: "Import Warning",
-                            description: "No valid data found to import. Please ensure your file has data in the first two columns.",
+                            description: "No valid data found to import. Please ensure your file has data in the first column.",
                             variant: 'destructive'
                         });
                     }
@@ -321,9 +316,9 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         disabled={showGroupByCategory}
                                     />
                                 </TableHead>
-                                <TableHead className={cn(showGroupByCategory && 'w-1/4')}>Category</TableHead>
-                                <TableHead>Cost Type</TableHead>
                                 <TableHead>Notes</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Cost Type</TableHead>
                                 <TableHead className="text-right">Original Budget</TableHead>
                                 <TableHead className="text-right">Approved COs</TableHead>
                                 <TableHead className="text-right">Revised Budget</TableHead>
@@ -338,8 +333,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                     <React.Fragment key={category}>
                                         <TableRow className="bg-secondary hover:bg-secondary">
                                             <TableCell></TableCell>
-                                            <TableCell className="font-bold text-secondary-foreground">{category}</TableCell>
-                                            <TableCell colSpan={2}></TableCell>
+                                            <TableCell colSpan={3} className="font-bold text-secondary-foreground">{category}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -376,9 +370,9 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                                     aria-label="Select row"
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{item.category}</TableCell>
+                                            <TableCell className="font-medium">{item.notes}</TableCell>
+                                            <TableCell>{item.category}</TableCell>
                                             <TableCell>{item.costType}</TableCell>
-                                            <TableCell>{item.notes}</TableCell>
                                             <TableCell className="text-right">${item.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell className="text-right">${item.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
