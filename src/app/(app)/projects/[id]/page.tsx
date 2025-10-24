@@ -122,35 +122,62 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+                    const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                    const newBudgetItems: BudgetItem[] = json.map((row: any) => {
-                        const originalBudget = parseAmount(row['Original Budget']);
-                        
-                        return {
-                            id: crypto.randomUUID(),
-                            projectId: project.id,
-                            category: row['Category'] || 'Uncategorized',
-                            costType: ['labor', 'material', 'both'].includes(row['Cost Type']?.toLowerCase()) ? row['Cost Type'].toLowerCase() : 'material',
-                            notes: row['Notes'] || '',
-                            originalBudget: originalBudget,
-                            approvedCOBudget: 0,
-                            committedCost: 0,
-                            projectedCost: originalBudget,
-                        }
-                    });
+                    const newBudgetItems: BudgetItem[] = rows
+                        .map((row: any) => {
+                            if (!row || row.length === 0) return null;
+                            
+                            const category = row[0] || 'Uncategorized';
+                            let originalBudget = 0;
+
+                            // Find the first valid number in the row to use as budget
+                            for(let i = 1; i < row.length; i++) {
+                                const parsed = parseAmount(row[i]);
+                                if (parsed > 0) {
+                                    originalBudget = parsed;
+                                    break;
+                                }
+                            }
+                            
+                            // If no valid category or budget, skip row
+                            if (category === 'Uncategorized' || originalBudget === 0) {
+                                return null;
+                            }
+
+                            return {
+                                id: crypto.randomUUID(),
+                                projectId: project.id,
+                                category: category,
+                                costType: 'material',
+                                notes: '',
+                                originalBudget: originalBudget,
+                                approvedCOBudget: 0,
+                                committedCost: 0,
+                                projectedCost: originalBudget,
+                            }
+                        })
+                        .filter((item): item is BudgetItem => item !== null);
                     
-                    appState.setBudgetItems(current => [...current, ...newBudgetItems]);
+                    if (newBudgetItems.length > 0) {
+                        appState.setBudgetItems(current => [...current, ...newBudgetItems]);
+                        toast({
+                            title: "Import Successful",
+                            description: `${newBudgetItems.length} budget items have been imported.`,
+                        });
+                    } else {
+                        toast({
+                            title: "Import Warning",
+                            description: "No valid budget items could be found in the file.",
+                            variant: "destructive"
+                        });
+                    }
 
-                    toast({
-                        title: "Import Successful",
-                        description: `${newBudgetItems.length} budget items have been imported.`,
-                    });
                 } catch (error) {
                     console.error("Error importing budget:", error);
                     toast({
                         title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns (Category, Cost Type, Notes, Original Budget).",
+                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file.",
                         variant: "destructive",
                     });
                 }
@@ -381,9 +408,3 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
-
-    
-
-    
-
-    
