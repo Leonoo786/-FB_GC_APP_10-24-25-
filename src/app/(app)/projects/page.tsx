@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -21,9 +21,14 @@ export default function ProjectsPage() {
     const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
+    const [hasMounted, setHasMounted] = useState(false);
 
-    if (!appState) {
-        return <div>Loading...</div>; // Or some other loading state
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!appState || !hasMounted) {
+        return <div>Loading...</div>; // Or some other loading state/skeleton
     }
     
     const { projects, setProjects } = appState;
