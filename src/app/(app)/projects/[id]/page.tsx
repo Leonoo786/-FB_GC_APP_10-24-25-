@@ -1,4 +1,5 @@
 
+
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -32,6 +33,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const [categoryFilter, setCategoryFilter] = useState('all');
+    const [sortOrder, setSortOrder] = useState('notes-asc');
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -46,8 +48,22 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         if (categoryFilter !== 'all') {
             items = items.filter(item => item.category === categoryFilter);
         }
+
+        const [key, direction] = sortOrder.split('-');
+        if (key === 'notes' && (direction === 'asc' || direction === 'desc')) {
+            items.sort((a, b) => {
+                const noteA = a.notes || '';
+                const noteB = b.notes || '';
+                if (direction === 'asc') {
+                    return noteA.localeCompare(noteB);
+                } else {
+                    return noteB.localeCompare(noteA);
+                }
+            });
+        }
+
         return items;
-    }, [budgetItems, project.id, categoryFilter]);
+    }, [budgetItems, project.id, categoryFilter, sortOrder]);
 
     const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
 
@@ -78,9 +94,19 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0), // This might need adjustment based on desired logic
                 }
             }
-        }).sort((a,b) => a.category.localeCompare(b.category));
+        }).sort((a,b) => {
+            const [key, direction] = sortOrder.split('-');
+            if (key === 'notes' && (direction === 'asc' || direction === 'desc')) {
+                 if (direction === 'asc') {
+                    return a.category.localeCompare(b.category);
+                } else {
+                    return b.category.localeCompare(a.category);
+                }
+            }
+            return a.category.localeCompare(b.category);
+        });
 
-    }, [projectBudgetItems, showGroupByCategory, projectExpenses]);
+    }, [projectBudgetItems, showGroupByCategory, projectExpenses, sortOrder]);
     
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -152,7 +178,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     };
                     
                     const importedItems = rows.map((row) => {
-                        if (!row || row.length < 4) return null;
+                        if (!row || row.length === 0) return null;
             
                         const notes = row[0] ? String(row[0]).trim() : '';
                         const category = row[1] ? String(row[1]).trim() : '';
@@ -300,6 +326,15 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                             {category.name}
                                             </SelectItem>
                                         ))}
+                                        </SelectContent>
+                                    </Select>
+                                     <Select value={sortOrder} onValueChange={setSortOrder}>
+                                        <SelectTrigger className="w-full sm:w-[180px]">
+                                            <SelectValue placeholder="Sort by..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="notes-asc">Notes (A-Z)</SelectItem>
+                                            <SelectItem value="notes-desc">Notes (Z-A)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <Button variant="outline" onClick={handleImportClick}>
@@ -454,3 +489,4 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
