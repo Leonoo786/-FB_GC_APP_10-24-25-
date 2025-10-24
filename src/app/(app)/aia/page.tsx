@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,42 +32,94 @@ import { AppStateContext } from '@/context/app-state-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Download, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
+import { useForm, Controller } from 'react-hook-form';
+import type { ChangeOrder } from '@/lib/types';
+
+type FormValues = {
+    applicationNo: string;
+    periodTo: Date;
+    architectName: string;
+    totalCompletedAndStored: number;
+    retainagePercentage: number;
+    storedMaterialRetainagePercentage: number;
+    previousCertificates: number;
+    amountCertified: number;
+};
 
 export default function AIAPage() {
   const appState = useContext(AppStateContext);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
+  const { control, watch, setValue, getValues } = useForm<FormValues>({
+    defaultValues: {
+      applicationNo: '',
+      architectName: '',
+      totalCompletedAndStored: 0,
+      retainagePercentage: 10,
+      storedMaterialRetainagePercentage: 10,
+      previousCertificates: 0,
+      amountCertified: 0,
+      periodTo: new Date(),
+    }
+  });
+
+  const formValues = watch();
+
+  useEffect(() => {
+    if (selectedProjectId && appState) {
+        const project = appState.projects.find(p => p.id === selectedProjectId);
+        if (project) {
+            setValue('totalCompletedAndStored', 0);
+            setValue('previousCertificates', 0);
+        }
+    }
+  }, [selectedProjectId, appState, setValue]);
+
+
   if (!appState) {
     return <div>Loading...</div>;
   }
 
-  const { projects } = appState;
+  const { projects, companyName, changeOrders } = appState;
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
-  const aiaTableRows = [
-    { id: 1, description: '1. Original Contract Sum', value: 1000000.00 },
-    { id: 2, description: '2. Net change by Change Orders', value: 50000.00 },
-    { id: 3, description: '3. Contract Sum to Date (Line 1 ± 2)', value: 1050000.00 },
-    { id: 4, description: '4. Total Completed & Stored to Date', value: 525000.00 },
-    { id: 5, description: '5. Retainage', subDescription: 'a. 10% of Completed Work', value: 52500.00 },
-    { id: 6, description: null, subDescription: 'b. 10% of Stored Material', value: 0.00 },
-    { id: 7, description: '6. Total Retainage (Lines 5a + 5b)', value: 52500.00 },
-    { id: 8, description: '7. Total Earned Less Retainage (Line 4 - Line 6 Total)', value: 472500.00 },
-    { id: 9, description: '8. Less Previous Certificates for Payment', value: 200000.00 },
-    { id: 10, description: '9. Current Payment Due', value: 272500.00 },
-    { id: 11, description: '10. Balance to Finish, Including Retainage', value: 577500.00 },
-  ];
-  
-  const changeOrderRows = [
-    { date: '2024-02-15', description: 'CO-001: Additional electrical outlets in main hall', additions: 25000.00, deductions: 0.00 },
-    { date: '2024-03-01', description: 'CO-002: Owner requested change to lobby finishes', additions: 30000.00, deductions: 0.00 },
-    { date: '2024-03-20', description: 'CO-003: Credit for switching to alternative flooring', additions: 0.00, deductions: 5000.00 },
-  ];
+  const projectChangeOrders: ChangeOrder[] = selectedProject
+    ? changeOrders.filter(co => co.projectId === selectedProject.id)
+    : [];
 
-  const totalAdditions = changeOrderRows.reduce((sum, co) => sum + co.additions, 0);
-  const totalDeductions = changeOrderRows.reduce((sum, co) => sum + co.deductions, 0);
+  const totalAdditions = projectChangeOrders.reduce((sum, co) => co.status === 'Approved' || co.status === 'Executed' ? sum + co.totalRequest : sum, 0);
+  const totalDeductions = 0; // Assuming deductions aren't tracked this way, adjust if they are.
+  const netChangeByChangeOrders = totalAdditions - totalDeductions;
+
+  const originalContractSum = selectedProject?.revisedContract ?? 0;
+  const contractSumToDate = originalContractSum + netChangeByChangeOrders;
+  const totalCompletedAndStored = formValues.totalCompletedAndStored || 0;
+  
+  const retainageOfCompletedWork = totalCompletedAndStored * (formValues.retainagePercentage / 100);
+  const retainageOfStoredMaterial = 0; // Assuming 0 for now
+  const totalRetainage = retainageOfCompletedWork + retainageOfStoredMaterial;
+  
+  const totalEarnedLessRetainage = totalCompletedAndStored - totalRetainage;
+  const lessPreviousCertificates = formValues.previousCertificates || 0;
+  const currentPaymentDue = totalEarnedLessRetainage - lessPreviousCertificates;
+  const balanceToFinish = contractSumToDate - totalEarnedLessRetainage;
+
+
+  const aiaTableRows = [
+    { id: 1, description: '1. Original Contract Sum', value: originalContractSum },
+    { id: 2, description: '2. Net change by Change Orders', value: netChangeByChangeOrders },
+    { id: 3, description: '3. Contract Sum to Date (Line 1 ± 2)', value: contractSumToDate },
+    { id: 4, description: '4. Total Completed & Stored to Date', isInput: true, fieldName: 'totalCompletedAndStored', value: totalCompletedAndStored },
+    { id: 5, description: '5. Retainage', subDescription: 'a. % of Completed Work', value: retainageOfCompletedWork, isRetainageInput: true, fieldName: 'retainagePercentage' },
+    { id: 6, description: null, subDescription: 'b. % of Stored Material', value: retainageOfStoredMaterial, isRetainageInput: true, fieldName: 'storedMaterialRetainagePercentage' },
+    { id: 7, description: '6. Total Retainage (Lines 5a + 5b)', value: totalRetainage },
+    { id: 8, description: '7. Total Earned Less Retainage (Line 4 - Line 6 Total)', value: totalEarnedLessRetainage },
+    { id: 9, description: '8. Less Previous Certificates for Payment', isInput: true, fieldName: 'previousCertificates', value: lessPreviousCertificates },
+    { id: 10, description: '9. Current Payment Due', value: currentPaymentDue },
+    { id: 11, description: '10. Balance to Finish, Including Retainage', value: balanceToFinish },
+  ];
 
   return (
     <div className="space-y-6">
@@ -112,16 +164,22 @@ export default function AIAPage() {
                 </div>
                 <div>
                     <Label>From (Contractor)</Label>
-                    <Input readOnly value={appState.companyName || 'N/A'} />
+                    <Input readOnly value={companyName || 'N/A'} />
                 </div>
                 <div>
                     <Label>Project</Label>
                     <Input readOnly value={selectedProject?.name || 'N/A'} />
                 </div>
-                <div>
-                    <Label>Via (Architect)</Label>
-                    <Input placeholder="Enter Architect Name" />
-                </div>
+                 <Controller
+                    name="architectName"
+                    control={control}
+                    render={({ field }) => (
+                        <div>
+                            <Label>Via (Architect)</Label>
+                            <Input placeholder="Enter Architect Name" {...field} />
+                        </div>
+                    )}
+                 />
              </div>
         </CardContent>
          <CardHeader>
@@ -130,21 +188,33 @@ export default function AIAPage() {
          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="application-no">Application No.</Label>
-                <Input id="application-no" placeholder="e.g., 003" />
+                <Controller
+                    name="applicationNo"
+                    control={control}
+                    render={({ field }) => (
+                        <Input id="application-no" placeholder="e.g., 003" {...field} />
+                    )}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="period-to">Period To</Label>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            <span>Pick a date</span>
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" initialFocus />
-                    </PopoverContent>
-                </Popover>
+                <Controller
+                    name="periodTo"
+                    control={control}
+                    render={({ field }) => (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {field.value && isValid(field.value) ? format(field.value, 'PP') : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            </PopoverContent>
+                        </Popover>
+                    )}
+                />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="contract-date">Contract Date</Label>
@@ -177,12 +247,41 @@ export default function AIAPage() {
                 <TableRow key={row.id}>
                   <TableCell className={cn("font-medium", !row.description && "pl-8")}>
                     {row.description || row.subDescription}
+                    {row.isRetainageInput && (
+                        <Controller
+                            name={row.fieldName as keyof FormValues}
+                            control={control}
+                            render={({ field }) => (
+                                <Input 
+                                    type="number" 
+                                    className="w-16 h-6 inline-block ml-2 px-1 text-center"
+                                    {...field}
+                                    onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                                />
+                            )}
+                        />
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {row.value.toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                    })}
+                    {row.isInput ? (
+                        <Controller
+                            name={row.fieldName as keyof FormValues}
+                            control={control}
+                            render={({ field }) => (
+                                <Input 
+                                    type="number" 
+                                    className="w-48 h-8 ml-auto text-right"
+                                    {...field}
+                                    onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                                />
+                            )}
+                        />
+                    ) : (
+                        row.value.toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                        })
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -198,31 +297,25 @@ export default function AIAPage() {
              <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Date</TableHead>
+                        <TableHead>CO #</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Additions</TableHead>
-                        <TableHead className="text-right">Deductions</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {changeOrderRows.map((co, index) => (
-                        <TableRow key={index}>
-                            <TableCell>{co.date}</TableCell>
+                    {projectChangeOrders.map((co) => (
+                        <TableRow key={co.id}>
+                            <TableCell>{co.coNumber}</TableCell>
                             <TableCell>{co.description}</TableCell>
-                            <TableCell className="text-right">{co.additions.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
-                            <TableCell className="text-right text-destructive">({co.deductions.toLocaleString('en-US', { style: 'currency', currency: 'USD' })})</TableCell>
+                            <TableCell className="text-right">{co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                         </TableRow>
                     ))}
+                    {projectChangeOrders.length === 0 && <TableRow><TableCell colSpan={3} className="text-center h-24">No approved change orders for this project.</TableCell></TableRow>}
                 </TableBody>
                 <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={2} className="font-bold">Totals</TableCell>
-                        <TableCell className="text-right font-bold">{totalAdditions.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
-                        <TableCell className="text-right font-bold text-destructive">({totalDeductions.toLocaleString('en-US', { style: 'currency', currency: 'USD' })})</TableCell>
-                    </TableRow>
                      <TableRow>
-                        <TableCell colSpan={2} className="font-bold">Net Change by Change Orders</TableCell>
-                        <TableCell colSpan={2} className="text-right font-bold">{(totalAdditions - totalDeductions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                        <TableCell colSpan={2} className="font-bold text-right">Net Change by Change Orders</TableCell>
+                        <TableCell className="text-right font-bold">{(netChangeByChangeOrders).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                     </TableRow>
                 </TableFooter>
              </Table>
@@ -239,11 +332,22 @@ export default function AIAPage() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label>Amount Certified</Label>
-                    <Input placeholder="$0.00" />
+                    <Controller
+                        name="amountCertified"
+                        control={control}
+                        render={({ field }) => (
+                           <Input 
+                                type="number" 
+                                placeholder="$0.00" 
+                                {...field}
+                                onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
+                           />
+                        )}
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label>Architect Signature</Label>
-                    <Input disabled />
+                    <Input disabled placeholder='Signature required after printing' />
                 </div>
              </div>
           </CardContent>
