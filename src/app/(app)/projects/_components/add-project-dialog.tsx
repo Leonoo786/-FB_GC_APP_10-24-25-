@@ -55,6 +55,7 @@ const formSchema = z.object({
   progress: z.coerce.number().min(0).max(100),
   startDate: z.date({ required_error: 'Please select a start date.' }),
   endDate: z.date({ required_error: 'Please select an end date.' }),
+  revisedContract: z.coerce.number().min(0, "Contract amount must be a positive number."),
 }).refine(data => data.endDate >= data.startDate, {
     message: "End date cannot be before start date.",
     path: ["endDate"],
@@ -95,6 +96,7 @@ export function AddEditProjectDialog({
                 progress: project.percentComplete,
                 startDate: new Date(project.startDate),
                 endDate: new Date(project.endDate),
+                revisedContract: project.revisedContract,
             });
             setImagePreview(project.imageUrl);
         } else {
@@ -108,6 +110,7 @@ export function AddEditProjectDialog({
                 description: '',
                 status: 'Planning',
                 progress: 0,
+                revisedContract: 0,
             });
             setImagePreview(null);
         }
@@ -152,7 +155,7 @@ export function AddEditProjectDialog({
       percentComplete: data.progress,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      revisedContract: isEditing && project ? project.revisedContract : 0,
+      revisedContract: data.revisedContract,
       imageUrl: imageUrl,
       imageHint: 'custom project',
     };
@@ -290,6 +293,20 @@ export function AddEditProjectDialog({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Project details and scope..." rows={4} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             <FormField
+              control={form.control}
+              name="revisedContract"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contract Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
