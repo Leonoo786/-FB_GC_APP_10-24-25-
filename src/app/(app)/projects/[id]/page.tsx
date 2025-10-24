@@ -82,6 +82,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
 
             const originalBudget = items.reduce((sum, item) => sum + item.originalBudget, 0);
             const approvedCOBudget = items.reduce((sum, item) => sum + item.approvedCOBudget, 0);
+            const projectedCost = items.reduce((sum, item) => sum + item.projectedCost, 0);
 
             return {
                 category,
@@ -90,8 +91,8 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     originalBudget,
                     approvedCOBudget,
                     revisedBudget: originalBudget + approvedCOBudget,
-                    committedCost: committedCost,
-                    projectedCost: items.reduce((sum, item) => sum + item.projectedCost, 0), // This might need adjustment based on desired logic
+                    committedCost,
+                    projectedCost,
                 }
             }
         }).sort((a,b) => {
@@ -166,26 +167,26 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const worksheet = workbook.Sheets[sheetName];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false }) as any[][];
 
-                    const parseAmount = (value: any): number => {
-                        if (value === null || value === undefined) return 0;
-                        if (typeof value === 'number') return value;
-                        if (typeof value === 'string') {
-                          const cleaned = value.replace(/[^0-9.,$]+/g, '');
-                          const num = parseFloat(cleaned);
-                          return isNaN(num) ? 0 : num;
-                        }
-                        return 0;
-                    };
-                    
                     const importedItems = rows.map((row) => {
-                        if (!row || row.length === 0) return null;
+                        if (!row || row.length < 4) return null;
             
                         const notes = row[0] ? String(row[0]).trim() : '';
                         const category = row[1] ? String(row[1]).trim() : '';
-            
-                        if (!notes && !category) {
+                        
+                        if (!notes || !category) {
                             return null;
                         }
+
+                        const parseAmount = (value: any): number => {
+                            if (value === null || value === undefined) return 0;
+                            if (typeof value === 'number') return value;
+                            if (typeof value === 'string') {
+                              const cleaned = value.replace(/[^0-9.]/g, '');
+                              const num = parseFloat(cleaned);
+                              return isNaN(num) ? 0 : num;
+                            }
+                            return 0;
+                        };
             
                         const originalBudget = parseAmount(row[3]);
             
@@ -368,9 +369,9 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         disabled={showGroupByCategory}
                                     />
                                 </TableHead>
-                                <TableHead>Notes</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Cost Type</TableHead>
+                                <TableHead>{showGroupByCategory ? 'Category' : 'Notes'}</TableHead>
+                                {!showGroupByCategory && <TableHead>Category</TableHead>}
+                                {!showGroupByCategory && <TableHead>Cost Type</TableHead>}
                                 <TableHead className="text-right">Original Budget</TableHead>
                                 <TableHead className="text-right">Approved COs</TableHead>
                                 <TableHead className="text-right">Revised Budget</TableHead>
@@ -382,22 +383,20 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         {showGroupByCategory && groupedBudgetItems ? (
                             <TableBody>
                                 {groupedBudgetItems.map(({ category, items, subtotals }) => (
-                                    <React.Fragment key={category}>
-                                        <TableRow className="bg-secondary hover:bg-secondary">
-                                            <TableCell></TableCell>
-                                            <TableCell colSpan={3} className="font-bold text-secondary-foreground">{category}</TableCell>
-                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right font-bold text-secondary-foreground">
-                                                <Button variant="link" className="p-0 h-auto text-secondary-foreground" onClick={() => handleTransactionsClick(category)}>
-                                                    ${subtotals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell className="text-right font-bold text-secondary-foreground">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell></TableCell>
-                                        </TableRow>
-                                    </React.Fragment>
+                                    <TableRow key={category} className="bg-secondary hover:bg-secondary/80 font-bold">
+                                        <TableCell></TableCell>
+                                        <TableCell>{category}</TableCell>
+                                        <TableCell className="text-right">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="link" className="p-0 h-auto text-secondary-foreground" onClick={() => handleTransactionsClick(category)}>
+                                                ${subtotals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </Button>
+                                        </TableCell>
+                                        <TableCell className="text-right">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
                                 ))}
                             </TableBody>
                         ) : (
@@ -474,7 +473,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         )}
                         <TableFooter>
                             <TableRow>
-                                <TableCell colSpan={4} className="font-bold">Totals</TableCell>
+                                <TableCell colSpan={showGroupByCategory ? 2 : 4} className="font-bold">Totals</TableCell>
                                 <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -489,4 +488,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
 
