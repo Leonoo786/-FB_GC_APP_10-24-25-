@@ -136,10 +136,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         return;
                     }
 
-                    // Skip header row if it looks like a header
-                    const firstRow = rows[0];
-                    const likelyHeader = typeof firstRow[0] === 'string' && typeof firstRow[1] === 'string' && isNaN(parseAmount(firstRow[1]));
-                    const dataRows = likelyHeader ? rows.slice(1) : rows;
+                    const dataRows = rows;
 
                     const newBudgetItems: BudgetItem[] = dataRows.map((row: any) => {
                         const category = row[0] || 'Uncategorized';
@@ -419,3 +416,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
 
 
 
+
+
+    
