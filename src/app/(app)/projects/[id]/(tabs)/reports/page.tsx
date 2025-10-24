@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext } from 'react';
+import { useState, use, useContext, useMemo } from 'react';
 import { notFound } from 'next/navigation';
 import {
   Card,
@@ -23,15 +23,15 @@ import { Button } from '@/components/ui/button';
 import { AppStateContext } from '@/context/app-state-context';
 import { TransactionsDialog } from '../../_components/transactions-dialog';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
 
 export default function ProjectReportsPage({
-  params,
+  params: paramsProp,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const params = use(paramsProp);
   
   const appState = useContext(AppStateContext);
   

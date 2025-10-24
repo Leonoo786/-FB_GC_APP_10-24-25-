@@ -44,9 +44,10 @@ import {
 } from '@/components/ui/accordion';
 import { AppStateContext } from '@/context/app-state-context';
 
-export default function ProjectRFIsPage({ params }: { params: { id: string } }) {
+export default function ProjectRFIsPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
   const [isAddRfiOpen, setIsAddRfiOpen] = useState(false);
   const appState = useContext(AppStateContext);
+  const params = use(paramsProp);
 
   if (!appState) {
     return <div>Loading...</div>
