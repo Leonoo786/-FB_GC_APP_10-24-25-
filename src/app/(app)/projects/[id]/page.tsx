@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Button } from "@/components/ui/button";
 import React, { useState, use, useContext, useRef, useMemo } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, Upload, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Upload, Trash2, ClipboardPaste } from "lucide-react";
 import { AddEditBudgetItemDialog } from "./_components/add-edit-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import type { BudgetItem } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PasteBudgetDialog } from "./_components/paste-budget-dialog";
 
 const parseAmount = (value: any): number => {
     if (typeof value === 'number') {
@@ -35,6 +36,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -125,6 +127,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                     const newBudgetItems: BudgetItem[] = rows
+                        .slice(1) // Assuming first row might be headers, or to be safe
                         .map((row: any) => {
                             if (!row || row.length === 0) return null;
                             
@@ -213,6 +216,11 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                 budgetItem={selectedBudgetItem}
                 onSave={handleSaveItem}
             />
+            <PasteBudgetDialog 
+                open={pasteDialogOpen}
+                onOpenChange={setPasteDialogOpen}
+                projectId={project.id}
+            />
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
@@ -250,6 +258,10 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                         <Label htmlFor="group-by-category">Group by Category</Label>
                                     </div>
+                                    <Button variant="outline" onClick={() => setPasteDialogOpen(true)}>
+                                        <ClipboardPaste className="mr-2 h-4 w-4" />
+                                        Paste
+                                    </Button>
                                     <Button variant="outline" onClick={handleImportClick}>
                                         <Upload className="mr-2 h-4 w-4" />
                                         Import
