@@ -18,7 +18,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from "@/lib/utils";
 import { TransactionsDialog } from "./_components/transactions-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PasteBudgetDialog } from "./_components/paste-budget-dialog";
 
 export default function ProjectBudgetPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
     const params = use(paramsProp);
@@ -27,7 +26,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [transactionsDialogOpen, setTransactionsDialogOpen] = useState(false);
-    const [pasteDialogOpen, setPasteDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null);
     const [showGroupByCategory, setShowGroupByCategory] = useState(false);
@@ -148,40 +146,46 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         return null;
                     };
 
-                    const newBudgetItems: BudgetItem[] = rows.slice(0).map((row: any) => {
-                        if (!row || row.length === 0 || row.every(cell => cell === null || cell === '')) return null;
-
-                        const notes = row[0] || '';
-                        const category = row[1] || 'Uncategorized';
-                        
-                        let originalBudget = 0;
-                        for (let i = 2; i < row.length; i++) {
-                            const amount = parseAmount(row[i]);
-                            if (amount !== null) {
-                                originalBudget = amount;
-                                break;
+                    const newBudgetItems: BudgetItem[] = rows
+                        .filter(row => Array.isArray(row) && row.length > 0 && row.some(cell => cell !== null && cell !== ''))
+                        .map((row: any) => {
+                            const notes = row[0] || '';
+                            const category = row[1] || 'Uncategorized';
+                            
+                            // Ensure category is a valid string before proceeding
+                            if (typeof category !== 'string' || category.trim() === '') {
+                                return null;
                             }
-                        }
 
-                        let costType: 'labor' | 'material' | 'both' = 'both';
-                        const notesLower = String(notes).toLowerCase();
-                        if (notesLower.includes('labor')) {
-                            costType = 'labor';
-                        } else if (notesLower.includes('material')) {
-                            costType = 'material';
-                        }
-                        
-                        return {
-                            id: crypto.randomUUID(),
-                            projectId: project.id,
-                            category: category,
-                            costType: costType,
-                            notes: notes,
-                            originalBudget: originalBudget,
-                            approvedCOBudget: 0,
-                            committedCost: 0,
-                            projectedCost: originalBudget,
-                        };
+                            let originalBudget = 0;
+                            // Scan from the third column onwards for a valid number
+                            for (let i = 2; i < row.length; i++) {
+                                const amount = parseAmount(row[i]);
+                                if (amount !== null) {
+                                    originalBudget = amount;
+                                    break;
+                                }
+                            }
+
+                            let costType: 'labor' | 'material' | 'both' = 'both';
+                            const notesLower = String(notes).toLowerCase();
+                            if (notesLower.includes('labor')) {
+                                costType = 'labor';
+                            } else if (notesLower.includes('material')) {
+                                costType = 'material';
+                            }
+                            
+                            return {
+                                id: crypto.randomUUID(),
+                                projectId: project.id,
+                                category: category,
+                                costType: costType,
+                                notes: notes,
+                                originalBudget: originalBudget,
+                                approvedCOBudget: 0,
+                                committedCost: 0,
+                                projectedCost: originalBudget,
+                            };
                     }).filter((item): item is BudgetItem => item !== null);
                     
                     if (newBudgetItems.length > 0) {
@@ -193,7 +197,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     } else {
                         toast({
                             title: "Import Warning",
-                            description: "No valid data found to import.",
+                            description: "No valid data found to import. Please ensure your file has at least two columns with data.",
                             variant: 'destructive'
                         });
                     }
@@ -242,11 +246,6 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                 projectId={project.id}
                 budgetItem={selectedBudgetItem}
                 onSave={handleSaveItem}
-            />
-             <PasteBudgetDialog 
-                open={pasteDialogOpen}
-                onOpenChange={setPasteDialogOpen}
-                projectId={project.id}
             />
              {selectedCategory && (
                 <TransactionsDialog
