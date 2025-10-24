@@ -125,43 +125,21 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
-                    const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    const json = XLSX.utils.sheet_to_json<any>(worksheet);
 
-                    const newBudgetItems: BudgetItem[] = rows
-                        .slice(1) // Assuming first row might be headers, or to be safe
-                        .map((row: any) => {
-                            if (!row || row.length === 0) return null;
-                            
-                            const category = row[0] || 'Uncategorized';
-                            let originalBudget = 0;
-
-                            // Find the first valid number in the row to use as budget
-                            for(let i = 1; i < row.length; i++) {
-                                const parsed = parseAmount(row[i]);
-                                if (parsed > 0) {
-                                    originalBudget = parsed;
-                                    break;
-                                }
-                            }
-                            
-                            // If no valid category or budget, skip row
-                            if (category === 'Uncategorized' || originalBudget === 0) {
-                                return null;
-                            }
-
-                            return {
-                                id: crypto.randomUUID(),
-                                projectId: project.id,
-                                category: category,
-                                costType: 'material',
-                                notes: '',
-                                originalBudget: originalBudget,
-                                approvedCOBudget: 0,
-                                committedCost: 0,
-                                projectedCost: originalBudget,
-                            }
-                        })
-                        .filter((item): item is BudgetItem => item !== null);
+                    const newBudgetItems: BudgetItem[] = json.map((row: any) => {
+                        return {
+                            id: crypto.randomUUID(),
+                            projectId: project.id,
+                            category: row['Category'] || 'Uncategorized',
+                            costType: ['labor', 'material', 'both'].includes(row['Cost Type']?.toLowerCase()) ? row['Cost Type'].toLowerCase() : 'material',
+                            notes: row['Notes'] || '',
+                            originalBudget: parseAmount(row['Original Budget']),
+                            approvedCOBudget: parseAmount(row['Approved CO Budget']),
+                            committedCost: parseAmount(row['Committed Cost']),
+                            projectedCost: parseAmount(row['Projected Cost']) || parseAmount(row['Original Budget']),
+                        };
+                    });
                     
                     if (newBudgetItems.length > 0) {
                         appState.setBudgetItems(current => [...current, ...newBudgetItems]);
@@ -181,7 +159,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     console.error("Error importing budget:", error);
                     toast({
                         title: "Import Failed",
-                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file.",
+                        description: "There was an error processing the file. Please ensure it is a valid Excel or CSV file with the correct columns.",
                         variant: "destructive",
                     });
                 }
@@ -421,4 +399,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
+
 
