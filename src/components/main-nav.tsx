@@ -19,6 +19,7 @@ import {
   ChevronDown,
   TrendingUp,
   Database,
+  FileText,
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -43,6 +44,7 @@ const mainNavLinks = [
   { href: "/daily-reports", label: "Daily Reports", icon: ClipboardCheck },
   { href: "/issues", label: "Issues", icon: AlertCircle },
   { href: "/chat", label: "Chat", icon: MessageCircle },
+  { href: "/aia", label: "AIA", icon: FileText },
 ];
 
 const estimatingLinks = [
@@ -136,4 +138,3 @@ export function MainNav() {
     </SidebarMenu>
   );
 }
-
