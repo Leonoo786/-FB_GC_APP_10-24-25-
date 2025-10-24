@@ -52,6 +52,7 @@ export default function ProjectExpensesPage({
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc'});
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [vendorFilter, setVendorFilter] = useState('all');
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
@@ -65,11 +66,24 @@ export default function ProjectExpensesPage({
     (exp) => exp.projectId === params.id
   ) : [];
 
+  const uniqueVendors = useMemo(() => {
+    const vendorSet = new Set<string>();
+    projectExpenses.forEach(exp => {
+      if (exp.vendorName) {
+        vendorSet.add(exp.vendorName);
+      }
+    });
+    return Array.from(vendorSet).sort();
+  }, [projectExpenses]);
+
   const sortedExpenses = useMemo(() => {
     let sortableItems = [...projectExpenses];
     
     if (categoryFilter !== 'all') {
       sortableItems = sortableItems.filter(exp => exp.category === categoryFilter);
+    }
+    if (vendorFilter !== 'all') {
+      sortableItems = sortableItems.filter(exp => exp.vendorName === vendorFilter);
     }
     
     if (sortConfig !== null) {
@@ -88,7 +102,7 @@ export default function ProjectExpensesPage({
       });
     }
     return sortableItems;
-  }, [projectExpenses, sortConfig, categoryFilter]);
+  }, [projectExpenses, sortConfig, categoryFilter, vendorFilter]);
 
   const requestSort = (key: keyof Expense) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -261,7 +275,7 @@ export default function ProjectExpensesPage({
                 Log and track daily expenses for this project.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
               {selectedRowKeys.length > 0 ? (
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -296,6 +310,19 @@ export default function ProjectExpensesPage({
                       {budgetCategories.map((category) => (
                         <SelectItem key={category.id} value={category.name}>
                           {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                   <Select value={vendorFilter} onValueChange={setVendorFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="All Vendors" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Vendors</SelectItem>
+                      {uniqueVendors.map((vendor) => (
+                        <SelectItem key={vendor} value={vendor}>
+                          {vendor}
                         </SelectItem>
                       ))}
                     </SelectContent>
