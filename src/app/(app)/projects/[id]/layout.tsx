@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use, Suspense, useContext } from "react";
+import { use, Suspense, useContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
@@ -23,6 +23,11 @@ function ProjectDetailLayoutContent({
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     if (!appState) {
         // This can be a loading spinner
@@ -60,6 +65,10 @@ function ProjectDetailLayoutContent({
         });
         router.push('/projects');
     };
+    
+    if (!hasMounted) {
+        return <div>Loading...</div>
+    }
 
     return (
         <div className="flex flex-col gap-6">
