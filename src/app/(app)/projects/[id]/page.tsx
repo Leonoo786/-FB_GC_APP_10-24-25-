@@ -144,34 +144,25 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         if (value === null || value === undefined) return 0;
                         if (typeof value === 'number') return value;
                         if (typeof value === 'string') {
-                          const cleaned = value.replace(/[^0-9.-]+/g, '');
+                          const cleaned = value.replace(/[^0-9.,$]+/g, '');
                           const num = parseFloat(cleaned);
                           return isNaN(num) ? 0 : num;
                         }
                         return 0;
                     };
-
-                    const newBudgetItems: BudgetItem[] = rows.map((row: any[]): BudgetItem | null => {
-                        if (!row || row.length === 0) return null;
                     
+                    const importedItems = rows.map((row) => {
+                        if (!row || row.length < 4) return null;
+            
                         const notes = row[0] ? String(row[0]).trim() : '';
                         const category = row[1] ? String(row[1]).trim() : '';
-                    
-                        // Strictest validation: Only import if the first column has text.
-                        if (notes === '') {
+            
+                        if (!notes && !category) {
                             return null;
                         }
-
-                        // Scan for the first valid number starting from the 3rd column (index 2)
-                        let originalBudget = 0;
-                        for (let i = 2; i < row.length; i++) {
-                            const parsed = parseAmount(row[i]);
-                            if (parsed > 0) { // Take the first non-zero number
-                                originalBudget = parsed;
-                                break;
-                            }
-                        }
-
+            
+                        const originalBudget = parseAmount(row[3]);
+            
                         let costType: 'labor' | 'material' | 'both' = 'both';
                         const notesLower = notes.toLowerCase();
                         if (notesLower.includes('labor')) {
@@ -179,7 +170,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         } else if (notesLower.includes('material')) {
                             costType = 'material';
                         }
-                        
+            
                         return {
                             id: crypto.randomUUID(),
                             projectId: project.id,
@@ -192,12 +183,13 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                             projectedCost: originalBudget,
                         };
                     }).filter((item): item is BudgetItem => item !== null);
-                    
-                    if (newBudgetItems.length > 0) {
-                        appState.setBudgetItems(current => [...current, ...newBudgetItems]);
+
+
+                    if (importedItems.length > 0) {
+                        appState.setBudgetItems(current => [...current, ...importedItems]);
                         toast({
                             title: "Import Successful",
-                            description: `${newBudgetItems.length} budget items have been imported.`,
+                            description: `${importedItems.length} budget items have been imported.`,
                         });
                     } else {
                         toast({
@@ -303,7 +295,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                                         </SelectTrigger>
                                         <SelectContent>
                                         <SelectItem value="all">All Categories</SelectItem>
-                                        {budgetCategories.map((category) => (
+                                        {budgetCategories.sort((a,b) => a.name.localeCompare(b.name)).map((category) => (
                                             <SelectItem key={category.id} value={category.name}>
                                             {category.name}
                                             </SelectItem>
@@ -462,5 +454,3 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
-
-    
