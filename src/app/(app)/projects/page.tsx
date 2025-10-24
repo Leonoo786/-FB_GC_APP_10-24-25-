@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useContext, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { Edit, MoreVertical, PlusCircle, Trash } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { AddProjectDialog } from './_components/add-project-dialog';
+import { AddEditProjectDialog } from './_components/add-project-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -18,7 +19,8 @@ import type { Project } from '@/lib/types';
 
 
 export default function ProjectsPage() {
-    const [isAddProjectOpen, setIsAddProjectOpen] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
     const [hasMounted, setHasMounted] = useState(false);
@@ -38,12 +40,15 @@ export default function ProjectsPage() {
         'Planning': 'secondary',
         'Completed': 'outline',
     } as const;
+    
+    const handleNewProject = () => {
+        setSelectedProject(null);
+        setDialogOpen(true);
+    };
 
-    const handleEdit = (projectName: string) => {
-        toast({
-            title: `Action: Edit`,
-            description: `Edit action for project "${projectName}" was triggered.`,
-        });
+    const handleEdit = (project: Project) => {
+        setSelectedProject(project);
+        setDialogOpen(true);
     };
     
     const handleDelete = (projectId: string, projectName: string) => {
@@ -57,7 +62,11 @@ export default function ProjectsPage() {
 
     return (
         <>
-            <AddProjectDialog open={isAddProjectOpen} onOpenChange={setIsAddProjectOpen} />
+            <AddEditProjectDialog 
+                open={dialogOpen} 
+                onOpenChange={setDialogOpen}
+                project={selectedProject}
+            />
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -66,7 +75,7 @@ export default function ProjectsPage() {
                             Manage all your construction projects from start to finish.
                         </p>
                     </div>
-                    <Button onClick={() => setIsAddProjectOpen(true)}>
+                    <Button onClick={handleNewProject}>
                         <PlusCircle className="mr-2" />
                         New Project
                     </Button>
@@ -102,7 +111,7 @@ export default function ProjectsPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleEdit(project.name)}>
+                                                <DropdownMenuItem onClick={() => handleEdit(project)}>
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     Edit
                                                 </DropdownMenuItem>

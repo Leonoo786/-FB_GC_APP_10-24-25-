@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -37,9 +38,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
+import Image from 'next/image';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -60,34 +62,74 @@ const formSchema = z.object({
 
 type AddProjectFormValues = z.infer<typeof formSchema>;
 
-export function AddProjectDialog({
+export function AddEditProjectDialog({
   open,
   onOpenChange,
+  project,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  project: Project | null;
 }) {
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
+  const isEditing = !!project;
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
 
   const form = useForm<AddProjectFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-        name: '',
-        client: '',
-        addressStreet: '',
-        city: '',
-        zip: '',
-        description: '',
-        status: 'Planning',
-        progress: 0,
-    }
   });
+
+  useEffect(() => {
+    if (open) {
+        if (isEditing && project) {
+            form.reset({
+                name: project.name,
+                client: project.ownerName,
+                addressStreet: project.addressStreet,
+                city: project.city,
+                zip: project.zip,
+                description: project.description,
+                status: project.status,
+                progress: project.percentComplete,
+                startDate: new Date(project.startDate),
+                endDate: new Date(project.endDate),
+            });
+            setImagePreview(project.imageUrl);
+        } else {
+            form.reset({
+                name: '',
+                client: '',
+                projectImage: undefined,
+                addressStreet: '',
+                city: '',
+                zip: '',
+                description: '',
+                status: 'Planning',
+                progress: 0,
+            });
+            setImagePreview(null);
+        }
+    }
+  }, [project, isEditing, open, form]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      form.setValue('projectImage', event.target.files);
+    }
+  };
 
   const onSubmit = async (data: AddProjectFormValues) => {
     if (!appState) return;
 
-    let imageUrl = 'https://picsum.photos/seed/default/600/400';
+    let imageUrl = project?.imageUrl || 'https://picsum.photos/seed/default/600/400';
     if (data.projectImage && data.projectImage[0]) {
       const file = data.projectImage[0] as File;
       imageUrl = await new Promise((resolve) => {
@@ -97,9 +139,9 @@ export function AddProjectDialog({
       });
     }
     
-    const newProject: Project = {
-      id: crypto.randomUUID(),
-      projectNumber: `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
+    const projectData: Project = {
+      id: isEditing && project ? project.id : crypto.randomUUID(),
+      projectNumber: isEditing && project ? project.projectNumber : `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
       name: data.name,
       ownerName: data.client,
       addressStreet: data.addressStreet || '',
@@ -110,28 +152,31 @@ export function AddProjectDialog({
       percentComplete: data.progress,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
-      revisedContract: 0, // Default value
+      revisedContract: isEditing && project ? project.revisedContract : 0,
       imageUrl: imageUrl,
       imageHint: 'custom project',
     };
 
-    appState.setProjects(currentProjects => [newProject, ...currentProjects]);
+    if (isEditing) {
+        appState.setProjects(currentProjects => currentProjects.map(p => p.id === projectData.id ? projectData : p));
+    } else {
+        appState.setProjects(currentProjects => [projectData, ...currentProjects]);
+    }
     
     toast({
-      title: 'Project Created',
-      description: `Successfully created project: ${data.name}.`,
+      title: `Project ${isEditing ? 'Updated' : 'Created'}`,
+      description: `Successfully ${isEditing ? 'updated' : 'created'} project: ${data.name}.`,
     });
     onOpenChange(false);
-    form.reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Project' : 'Create New Project'}</DialogTitle>
           <DialogDescription>
-            Fill out the details below to create a new construction project.
+            {isEditing ? 'Update the details for this project.' : 'Fill out the details below to create a new construction project.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -159,13 +204,17 @@ export function AddProjectDialog({
                   <FormControl>
                      <div className="flex items-center gap-4">
                         <div className="flex h-24 w-24 items-center justify-center rounded-md border border-dashed bg-secondary">
-                            <Upload className="h-8 w-8 text-muted-foreground" />
+                            {imagePreview ? (
+                                <Image src={imagePreview} alt="Project Preview" width={96} height={96} className="h-full w-full rounded-md object-cover" />
+                            ) : (
+                                <Upload className="h-8 w-8 text-muted-foreground" />
+                            )}
                         </div>
                         <div className='flex-1'>
                              <Input 
                                 type="file" 
                                 accept="image/*" 
-                                onChange={(e) => field.onChange(e.target.files)}
+                                onChange={handleFileChange}
                                 className='w-full'
                              />
                              <p className='text-xs text-muted-foreground mt-1'>Select an image file to upload.</p>
@@ -254,7 +303,7 @@ export function AddProjectDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a status" />
@@ -373,7 +422,7 @@ export function AddProjectDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Project</Button>
+              <Button type="submit">{isEditing ? 'Save Changes' : 'Create Project'}</Button>
             </DialogFooter>
           </form>
         </Form>
