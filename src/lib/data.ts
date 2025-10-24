@@ -43,8 +43,7 @@ export const budgetCategories: BudgetCategory[] = [
   { id: 'cat-26', name: 'Fuel Canopy Labor' },
   { id: 'cat-27', name: 'Fuel Canopy Material' },
   { id: 'cat-28', name: 'FuelCanopyBricks' },
-  { id
-: 'cat-29', name: 'Get Reimbursed' },
+  { id: 'cat-29', name: 'Get Reimbursed' },
   { id: 'cat-30', name: 'Grass Cut' },
   { id: 'cat-31', name: 'Haul-Off' },
   { id: 'cat-32', name: 'KnoxBox' },

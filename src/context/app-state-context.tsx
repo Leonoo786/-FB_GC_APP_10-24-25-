@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, ReactNode } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder } from '@/lib/types';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI } from '@/lib/types';
 
 type AppState = {
   companyName: string;
@@ -15,6 +15,7 @@ type AppState = {
   tasks: Task[];
   expenses: Expense[];
   changeOrders: ChangeOrder[];
+  rfis: RFI[];
   userName: string;
   userAvatarUrl: string;
   userEmail: string;
@@ -31,6 +32,7 @@ type AppStateSetters = {
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
+  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   setUserName: React.Dispatch<React.SetStateAction<string>>;
   setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
   setUserEmail: React.Dispatch<React.SetStateAction<string>>;

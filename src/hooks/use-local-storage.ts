@@ -17,12 +17,7 @@ function getValue<T>(key: string, defaultValue: T): T {
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
-    const [value, setValue] = useState(defaultValue);
-
-    useEffect(() => {
-        setValue(getValue(key, defaultValue));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [key]);
+    const [value, setValue] = useState(() => getValue(key, defaultValue));
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
