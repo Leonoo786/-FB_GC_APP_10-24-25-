@@ -46,16 +46,24 @@ export default function ProfitLossPage() {
         ? projects
         : projects.filter((p) => p.id === selectedProjectId);
 
-    const bidAmount = relevantProjects.reduce(
+    const projectIds = relevantProjects.map((p) => p.id);
+    
+    const relevantBudgetItems = budgetItems.filter((item) =>
+      projectIds.includes(item.projectId)
+    );
+
+    const initialContract = relevantProjects.reduce(
       (acc, p) => acc + p.revisedContract,
       0
     );
 
-    const projectIds = relevantProjects.map((p) => p.id);
-
-    const relevantBudgetItems = budgetItems.filter((item) =>
-      projectIds.includes(item.projectId)
+    const approvedCOs = relevantBudgetItems.reduce(
+      (acc, item) => acc + item.approvedCOBudget,
+      0
     );
+    
+    const bidAmount = initialContract + approvedCOs;
+
     const budget = relevantBudgetItems.reduce(
       (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
       0
