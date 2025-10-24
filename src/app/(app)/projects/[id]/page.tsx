@@ -146,15 +146,24 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         return null;
                     };
 
-                    const newBudgetItems: BudgetItem[] = rows.slice(1) // Skip header row
-                      .map((row: any[]): BudgetItem | null => {
-                        if (!Array.isArray(row) || typeof row[0] !== 'string' || row[0].trim() === '') {
+                    const newBudgetItems: BudgetItem[] = rows.map((row: any[]): BudgetItem | null => {
+                        const notes = row[0] ? String(row[0]).trim() : '';
+                        const category = row[1] ? String(row[1]).trim() : '';
+                        
+                        // Strict validation: only import if the first two columns have text.
+                        if (notes === '' || category === '') {
                             return null;
                         }
-                        
-                        const notes = row[0]?.trim() || '';
-                        const category = row[1]?.trim() || 'Uncategorized';
-                        const originalBudget = parseAmount(row[3]) ?? 0;
+
+                        let originalBudget = 0;
+                        // Scan from the 3rd column onwards for the first valid number
+                        for (let i = 2; i < row.length; i++) {
+                            const parsed = parseAmount(row[i]);
+                            if (parsed !== null) {
+                                originalBudget = parsed;
+                                break;
+                            }
+                        }
 
                         let costType: 'labor' | 'material' | 'both' = 'both';
                         const notesLower = notes.toLowerCase();
@@ -186,7 +195,7 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                     } else {
                         toast({
                             title: "Import Warning",
-                            description: "No valid data found to import. Please ensure your file has data in the first column.",
+                            description: "No valid data found to import. Please ensure your file has data in the first two columns.",
                             variant: 'destructive'
                         });
                     }
