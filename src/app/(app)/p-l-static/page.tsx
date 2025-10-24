@@ -26,6 +26,7 @@ import {
   BarChart,
   TrendingDown,
   TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import { FinancialBreakdown } from './_components/financial-breakdown';
 import { AppStateContext } from '@/context/app-state-context';
@@ -105,7 +106,7 @@ export default function ProfitLossStaticPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="summary" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
@@ -118,13 +119,13 @@ export default function ProfitLossStaticPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Total of all budget line items</p>
+                <p className="text-xs text-muted-foreground">Sum of all budget line items</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Expenses
+                  Spent so far
                 </CardTitle>
                 <TrendingDown className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -140,10 +141,27 @@ export default function ProfitLossStaticPage() {
                 </p>
               </CardContent>
             </Card>
+             <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Remaining
+                </CardTitle>
+                <Wallet className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {financialData.actualProfitLoss.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">Budget - Spent</p>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Actual Profit/Loss
+                  Profit/Loss
                 </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -162,7 +180,7 @@ export default function ProfitLossStaticPage() {
             <FinancialBreakdown 
                 budget={financialData.budget}
                 expenses={financialData.expenses}
-                actualProfit={financialData.actualProfitLoss}
+                remaining={financialData.actualProfitLoss}
             />
           </div>
         </TabsContent>

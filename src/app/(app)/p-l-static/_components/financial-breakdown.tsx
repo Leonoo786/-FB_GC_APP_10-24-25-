@@ -41,12 +41,12 @@ const BreakdownItem = ({
 type FinancialBreakdownProps = {
     budget: number;
     expenses: number;
-    actualProfit: number;
+    remaining: number;
 };
 
 
-export function FinancialBreakdown({ budget, expenses, actualProfit }: FinancialBreakdownProps) {
-  const maxVal = Math.max(budget, expenses, Math.abs(actualProfit), 1);
+export function FinancialBreakdown({ budget, expenses, remaining }: FinancialBreakdownProps) {
+  const maxVal = Math.max(budget, expenses, Math.abs(remaining), 1);
 
   return (
     <Card>
@@ -64,16 +64,16 @@ export function FinancialBreakdown({ budget, expenses, actualProfit }: Financial
           colorClass="bg-sky-500"
         />
         <BreakdownItem
-          label="Total Expenses"
+          label="Spent so far"
           value={expenses}
           total={maxVal}
           colorClass="bg-gray-300"
         />
         <BreakdownItem
-          label="Total Actual Profit"
-          value={actualProfit}
+          label="Remaining"
+          value={remaining}
           total={maxVal}
-          colorClass={actualProfit >= 0 ? "bg-emerald-500" : "bg-red-500"}
+          colorClass={remaining >= 0 ? "bg-emerald-500" : "bg-red-500"}
         />
       </CardContent>
     </Card>
