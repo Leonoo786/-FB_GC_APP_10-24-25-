@@ -57,9 +57,8 @@ export default function SettingsPage() {
   const appState = useContext(AppStateContext);
 
   // Profile State
-  const [photoUrl, setPhotoUrl] = useState("https://i.pravatar.cc/150?u=john");
-  const [firstName, setFirstName] = useState("John");
-  const [lastName, setLastName] = useState("Doe");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("john.doe@constructai.com");
   const [phone, setPhone] = useState("(555) 123-4567");
   const [jobTitle, setJobTitle] = useState("Admin");
@@ -82,12 +81,16 @@ export default function SettingsPage() {
     if (appState) {
         setCompanyName(appState.companyName);
         setCompanyLogoUrl(appState.companyLogoUrl);
+        setName(appState.userName);
+        setPhotoUrl(appState.userAvatarUrl);
     }
   }, [appState]);
 
   if (!appState) {
     return <div>Loading...</div>
   }
+
+  const { userName } = appState;
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -113,6 +116,8 @@ export default function SettingsPage() {
   };
 
   const handleSaveChanges = () => {
+    appState.setUserName(name);
+    appState.setUserAvatarUrl(photoUrl);
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
@@ -128,11 +133,24 @@ export default function SettingsPage() {
     });
   };
 
+  const nameParts = name.split(' ');
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(' ') || "";
+
+  const handleNameChange = (part: 'first' | 'last', value: string) => {
+    if (part === 'first') {
+        setName(`${value} ${lastName}`);
+    } else {
+        setName(`${firstName} ${value}`);
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Welcome back, {firstName}</p>
+        <p className="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
       </div>
 
       <Tabs defaultValue="profile">
@@ -165,11 +183,11 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                      <Input id="firstName" value={firstName} onChange={(e) => handleNameChange('first', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                      <Input id="lastName" value={lastName} onChange={(e) => handleNameChange('last', e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">

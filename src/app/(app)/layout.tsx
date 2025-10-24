@@ -32,6 +32,8 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', initialTasks);
     const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', initialExpenses);
     const [changeOrders, setChangeOrders] = useLocalStorage<ChangeOrder[]>('changeOrders', initialChangeOrders);
+    const [userName, setUserName] = useLocalStorage('userName', 'John Doe');
+    const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage('userAvatarUrl', 'https://i.pravatar.cc/150?u=john');
     
     return (
         <AppStateProvider 
@@ -45,7 +47,9 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
                 teamMembers, 
                 tasks, 
                 expenses,
-                changeOrders
+                changeOrders,
+                userName,
+                userAvatarUrl
             }}
             onStateChange={{ 
                 setCompanyName, 
@@ -57,7 +61,9 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
                 setTeamMembers, 
                 setTasks, 
                 setExpenses,
-                setChangeOrders
+                setChangeOrders,
+                setUserName,
+                setUserAvatarUrl
             }}
         >
             <SidebarProvider>

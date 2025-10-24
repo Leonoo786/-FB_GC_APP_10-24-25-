@@ -15,6 +15,8 @@ type AppState = {
   tasks: Task[];
   expenses: Expense[];
   changeOrders: ChangeOrder[];
+  userName: string;
+  userAvatarUrl: string;
 };
 
 type AppStateSetters = {
@@ -28,6 +30,8 @@ type AppStateSetters = {
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
+  setUserName: React.Dispatch<React.SetStateAction<string>>;
+  setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
 type AppStateContextType = AppState & AppStateSetters;
