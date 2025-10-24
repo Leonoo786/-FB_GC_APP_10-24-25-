@@ -57,10 +57,11 @@ export function PasteBudgetDialog({
           return null;
         }
 
-        const category = columns[0].trim();
-        const originalBudget = parseAmount(columns[1]);
+        const notes = columns[0].trim();
+        const category = columns[1].trim();
+        const originalBudget = parseAmount(columns[2]);
         
-        if (!category || originalBudget === 0) {
+        if (!category || !notes) {
             return null;
         }
 
@@ -69,7 +70,7 @@ export function PasteBudgetDialog({
           projectId: projectId,
           category,
           costType: 'material', // Default value
-          notes: '',
+          notes,
           originalBudget,
           approvedCOBudget: 0,
           committedCost: 0,
