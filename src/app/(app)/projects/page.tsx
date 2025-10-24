@@ -2,11 +2,11 @@
 
 'use client';
 
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Edit, MoreVertical, PlusCircle, Trash } from "lucide-react";
+import { Edit, MoreVertical, PlusCircle, Trash, Calendar, DollarSign, PiggyBank, Target } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
+import { differenceInDays, formatDistanceToNowStrict, parseISO } from 'date-fns';
 
 
 export default function ProjectsPage() {
@@ -29,11 +30,43 @@ export default function ProjectsPage() {
         setHasMounted(true);
     }, []);
 
+    const projectData = useMemo(() => {
+        if (!appState) return [];
+        const { projects, budgetItems, expenses } = appState;
+        
+        return projects.map(project => {
+            const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
+            const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
+            
+            const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
+            const spentSoFar = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
+            const remainingBudget = totalBudget - spentSoFar;
+            const budgetUsedPercent = totalBudget > 0 ? Math.min((spentSoFar / totalBudget) * 100, 100) : 0;
+            
+            const now = new Date();
+            const startDate = parseISO(project.startDate);
+            const endDate = parseISO(project.endDate);
+            const daysIn = differenceInDays(now, startDate);
+            const daysLeft = differenceInDays(endDate, now);
+            
+            return {
+                ...project,
+                totalBudget,
+                spentSoFar,
+                remainingBudget,
+                budgetUsedPercent,
+                daysIn: daysIn > 0 ? daysIn : 0,
+                daysLeft: daysLeft > 0 ? daysLeft : 0,
+            };
+        });
+
+    }, [appState]);
+
     if (!appState || !hasMounted) {
         return <div>Loading...</div>; // Or some other loading state/skeleton
     }
     
-    const { projects, setProjects } = appState;
+    const { setProjects } = appState;
 
     const statusVariant = {
         'In Progress': 'default',
@@ -81,7 +114,7 @@ export default function ProjectsPage() {
                     </Button>
                 </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {projects.map(project => (
+                    {projectData.map(project => (
                         <Card key={project.id} className="flex flex-col">
                             <CardHeader className="p-0">
                                 <Link href={`/projects/${project.id}`}>
@@ -147,16 +180,43 @@ export default function ProjectsPage() {
                                 </div>
                                 <CardDescription className="line-clamp-2">{project.description}</CardDescription>
                             </CardContent>
-                            <CardFooter className="flex flex-col items-start gap-2">
+                            <CardFooter className="flex flex-col items-start gap-4">
                                 <div className="w-full">
                                     <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                                        <span>Progress</span>
-                                        <span>{project.percentComplete}%</span>
+                                        <span>Budget Used</span>
+                                        <span>{project.budgetUsedPercent.toFixed(1)}%</span>
                                     </div>
-                                    <Progress value={project.percentComplete} aria-label={`${project.percentComplete}% complete`} />
+                                    <Progress value={project.budgetUsedPercent} aria-label={`${project.budgetUsedPercent}% of budget used`} />
                                 </div>
-                                <div className="text-xs text-muted-foreground mt-2">
-                                    Contract: ${project.revisedContract.toLocaleString()}
+                                <div className="w-full space-y-2 text-sm text-muted-foreground">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <DollarSign className="size-4" />
+                                            <span>Spent:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <PiggyBank className="size-4" />
+                                            <span>Remaining:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Target className="size-4" />
+                                            <span>Total Budget:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.totalBudget.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 pt-1 border-t mt-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Calendar className="size-4" />
+                                            <span>Timeline:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">{project.daysIn} days in, {project.daysLeft} days left</span>
+                                    </div>
                                 </div>
                             </CardFooter>
                         </Card>
