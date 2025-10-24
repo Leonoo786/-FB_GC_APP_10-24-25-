@@ -146,46 +146,42 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
                         return null;
                     };
 
-                    const newBudgetItems: BudgetItem[] = rows
-                        .filter(row => Array.isArray(row) && row.length > 0 && row.some(cell => cell !== null && cell !== ''))
-                        .map((row: any) => {
-                            const notes = row[0] || '';
-                            const category = row[1] || 'Uncategorized';
-                            
-                            // Ensure category is a valid string before proceeding
-                            if (typeof category !== 'string' || category.trim() === '') {
-                                return null;
+                    const newBudgetItems: BudgetItem[] = rows.map((row: any) => {
+                        if (!Array.isArray(row) || typeof row[1] !== 'string' || row[1].trim() === '') {
+                            return null;
+                        }
+                        
+                        const notes = row[0] || '';
+                        const category = row[1] || 'Uncategorized';
+                        
+                        let originalBudget = 0;
+                        for (let i = 2; i < row.length; i++) {
+                            const amount = parseAmount(row[i]);
+                            if (amount !== null) {
+                                originalBudget = amount;
+                                break;
                             }
+                        }
 
-                            let originalBudget = 0;
-                            // Scan from the third column onwards for a valid number
-                            for (let i = 2; i < row.length; i++) {
-                                const amount = parseAmount(row[i]);
-                                if (amount !== null) {
-                                    originalBudget = amount;
-                                    break;
-                                }
-                            }
-
-                            let costType: 'labor' | 'material' | 'both' = 'both';
-                            const notesLower = String(notes).toLowerCase();
-                            if (notesLower.includes('labor')) {
-                                costType = 'labor';
-                            } else if (notesLower.includes('material')) {
-                                costType = 'material';
-                            }
-                            
-                            return {
-                                id: crypto.randomUUID(),
-                                projectId: project.id,
-                                category: category,
-                                costType: costType,
-                                notes: notes,
-                                originalBudget: originalBudget,
-                                approvedCOBudget: 0,
-                                committedCost: 0,
-                                projectedCost: originalBudget,
-                            };
+                        let costType: 'labor' | 'material' | 'both' = 'both';
+                        const notesLower = String(notes).toLowerCase();
+                        if (notesLower.includes('labor')) {
+                            costType = 'labor';
+                        } else if (notesLower.includes('material')) {
+                            costType = 'material';
+                        }
+                        
+                        return {
+                            id: crypto.randomUUID(),
+                            projectId: project.id,
+                            category: category,
+                            costType: costType,
+                            notes: notes,
+                            originalBudget: originalBudget,
+                            approvedCOBudget: 0,
+                            committedCost: 0,
+                            projectedCost: originalBudget,
+                        };
                     }).filter((item): item is BudgetItem => item !== null);
                     
                     if (newBudgetItems.length > 0) {
@@ -445,7 +441,5 @@ export default function ProjectBudgetPage({ params: paramsProp }: { params: Prom
         </>
     );
 }
-
-    
 
     
