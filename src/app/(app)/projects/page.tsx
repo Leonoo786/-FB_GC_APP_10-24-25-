@@ -201,7 +201,7 @@ export default function ProjectsPage() {
                                      <div className="flex items-center justify-between gap-2">
                                          <div className="flex items-center gap-1.5">
                                             <Target className="size-4" />
-                                            <span>Total Budget:</span>
+                                            <span>Total Budget (cost):</span>
                                         </div>
                                         <span className="font-medium text-foreground">${project.totalBudget.toLocaleString()}</span>
                                     </div>
