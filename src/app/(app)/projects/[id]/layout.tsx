@@ -4,7 +4,7 @@
 
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreVertical, Edit, Trash } from "lucide-react";
+import { ArrowLeft, MoreVertical, Edit, Trash, AlertCircle, FileQuestion, Flag } from "lucide-react";
 import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MilestoneProgress } from "./_components/milestone-progress";
 
 function ProjectDetailLayoutContent({
     params,
@@ -38,7 +39,7 @@ function ProjectDetailLayoutContent({
         return <div>Loading...</div>;
     }
 
-    const { projects, setProjects, budgetItems, expenses } = appState;
+    const { projects, setProjects, budgetItems, expenses, milestones, rfis, issues } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
@@ -47,6 +48,10 @@ function ProjectDetailLayoutContent({
 
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
     const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
+    const projectMilestones = milestones.filter(m => m.projectId === project.id);
+    const completedMilestones = projectMilestones.filter(m => m.status === 'Completed').length;
+    const openRfis = rfis.filter(r => r.projectId === project.id && r.status === 'Open').length;
+    const openIssues = issues.filter(i => i.projectId === project.id && i.status === 'Open').length;
 
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
     const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
@@ -164,28 +169,33 @@ function ProjectDetailLayoutContent({
             </div>
 
             <Card>
-                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-6 gap-6">
-                    <div>
+                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 items-center">
+                    <div className="lg:col-span-1">
                         <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
                         <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">The agreed-upon price</p>
                     </div>
-                    <div>
+                    <div className="lg:col-span-1">
                         <p className="text-sm text-muted-foreground">Total Budget (cost)</p>
                         <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">Internal cost estimate</p>
                     </div>
-                    <div>
-                        <p className="text-sm text-muted-foreground">Spent to Date</p>
-                        <p className="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">{totalBudget > 0 ? (spentToDate / totalBudget * 100).toFixed(2) : 0}% of budget</p>
+
+                    <div className="lg:col-span-2 flex justify-around items-center h-full border-l border-r px-6">
+                        <MilestoneProgress value={completedMilestones} total={projectMilestones.length} />
+                         <div className="flex flex-col items-center">
+                            <FileQuestion className="h-6 w-6 text-muted-foreground" />
+                            <p className="text-2xl font-bold">{openRfis}</p>
+                            <p className="text-xs text-muted-foreground">Open RFIs</p>
+                        </div>
+                         <div className="flex flex-col items-center">
+                            <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                            <p className="text-2xl font-bold">{openIssues}</p>
+                            <p className="text-xs text-muted-foreground">Active Issues</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-sm text-muted-foreground">Profit/Loss</p>
-                        <p className="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Bid - Spent</p>
-                    </div>
-                    <div className="md:col-span-1">
+                    
+                    <div className="lg:col-span-1">
                         <p className="text-sm text-muted-foreground">
                             {totalDays} Total Days ({format(endDate, 'MMM d, yyyy')})
                         </p>
@@ -195,7 +205,7 @@ function ProjectDetailLayoutContent({
                            <span>{daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed'}</span>
                         </div>
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="lg:col-span-2">
                         <p className="text-sm text-muted-foreground">
                             Budget Status
                         </p>
