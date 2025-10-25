@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useContext } from 'react';
 import {
   Card,
   CardContent,
@@ -14,12 +18,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { issues, projects, rfis, tasks } from "@/lib/data"
 import { Activity, AlertCircle, ArrowUpRight, CheckCircle2, CircleDashed, FileQuestion, Users } from "lucide-react"
 import { BudgetChart } from "./_components/budget-chart"
 import Link from "next/link"
+import { AppStateContext } from '@/context/app-state-context';
 
 export default function DashboardPage() {
+  const appState = useContext(AppStateContext);
+
+  if (!appState || !appState.projects || !appState.rfis || !appState.issues || !appState.tasks) {
+    return <div>Loading...</div>;
+  }
+  
+  const { projects, rfis, issues, tasks } = appState;
+
   const activeProjects = projects.filter(p => p.status === 'In Progress').length;
   const openRfis = rfis.filter(r => r.status === 'Open').length;
   const openIssues = issues.filter(i => i.status === 'Open').length;

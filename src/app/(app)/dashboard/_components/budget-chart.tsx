@@ -1,5 +1,7 @@
+
 "use client"
 
+import { useContext } from "react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import {
@@ -16,20 +18,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart"
-import { budgetItems, projects } from "@/lib/data"
-
-const activeProjects = projects.filter(p => p.status === "In Progress");
-
-const chartData = activeProjects.map(project => {
-  const items = budgetItems.filter(item => item.projectId === project.id);
-  const totalBudget = items.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
-  const totalSpent = items.reduce((acc, item) => acc + item.committedCost, 0);
-  return {
-    project: project.name,
-    budget: totalBudget,
-    actual: totalSpent,
-  };
-});
+import { AppStateContext } from "@/context/app-state-context"
 
 const chartConfig = {
   budget: {
@@ -43,6 +32,29 @@ const chartConfig = {
 }
 
 export function BudgetChart() {
+  const appState = useContext(AppStateContext);
+
+  if (!appState || !appState.projects || !appState.budgetItems || !appState.expenses) {
+    return <div>Loading...</div>;
+  }
+  
+  const { projects, budgetItems, expenses } = appState;
+  
+  const activeProjects = projects.filter(p => p.status === "In Progress");
+
+  const chartData = activeProjects.map(project => {
+    const items = budgetItems.filter(item => item.projectId === project.id);
+    const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
+    const totalBudget = items.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
+    const totalSpent = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
+    return {
+      project: project.name,
+      budget: totalBudget,
+      actual: totalSpent,
+    };
+  });
+
+
   return (
     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart accessibilityLayer data={chartData}>
