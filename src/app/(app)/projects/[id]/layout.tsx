@@ -13,6 +13,7 @@ import { use, Suspense, useContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
+import { differenceInDays, format, parseISO } from "date-fns";
 
 function ProjectDetailLayoutContent({
     params,
@@ -48,7 +49,15 @@ function ProjectDetailLayoutContent({
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
     const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
     const profitAndLoss = (project.finalBidAmount || 0) - spentToDate;
-    const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
+    
+    const startDate = parseISO(project.startDate);
+    const endDate = parseISO(project.endDate);
+    const today = new Date();
+
+    const totalDays = differenceInDays(endDate, startDate);
+    const daysPassed = differenceInDays(today, startDate);
+    const daysRemaining = differenceInDays(endDate, today);
+    const timeProgress = totalDays > 0 ? Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100) : 0;
     
     const handleEdit = () => {
         toast({
@@ -138,7 +147,7 @@ function ProjectDetailLayoutContent({
                     <div>
                         <p className="text-sm text-muted-foreground">Spent to Date</p>
                         <p className="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">{budgetUsedPercent.toFixed(2)}% of budget</p>
+                        <p className="text-xs text-muted-foreground">{totalBudget > 0 ? (spentToDate / totalBudget * 100).toFixed(2) : 0}% of budget</p>
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Profit/Loss</p>
@@ -146,9 +155,14 @@ function ProjectDetailLayoutContent({
                         <p className="text-xs text-muted-foreground">Bid - Spent</p>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Budget Status</p>
-                        <Progress value={budgetUsedPercent} className="h-2 mt-2" />
-                        <p className="text-xs text-muted-foreground mt-2">{budgetUsedPercent.toFixed(2)}% Used</p>
+                        <p className="text-sm text-muted-foreground">
+                            {totalDays} Total Days ({format(endDate, 'MMM d, yyyy')})
+                        </p>
+                        <Progress value={timeProgress} className="h-2 mt-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                           <span>{daysPassed > 0 ? `${daysPassed} days passed` : 'Starting soon'}</span>
+                           <span>{daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed'}</span>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
