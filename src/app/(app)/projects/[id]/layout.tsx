@@ -49,6 +49,7 @@ function ProjectDetailLayoutContent({
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
     const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
     const profitAndLoss = (project.finalBidAmount || 0) - spentToDate;
+    const budgetProgress = totalBudget > 0 ? Math.min(Math.max((spentToDate / totalBudget) * 100, 0), 100) : 0;
     
     const startDate = parseISO(project.startDate);
     const endDate = parseISO(project.endDate);
@@ -133,7 +134,7 @@ function ProjectDetailLayoutContent({
             </div>
 
             <Card>
-                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-5 gap-6">
+                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-6 gap-6">
                     <div>
                         <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
                         <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
@@ -154,7 +155,7 @@ function ProjectDetailLayoutContent({
                         <p className="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">Bid - Spent</p>
                     </div>
-                    <div>
+                    <div className="md:col-span-1">
                         <p className="text-sm text-muted-foreground">
                             {totalDays} Total Days ({format(endDate, 'MMM d, yyyy')})
                         </p>
@@ -162,6 +163,16 @@ function ProjectDetailLayoutContent({
                         <div className="flex justify-between text-xs text-muted-foreground mt-2">
                            <span>{daysPassed > 0 ? `${daysPassed} days passed` : 'Starting soon'}</span>
                            <span>{daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed'}</span>
+                        </div>
+                    </div>
+                    <div className="md:col-span-1">
+                        <p className="text-sm text-muted-foreground">
+                            Budget Status
+                        </p>
+                        <Progress value={budgetProgress} className="h-2 mt-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                           <span>${spentToDate.toLocaleString()} spent</span>
+                           <span>${(totalBudget - spentToDate).toLocaleString()} left</span>
                         </div>
                     </div>
                 </CardContent>
