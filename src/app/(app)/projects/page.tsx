@@ -6,7 +6,7 @@ import { useState, useContext, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Edit, MoreVertical, PlusCircle, Trash, Calendar, DollarSign, PiggyBank, Target } from "lucide-react";
+import { Edit, MoreVertical, PlusCircle, Trash, Calendar, DollarSign, PiggyBank, Target, TrendingUp, Wallet } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,7 @@ export default function ProjectsPage() {
             const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
             const spentSoFar = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
             const remainingBudget = totalBudget - spentSoFar;
+            const profitLoss = (project.finalBidAmount || 0) - spentSoFar;
             const budgetUsedPercent = totalBudget > 0 ? Math.min((spentSoFar / totalBudget) * 100, 100) : 0;
             
             const now = new Date();
@@ -54,6 +55,7 @@ export default function ProjectsPage() {
                 totalBudget,
                 spentSoFar,
                 remainingBudget,
+                profitLoss,
                 budgetUsedPercent,
                 daysIn: daysIn > 0 ? daysIn : 0,
                 daysLeft: daysLeft > 0 ? daysLeft : 0,
@@ -183,32 +185,46 @@ export default function ProjectsPage() {
                             <CardFooter className="flex flex-col items-start gap-4">
                                 <div className="w-full">
                                     <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                                        <span>Budget Used</span>
-                                        <span>{project.budgetUsedPercent.toFixed(1)}%</span>
+                                        <span>Budget Status</span>
+                                        <span>{project.budgetUsedPercent.toFixed(1)}% Used</span>
                                     </div>
                                     <Progress value={project.budgetUsedPercent} aria-label={`${project.budgetUsedPercent}% of budget used`} />
                                 </div>
                                 <div className="w-full space-y-2 text-sm text-muted-foreground">
-                                    <div className="flex items-center justify-between gap-2">
+                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-1.5">
                                             <DollarSign className="size-4" />
-                                            <span>Spent:</span>
+                                            <span>Final Bid:</span>
                                         </div>
-                                        <span className="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${(project.finalBidAmount || 0).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex items-center justify-between gap-2">
-                                         <div className="flex items-center gap-1.5">
-                                            <PiggyBank className="size-4" />
-                                            <span>Remaining:</span>
-                                        </div>
-                                        <span className="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-2">
+                                     <div className="flex items-center justify-between gap-2">
                                          <div className="flex items-center gap-1.5">
                                             <Target className="size-4" />
                                             <span>Total Budget:</span>
                                         </div>
                                         <span className="font-medium text-foreground">${project.totalBudget.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <TrendingUp className="size-4" />
+                                            <span>Spent to Date:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Wallet className="size-4" />
+                                            <span>Remaining Budget:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
+                                    </div>
+                                     <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <PiggyBank className="size-4" />
+                                            <span>Profit / Loss:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.profitLoss.toLocaleString()}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-2 pt-1 border-t mt-2">
                                          <div className="flex items-center gap-1.5">
