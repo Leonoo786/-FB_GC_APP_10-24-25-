@@ -1,6 +1,5 @@
 
 
-
 'use client'
 
 import Link from 'next/link';
@@ -24,7 +23,7 @@ import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as 
 import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { AppStateContext } from '@/context/app-state-context';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 function AppStateInitializer({ children }: { children: React.ReactNode }) {
     const [companyName, setCompanyName] = useLocalStorage('companyName', 'FancyBuilders');
@@ -91,8 +90,13 @@ function AppStateInitializer({ children }: { children: React.ReactNode }) {
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
     const appState = useContext(AppStateContext);
+    const [hasMounted, setHasMounted] = useState(false);
 
-    if (!appState) {
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!appState || !hasMounted) {
         return null;
     }
     
