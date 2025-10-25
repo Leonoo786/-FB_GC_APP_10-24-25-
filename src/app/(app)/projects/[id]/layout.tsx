@@ -131,7 +131,7 @@ function ProjectDetailLayoutContent({
                         <p className="text-xs text-muted-foreground">The agreed-upon price</p>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Total Budget</p>
+                        <p className="text-sm text-muted-foreground">Total Budget (cost)</p>
                         <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">Internal cost estimate</p>
                     </div>
