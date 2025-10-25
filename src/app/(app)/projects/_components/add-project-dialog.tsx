@@ -56,6 +56,7 @@ const formSchema = z.object({
   startDate: z.date({ required_error: 'Please select a start date.' }),
   endDate: z.date({ required_error: 'Please select an end date.' }),
   revisedContract: z.coerce.number().min(0, "Contract amount must be a positive number."),
+  finalBidAmount: z.coerce.number().min(0, "Final bid amount must be a positive number."),
 }).refine(data => data.endDate >= data.startDate, {
     message: "End date cannot be before start date.",
     path: ["endDate"],
@@ -97,6 +98,7 @@ export function AddEditProjectDialog({
                 startDate: new Date(project.startDate),
                 endDate: new Date(project.endDate),
                 revisedContract: project.revisedContract,
+                finalBidAmount: project.finalBidAmount,
             });
             setImagePreview(project.imageUrl);
         } else {
@@ -111,6 +113,7 @@ export function AddEditProjectDialog({
                 status: 'Planning',
                 progress: 0,
                 revisedContract: 0,
+                finalBidAmount: 0,
             });
             setImagePreview(null);
         }
@@ -156,6 +159,7 @@ export function AddEditProjectDialog({
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
       revisedContract: data.revisedContract,
+      finalBidAmount: data.finalBidAmount,
       imageUrl: imageUrl,
       imageHint: 'custom project',
     };
@@ -304,7 +308,21 @@ export function AddEditProjectDialog({
               name="revisedContract"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contract Amount</FormLabel>
+                  <FormLabel>Internal Contract Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="finalBidAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Final Bid to Customer</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0.00" {...field} />
                   </FormControl>

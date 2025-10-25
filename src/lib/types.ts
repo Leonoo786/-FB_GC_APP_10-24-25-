@@ -13,6 +13,7 @@ export type Project = {
   startDate: string;
   endDate: string;
   revisedContract: number;
+  finalBidAmount: number;
   imageUrl: string;
   imageHint: string;
 };

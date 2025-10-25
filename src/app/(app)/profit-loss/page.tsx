@@ -48,6 +48,8 @@ export default function ProfitLossPage() {
         : projects.filter((p) => p.id === selectedProjectId);
 
     const projectIds = relevantProjects.map((p) => p.id);
+    
+    const bidAmount = relevantProjects.reduce((acc, p) => acc + p.finalBidAmount, 0);
 
     const relevantBudgetItems = budgetItems.filter((item) =>
       projectIds.includes(item.projectId)
@@ -63,9 +65,10 @@ export default function ProfitLossPage() {
     );
     const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
 
-    const profitLoss = budget - expenses;
+    const profitLoss = bidAmount - expenses;
+    const remainingBudget = budget - expenses;
 
-    return { budget, expenses, profitLoss };
+    return { bidAmount, budget, expenses, profitLoss, remainingBudget };
   }, [selectedProjectId, projects, allExpenses, budgetItems]);
 
   return (
@@ -152,7 +155,7 @@ export default function ProfitLossPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {financialData.profitLoss.toLocaleString('en-US', {
+                  {financialData.remainingBudget.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -174,7 +177,7 @@ export default function ProfitLossPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Budget - Expenses</p>
+                <p className="text-xs text-muted-foreground">Bid - Expenses</p>
               </CardContent>
             </Card>
           </div>

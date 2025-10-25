@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { notFound, useRouter } from "next/navigation";
@@ -46,7 +47,7 @@ function ProjectDetailLayoutContent({
 
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
     const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
-    const remaining = totalBudget - spentToDate;
+    const profitAndLoss = (project.finalBidAmount || 0) - spentToDate;
     const budgetUsedPercent = totalBudget > 0 ? (spentToDate / totalBudget) * 100 : 0;
     
     const handleEdit = () => {
@@ -123,11 +124,16 @@ function ProjectDetailLayoutContent({
             </div>
 
             <Card>
-                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+                <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-5 gap-6">
+                    <div>
+                        <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
+                        <p className="text-2xl font-bold">${project.finalBidAmount.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">The agreed-upon price</p>
+                    </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Total Budget</p>
                         <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Category-based budgeting</p>
+                        <p className="text-xs text-muted-foreground">Internal cost estimate</p>
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Spent to Date</p>
@@ -135,9 +141,9 @@ function ProjectDetailLayoutContent({
                         <p className="text-xs text-muted-foreground">{budgetUsedPercent.toFixed(2)}% of budget</p>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Remaining</p>
-                        <p className="text-2xl font-bold">${remaining.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">On Track</p>
+                        <p className="text-sm text-muted-foreground">Profit/Loss</p>
+                        <p className="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Bid - Spent</p>
                     </div>
                     <div>
                         <p className="text-sm text-muted-foreground">Budget Status</p>

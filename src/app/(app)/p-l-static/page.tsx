@@ -49,6 +49,8 @@ export default function ProfitLossStaticPage() {
 
         const projectIds = relevantProjects.map((p) => p.id);
         
+        const bidAmount = relevantProjects.reduce((acc, p) => acc + p.finalBidAmount, 0);
+        
         const relevantBudgetItems = budgetItems.filter((item) =>
           projectIds.includes(item.projectId)
         );
@@ -63,9 +65,10 @@ export default function ProfitLossStaticPage() {
         );
         const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
 
-        const actualProfitLoss = budget - expenses;
+        const actualProfitLoss = bidAmount - expenses;
+        const remainingBudget = budget - expenses;
 
-        return { budget, expenses, actualProfitLoss };
+        return { budget, expenses, actualProfitLoss, remainingBudget };
     }, [selectedProjectId, projects, allExpenses, budgetItems]);
 
 
@@ -150,7 +153,7 @@ export default function ProfitLossStaticPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {financialData.actualProfitLoss.toLocaleString('en-US', {
+                  {financialData.remainingBudget.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
@@ -172,7 +175,7 @@ export default function ProfitLossStaticPage() {
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Budget - Expenses</p>
+                <p className="text-xs text-muted-foreground">Bid - Expenses</p>
               </CardContent>
             </Card>
           </div>

@@ -166,7 +166,7 @@ export const budgetCategories: BudgetCategory[] = [
   { id: 'cat-60', name: 'TO BE PAID' },
   { id: 'cat-61', name: 'Undrgrnd pipes Labor' },
   { id: 'cat-62', name: 'Undrgrnd pipes Material' },
-  { id: 'cat-63', name: 'Utility Bill' },
+  { id: 'cat-63', 'name': 'Utility Bill' },
   { id: 'cat-64', name: 'Venthood' },
   { id: 'cat-65', name: 'Builders Risk' },
   { id: 'cat-66', name: 'Curbs Labor' },
@@ -198,6 +198,7 @@ export const projects: Project[] = [
     startDate: '2023-01-15',
     endDate: '2025-12-31',
     revisedContract: 150000000,
+    finalBidAmount: 165000000,
     imageUrl: 'https://picsum.photos/seed/tower/600/400',
     imageHint: 'office tower',
   },
@@ -215,6 +216,7 @@ export const projects: Project[] = [
     startDate: '2023-06-01',
     endDate: '2024-08-31',
     revisedContract: 25000000,
+    finalBidAmount: 27500000,
     imageUrl: 'https://picsum.photos/seed/retail/600/400',
     imageHint: 'retail center',
   },
@@ -232,6 +234,7 @@ export const projects: Project[] = [
     startDate: '2022-03-01',
     endDate: '2023-09-15',
     revisedContract: 5000000,
+    finalBidAmount: 5500000,
     imageUrl: 'https://picsum.photos/seed/residence/600/400',
     imageHint: 'luxury home',
   },
@@ -249,6 +252,7 @@ export const projects: Project[] = [
     startDate: '2025-08-12',
     endDate: '2026-08-12',
     revisedContract: 500000,
+    finalBidAmount: 550000,
     imageUrl: 'https://picsum.photos/seed/temple/600/400',
     imageHint: 'construction site',
   }
@@ -298,7 +302,7 @@ export const expenses: Expense[] = [
   { id: 'exp-15', projectId: 'proj-4', date: '2025-08-23', category: 'Steel', vendorName: 'Triple-S Steel Holdings Inc', description: 'Material for barjoist (material cost $32,281.85 + tax + (freight cost $650)', amount: 650, paymentMethod: 'Credit Card', paymentReference: '1769', invoiceNumber: '652659' },
   { id: 'exp-16', projectId: 'proj-4', date: '2025-08-26', category: 'Haul Off', vendorName: 'Jose Ramirez', description: '42 x $160 haul off + $360 extra charge for over load (more to come)', amount: 7080, paymentMethod: 'Check', paymentReference: '5436', invoiceNumber: 'Haul Off' },
   { id: 'exp-17', projectId: 'proj-4', date: '2025-08-26', category: 'Haul Off', vendorName: 'Jose Ramirez', description: '4 x backhoe with operator to haul off heavy tree trunks', amount: 2200, paymentMethod: 'Check', paymentReference: '5436', invoiceNumber: 'Haul Off' },
-  { id: 'exp-18', projectId: 'proj-4', date: '2025-08-26', category: 'Sitework-Mtrl', vendorName: 'Jose Ramirez', description: 'Ttl Base back fill needed 370 loads x $370 ea, x24 1st of 15', amount: 8880, paymentMethod: 'Check', paymentReference: '5436', invoiceNumber: 'Sitework' },
+  { id: 'exp-18', projectId: 'proj-4', date: '2025-08-26', category: 'Sitework-Mtrl', vendorName: 'Jose Ramirez', description: 'Ttl Base back fill needed 370 loads x this time charged $370 ea, x24 1st of 15', amount: 8880, paymentMethod: 'Check', paymentReference: '5436', invoiceNumber: 'Sitework' },
   { id: 'exp-19', projectId: 'proj-4', date: '2025-08-28', category: 'Steel', vendorName: 'Triple-S Steel Holdings Inc', description: 'Material for barjoist (material cost $11,196.42 + tax + freight cost $703.64)', amount: 11196.42, paymentMethod: 'Credit Card', paymentReference: '1769', invoiceNumber: 'RS-667851' },
   { id: 'exp-20', projectId: 'proj-4', date: '2025-08-28', category: 'Steel', vendorName: 'Triple-S Steel Holdings Inc', description: 'Material for barjoist (material cost $11,196.42 + tax + freight cost $703.64)', amount: 703.64, paymentMethod: 'Credit Card', paymentReference: '1769', invoiceNumber: 'RS-667851' },
   { id: 'exp-21', projectId: 'proj-4', date: '2025-08-30', category: 'Foundation-Main', vendorName: 'Jose Ramirez', description: 'Foundation LABOR ttl $31500, prv bal $31500, pd tdy $10k, bal $21500', amount: 10000, paymentMethod: 'Check', paymentReference: '5437', invoiceNumber: '1st foundation chk' },
@@ -358,8 +362,3 @@ export const changeOrders: ChangeOrder[] = [
     { id: 'co-2', projectId: 'proj-1', coNumber: 'CO-002', description: 'Owner requested change to lobby finishes.', totalRequest: 75000, status: 'Submitted' },
     { id: 'co-3', projectId: 'proj-3', coNumber: 'CO-001', description: 'Add outdoor kitchen to patio.', totalRequest: 50000, status: 'Executed' },
 ];
-
-
-
-
-    
