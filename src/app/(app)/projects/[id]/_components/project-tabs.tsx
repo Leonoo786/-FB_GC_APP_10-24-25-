@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -10,6 +11,7 @@ const tabs = [
     { name: "Budget", href: "" },
     { name: "Expenses", href: "expenses" },
     { name: "Change Orders", href: "change-orders" },
+    { name: "Milestones", href: "milestones" },
     { name: "Drawings", href: "drawings" },
     { name: "Schedule", href: "schedule" },
     { name: "RFIs", href: "rfis" },

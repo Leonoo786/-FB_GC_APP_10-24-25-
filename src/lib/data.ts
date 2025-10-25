@@ -1,5 +1,6 @@
 
-import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder } from './types';
+
+import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder, Milestone } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
 export const teamMembers: TeamMember[] = [
@@ -361,4 +362,11 @@ export const changeOrders: ChangeOrder[] = [
     { id: 'co-1', projectId: 'proj-1', coNumber: 'CO-001', description: 'Increase electrical capacity for 10th floor data center.', totalRequest: 125000, status: 'Approved' },
     { id: 'co-2', projectId: 'proj-1', coNumber: 'CO-002', description: 'Owner requested change to lobby finishes.', totalRequest: 75000, status: 'Submitted' },
     { id: 'co-3', projectId: 'proj-3', coNumber: 'CO-001', description: 'Add outdoor kitchen to patio.', totalRequest: 50000, status: 'Executed' },
+];
+
+export const milestones: Milestone[] = [
+    { id: 'm-1', projectId: 'proj-1', name: 'Foundation Poured', description: 'Foundation and slab for the main tower have been poured.', dueDate: '2023-04-15', status: 'Completed' },
+    { id: 'm-2', projectId: 'proj-1', name: 'Steel Structure Topped Out', description: 'The final beam has been placed on the main tower structure.', dueDate: '2024-08-30', status: 'In Progress' },
+    { id: 'm-3', projectId: 'proj-1', name: 'Building Weather-Tight', description: 'Exterior cladding and roofing are complete, making the building weather-tight.', dueDate: '2025-02-28', status: 'Upcoming' },
+    { id: 'm-4', projectId: 'proj-2', name: 'Site Work Complete', description: 'All grading, utilities, and paving for the retail center are complete.', dueDate: '2023-10-01', status: 'Upcoming' },
 ];

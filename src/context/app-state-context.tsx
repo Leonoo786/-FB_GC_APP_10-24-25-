@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import React, { createContext, ReactNode } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue } from '@/lib/types';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
 
 type AppState = {
   companyName: string;
@@ -17,6 +18,7 @@ type AppState = {
   changeOrders: ChangeOrder[];
   rfis: RFI[];
   issues: Issue[];
+  milestones: Milestone[];
   userName: string;
   userAvatarUrl: string;
   userEmail: string;
@@ -35,6 +37,7 @@ type AppStateSetters = {
   setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
+  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
   setUserName: React.Dispatch<React.SetStateAction<string>>;
   setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
   setUserEmail: React.Dispatch<React.SetStateAction<string>>;

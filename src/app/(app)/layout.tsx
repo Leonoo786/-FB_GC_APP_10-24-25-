@@ -1,5 +1,6 @@
 
 
+
 'use client'
 
 import Link from 'next/link';
@@ -19,8 +20,8 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppStateProvider } from '@/context/app-state-context';
-import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses, changeOrders as initialChangeOrders, rfis as initialRfis, issues as initialIssues } from '@/lib/data';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue } from '@/lib/types';
+import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses, changeOrders as initialChangeOrders, rfis as initialRfis, issues as initialIssues, milestones as initialMilestones } from '@/lib/data';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { AppStateContext } from '@/context/app-state-context';
 import { useContext } from 'react';
@@ -38,6 +39,7 @@ function AppStateInitializer({ children }: { children: React.ReactNode }) {
     const [changeOrders, setChangeOrders] = useLocalStorage<ChangeOrder[]>('changeOrders', initialChangeOrders);
     const [rfis, setRfis] = useLocalStorage<RFI[]>('rfis', initialRfis);
     const [issues, setIssues] = useLocalStorage<Issue[]>('issues', initialIssues);
+    const [milestones, setMilestones] = useLocalStorage<Milestone[]>('milestones', initialMilestones);
     const [userName, setUserName] = useLocalStorage('userName', 'John Doe');
     const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage('userAvatarUrl', 'https://i.pravatar.cc/150?u=john');
     const [userEmail, setUserEmail] = useLocalStorage('userEmail', 'john.doe@constructai.com');
@@ -57,6 +59,7 @@ function AppStateInitializer({ children }: { children: React.ReactNode }) {
                 changeOrders,
                 rfis,
                 issues,
+                milestones,
                 userName,
                 userAvatarUrl,
                 userEmail
@@ -74,6 +77,7 @@ function AppStateInitializer({ children }: { children: React.ReactNode }) {
                 setChangeOrders,
                 setRfis,
                 setIssues,
+                setMilestones,
                 setUserName,
                 setUserAvatarUrl,
                 setUserEmail

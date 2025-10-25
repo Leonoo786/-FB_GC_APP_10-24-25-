@@ -1,4 +1,5 @@
 
+
 export type Project = {
   id: string;
   projectNumber: string;
@@ -106,6 +107,16 @@ export type Issue = {
   status: 'Open' | 'Closed';
   correctiveAction?: string;
 };
+
+export type Milestone = {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string;
+  dueDate: string;
+  status: 'Upcoming' | 'In Progress' | 'Completed';
+};
+
 
 export type Drawing = {
   id: string;
