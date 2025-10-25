@@ -4,7 +4,7 @@
 
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Trash } from "lucide-react";
+import { ArrowLeft, MoreVertical, Edit, Trash } from "lucide-react";
 import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
+import { ProjectSummaryChart } from "./_components/project-summary-chart";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 function ProjectDetailLayoutContent({
     params,
@@ -100,35 +102,63 @@ function ProjectDetailLayoutContent({
                             {project.projectNumber}
                         </p>
                     </div>
-                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleEdit}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit
-                        </Button>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                 <Button variant="destructive">
-                                    <Trash className="mr-2 h-4 w-4" /> Delete
+                     <div className="flex gap-2 items-center">
+                        <ProjectSummaryChart 
+                            data={[
+                                { name: 'Spent', value: spentToDate, fill: 'hsl(var(--primary))' },
+                                { name: 'Remaining', value: Math.max(0, totalBudget - spentToDate), fill: 'hsl(var(--muted))' }
+                            ]}
+                            label="Budget"
+                            metric={`$${(totalBudget - spentToDate).toLocaleString(undefined, {maximumFractionDigits: 0})}`}
+                            metricLabel="Remaining"
+                        />
+                        <ProjectSummaryChart 
+                           data={[
+                                { name: 'Cost', value: spentToDate, fill: 'hsl(var(--chart-3))' },
+                                { name: 'Profit', value: Math.max(0, profitAndLoss), fill: 'hsl(var(--chart-2))' }
+                            ]}
+                            label="Profitability"
+                            metric={`$${profitAndLoss.toLocaleString(undefined, {maximumFractionDigits: 0})}`}
+                            metricLabel="P/L"
+                        />
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-5 w-5" />
                                 </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the project
-                                    &quot;{project.name}&quot;.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={handleDelete}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                    Delete
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                 <DropdownMenuItem onClick={handleEdit}>
+                                    <Edit className="mr-2 h-4 w-4" /> Edit Project
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                            <Trash className="mr-2 h-4 w-4" /> Delete Project
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the project
+                                            &quot;{project.name}&quot;.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleDelete}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                            Delete
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </div>
