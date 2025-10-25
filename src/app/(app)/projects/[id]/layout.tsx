@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ProjectSummaryChart } from "./_components/project-summary-chart";
 
 function ProjectDetailLayoutContent({
     params,
@@ -82,6 +83,17 @@ function ProjectDetailLayoutContent({
         return <div>Loading...</div>
     }
 
+    const budgetChartData = [
+        { name: "Spent", value: spentToDate, fill: "hsl(var(--primary))" },
+        { name: "Remaining", value: Math.max(0, totalBudget - spentToDate), fill: "hsl(var(--muted))" },
+    ];
+    
+    const profitChartData = [
+        { name: "Cost", value: spentToDate, fill: "hsl(var(--chart-3))" },
+        { name: "Profit", value: Math.max(0, profitAndLoss), fill: "hsl(var(--chart-2))" },
+    ];
+
+
     return (
         <div className="flex flex-col gap-6">
             <div>
@@ -101,37 +113,64 @@ function ProjectDetailLayoutContent({
                             {project.projectNumber}
                         </p>
                     </div>
-                     <div className="flex gap-2 items-center">
-                        <Button variant="outline" onClick={handleEdit}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive"><Trash className="mr-2 h-4 w-4" /> Delete</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the project
-                                    &quot;{project.name}&quot;.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={handleDelete}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                    Delete
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                     <div className="flex gap-4 items-center">
+                        <ProjectSummaryChart 
+                            data={budgetChartData}
+                            label="Budget"
+                            metric={`$${spentToDate.toLocaleString()}`}
+                            metricLabel={`${budgetProgress.toFixed(1)}% of $${totalBudget.toLocaleString()}`}
+                        />
+                         <ProjectSummaryChart 
+                            data={profitChartData}
+                            label="Profit/Loss"
+                            metric={`$${profitAndLoss.toLocaleString()}`}
+                            metricLabel="Bid - Expenses"
+                        />
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <MoreVertical />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                 <DropdownMenuItem onClick={handleEdit}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Project
+                                </DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive">
+                                            <Trash className="mr-2 h-4 w-4" />
+                                            Delete Project
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the project
+                                            &quot;{project.name}&quot;.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleDelete}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                            Delete
+                                        </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </DropdownMenuContent>
+                         </DropdownMenu>
                     </div>
                 </div>
             </div>
 
             <Card>
-                <CardContent className="pt-6 grid grid-cols-2 lg:grid-cols-5 gap-6 items-center">
+                <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-1">
                         <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
                         <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
@@ -153,7 +192,7 @@ function ProjectDetailLayoutContent({
                         <p className="text-xs text-muted-foreground">Bid - Spent</p>
                     </div>
 
-                    <div className="lg:col-span-1 space-y-4">
+                    <div className="space-y-4 lg:col-span-1">
                         <div>
                             <p className="text-sm text-muted-foreground">
                                 {totalDays} Total Days ({format(endDate, 'MMM d, yyyy')})
