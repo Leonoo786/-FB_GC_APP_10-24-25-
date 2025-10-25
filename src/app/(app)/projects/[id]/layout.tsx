@@ -127,7 +127,7 @@ function ProjectDetailLayoutContent({
                 <CardContent className="pt-6 grid grid-cols-2 md:grid-cols-5 gap-6">
                     <div>
                         <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
-                        <p className="text-2xl font-bold">${project.finalBidAmount.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground">The agreed-upon price</p>
                     </div>
                     <div>
