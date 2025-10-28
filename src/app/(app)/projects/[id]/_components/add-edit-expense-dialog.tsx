@@ -52,6 +52,18 @@ const formSchema = z.object({
 
 type AddExpenseFormValues = z.infer<typeof formSchema>;
 
+const tryParseDate = (dateString: string): Date | null => {
+    const formats = ['PPP', 'MM/dd/yyyy', 'MM-dd-yyyy', 'yyyy-MM-dd'];
+    for (const fmt of formats) {
+        const parsedDate = parse(dateString, fmt, new Date());
+        if (isValid(parsedDate)) {
+            return parsedDate;
+        }
+    }
+    return null;
+}
+
+
 export function AddEditExpenseDialog({
   open,
   onOpenChange,
@@ -111,8 +123,8 @@ export function AddEditExpenseDialog({
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === 'date' && value.date) {
-        setManualDate(format(value.date, 'PPP'));
+      if (name === 'date' && value.date && isValid(new Date(value.date))) {
+        setManualDate(format(new Date(value.date), 'PPP'));
       }
     });
     return () => subscription.unsubscribe();
@@ -177,11 +189,10 @@ export function AddEditExpenseDialog({
                              value={manualDate}
                              onChange={(e) => setManualDate(e.target.value)}
                              onBlur={() => {
-                                const parsedDate = parse(manualDate, 'PPP', new Date());
-                                if (isValid(parsedDate)) {
+                                const parsedDate = tryParseDate(manualDate);
+                                if (parsedDate) {
                                   field.onChange(parsedDate);
                                 } else {
-                                  // Reset to last valid date if input is invalid
                                   setManualDate(field.value ? format(field.value, "PPP") : "");
                                 }
                              }}
