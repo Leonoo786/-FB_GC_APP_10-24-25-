@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isValid, parse } from 'date-fns';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense } from '@/lib/types';
 
@@ -147,6 +147,11 @@ export function AddEditExpenseDialog({
   if (!appState) return null;
   const { budgetCategories, vendors } = appState;
 
+  const uniqueBudgetCategories = useMemo(() => {
+    const categoryNames = new Set(budgetCategories.map(c => c.name));
+    return Array.from(categoryNames).sort();
+  }, [budgetCategories]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
@@ -177,7 +182,7 @@ export function AddEditExpenseDialog({
                                   field.onChange(parsedDate);
                                 } else {
                                   // Reset to last valid date if input is invalid
-                                  setManualDate(format(field.value, "PPP"));
+                                  setManualDate(field.value ? format(field.value, "PPP") : "");
                                 }
                              }}
                              className="w-full pl-3 text-left font-normal"
@@ -224,11 +229,9 @@ export function AddEditExpenseDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {budgetCategories
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.name}
+                      {uniqueBudgetCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
                           </SelectItem>
                         ))}
                     </SelectContent>
