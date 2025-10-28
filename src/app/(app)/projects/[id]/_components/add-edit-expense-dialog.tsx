@@ -34,7 +34,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, isValid, parse } from 'date-fns';
 import { useContext, useEffect, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense } from '@/lib/types';
@@ -148,23 +148,22 @@ export function AddEditExpenseDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
-                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                   <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <div className="relative">
+                           <Input
+                             value={field.value ? format(field.value, "PPP") : ""}
+                             onChange={(e) => {
+                               const date = parse(e.target.value, "PPP", new Date());
+                               if (isValid(date)) {
+                                 field.onChange(date);
+                               }
+                             }}
+                             className="w-full pl-3 text-left font-normal"
+                           />
+                           <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                        </div>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -172,7 +171,9 @@ export function AddEditExpenseDialog({
                         mode="single"
                         selected={field.value}
                         onSelect={(date) => {
-                            field.onChange(date);
+                            if (date) {
+                                field.onChange(date);
+                            }
                             setDatePickerOpen(false);
                         }}
                         disabled={(date) =>
