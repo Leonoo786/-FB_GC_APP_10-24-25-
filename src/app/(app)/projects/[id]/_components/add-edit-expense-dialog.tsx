@@ -75,11 +75,14 @@ export function AddEditExpenseDialog({
   const paymentMethod = form.watch('paymentMethod');
   const isEditing = !!expense;
 
+  const [manualDate, setManualDate] = useState('');
+
   useEffect(() => {
     if (open) {
       if (isEditing && expense) {
+        const expenseDate = new Date(expense.date);
         form.reset({
-          date: new Date(expense.date),
+          date: expenseDate,
           category: expense.category,
           vendor: expense.vendorName,
           description: expense.description,
@@ -88,9 +91,11 @@ export function AddEditExpenseDialog({
           paymentReference: expense.paymentReference,
           invoiceNumber: expense.invoiceNumber,
         });
+        setManualDate(format(expenseDate, "PPP"));
       } else {
+        const newDate = new Date();
         form.reset({
-            date: new Date(),
+            date: newDate,
             description: '',
             paymentReference: '',
             invoiceNumber: '',
@@ -99,9 +104,20 @@ export function AddEditExpenseDialog({
             paymentMethod: undefined,
             amount: 0,
         });
+        setManualDate(format(newDate, "PPP"));
       }
     }
   }, [expense, isEditing, open, form]);
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'date' && value.date) {
+        setManualDate(format(value.date, 'PPP'));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
 
   const onSubmit = (data: AddExpenseFormValues) => {
     if (!appState) return;
@@ -153,12 +169,16 @@ export function AddEditExpenseDialog({
                       <FormControl>
                         <div className="relative">
                            <Input
-                             value={field.value ? format(field.value, "PPP") : ""}
-                             onChange={(e) => {
-                               const date = parse(e.target.value, "PPP", new Date());
-                               if (isValid(date)) {
-                                 field.onChange(date);
-                               }
+                             value={manualDate}
+                             onChange={(e) => setManualDate(e.target.value)}
+                             onBlur={() => {
+                                const parsedDate = parse(manualDate, 'PPP', new Date());
+                                if (isValid(parsedDate)) {
+                                  field.onChange(parsedDate);
+                                } else {
+                                  // Reset to last valid date if input is invalid
+                                  setManualDate(format(field.value, "PPP"));
+                                }
                              }}
                              className="w-full pl-3 text-left font-normal"
                            />
@@ -173,6 +193,7 @@ export function AddEditExpenseDialog({
                         onSelect={(date) => {
                             if (date) {
                                 field.onChange(date);
+                                setManualDate(format(date, "PPP"));
                             }
                             setDatePickerOpen(false);
                         }}
