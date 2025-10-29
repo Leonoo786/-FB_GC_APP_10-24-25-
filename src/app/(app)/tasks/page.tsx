@@ -12,6 +12,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { Task } from '@/lib/types';
 import { format } from 'date-fns';
 import { AddTaskDialog } from './_components/add-task-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 type TaskStatus = 'To Do' | 'In Progress' | 'Done';
 const STATUSES: TaskStatus[] = ['To Do', 'In Progress', 'Done'];
@@ -24,7 +26,9 @@ const priorityVariant: Record<Task['priority'], 'destructive' | 'secondary' | 'o
 
 export default function TasksPage() {
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const appState = useContext(AppStateContext);
+    const { toast } = useToast();
 
     if (!appState) {
         return <div>Loading...</div>;
@@ -51,8 +55,31 @@ export default function TasksPage() {
         return name.split(' ').map(n => n[0]).join('');
     };
 
+    const handleNewTask = () => {
+        setSelectedTask(null);
+        setIsAddTaskOpen(true);
+    };
+
+    const handleEditTask = (task: Task) => {
+        setSelectedTask(task);
+        setIsAddTaskOpen(true);
+    };
+
+    const handleDeleteTask = (taskId: string) => {
+        setTasks(current => current.filter(t => t.id !== taskId));
+        toast({
+            title: "Task Deleted",
+            description: "The task has been successfully deleted.",
+            variant: "destructive",
+        });
+    };
+    
     const handleSaveTask = (task: Task) => {
-        setTasks(current => [{...task, id: crypto.randomUUID()}, ...current]);
+        if (task.id) { // Editing existing task
+            setTasks(current => current.map(t => t.id === task.id ? task : t));
+        } else { // Adding new task
+            setTasks(current => [{...task, id: crypto.randomUUID()}, ...current]);
+        }
     };
 
     return (
@@ -61,6 +88,7 @@ export default function TasksPage() {
                 open={isAddTaskOpen}
                 onOpenChange={setIsAddTaskOpen}
                 onSave={handleSaveTask}
+                task={selectedTask}
                 projects={projects}
                 teamMembers={teamMembers}
             />
@@ -72,7 +100,7 @@ export default function TasksPage() {
                             Manage project tasks with a Kanban board.
                         </p>
                     </div>
-                    <Button onClick={() => setIsAddTaskOpen(true)}>
+                    <Button onClick={handleNewTask}>
                         <PlusCircle className="mr-2" />
                         Add Task
                     </Button>
@@ -99,8 +127,26 @@ export default function TasksPage() {
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent>
-                                                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleEditTask(task)}>Edit</DropdownMenuItem>
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This action cannot be undone. This will permanently delete the task "{task.title}".
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                        <AlertDialogAction onClick={() => handleDeleteTask(task.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                            Delete
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </div>

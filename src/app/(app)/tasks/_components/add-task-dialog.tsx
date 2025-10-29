@@ -47,40 +47,50 @@ export function AddTaskDialog({
   open,
   onOpenChange,
   onSave,
+  task,
   projects,
   teamMembers,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (task: Task) => void;
+  task: Task | null;
   projects: Project[];
   teamMembers: TeamMember[];
 }) {
   const { toast } = useToast();
+  const isEditing = !!task;
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-        status: 'To Do',
-        priority: 'Medium',
-    }
   });
 
   useEffect(() => {
-    if (!open) {
-      form.reset({
-        status: 'To Do',
-        priority: 'Medium',
-        title: '',
-        projectId: undefined,
-        assigneeId: undefined,
-        dueDate: undefined,
-      });
+    if (open) {
+      if (isEditing && task) {
+        form.reset({
+          title: task.title,
+          projectId: task.projectId,
+          status: task.status,
+          priority: task.priority,
+          assigneeId: task.assigneeId || undefined,
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        });
+      } else {
+        form.reset({
+            status: 'To Do',
+            priority: 'Medium',
+            title: '',
+            projectId: undefined,
+            assigneeId: undefined,
+            dueDate: undefined,
+        });
+      }
     }
-  }, [open, form]);
+  }, [open, form, isEditing, task]);
 
   const onSubmit = (data: FormValues) => {
     const taskToSave: Task = {
-      id: '', // will be set in parent
+      id: task?.id || '', // will be set in parent if new
       title: data.title,
       projectId: data.projectId,
       status: data.status,
@@ -90,8 +100,8 @@ export function AddTaskDialog({
     };
     onSave(taskToSave);
     toast({
-      title: 'Task Created',
-      description: `Successfully created task: ${data.title}.`,
+      title: `Task ${isEditing ? 'Updated' : 'Created'}`,
+      description: `Successfully ${isEditing ? 'updated' : 'created'} task: ${data.title}.`,
     });
     onOpenChange(false);
   };
@@ -100,9 +110,9 @@ export function AddTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit' : 'Add New'} Task</DialogTitle>
           <DialogDescription>
-            Fill out the form to create a new task.
+            {isEditing ? 'Update the details of this task.' : 'Fill out the form to create a new task.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -127,7 +137,7 @@ export function AddTaskDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Project</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a project" />
@@ -153,7 +163,7 @@ export function AddTaskDialog({
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a status" />
@@ -175,7 +185,7 @@ export function AddTaskDialog({
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a priority" />
@@ -200,7 +210,7 @@ export function AddTaskDialog({
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel>Assign To (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a team member" />
@@ -266,7 +276,7 @@ export function AddTaskDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Task</Button>
+              <Button type="submit">{isEditing ? 'Save Changes' : 'Create Task'}</Button>
             </DialogFooter>
           </form>
         </Form>
