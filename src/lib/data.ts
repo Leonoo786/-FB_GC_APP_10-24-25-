@@ -172,7 +172,6 @@ export const budgetCategories: BudgetCategory[] = [
   { id: 'cat-65', name: 'Builders Risk' },
   { id: 'cat-66', name: 'Curbs Labor' },
   { id: 'cat-67', name: 'Curbs Material' },
-  { id: 'cat-68', name: 'Sitework Material' },
   { id: 'cat-69', name: 'Sidewalk Labor' },
   { id: 'cat-70', name: 'Sidewalk Material' },
   { id: 'cat-71', name: 'Dirtwork-Lbr' },
