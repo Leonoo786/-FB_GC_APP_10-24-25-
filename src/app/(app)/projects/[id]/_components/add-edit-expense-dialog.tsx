@@ -32,16 +32,17 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isValid, parse } from 'date-fns';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
-import type { Expense } from '@/lib/types';
+import type { Expense, Vendor } from '@/lib/types';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
-  category: z.string().optional(),
+  category: z.string().min(1, 'Category is required.'),
   vendor: z.string().optional(),
   description: z.string().min(1, 'Description is required.'),
   amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
@@ -157,7 +158,7 @@ export function AddEditExpenseDialog({
   };
 
   if (!appState) return null;
-  const { budgetCategories, vendors } = appState;
+  const { budgetCategories, vendors, setBudgetCategories, setVendors } = appState;
 
   const uniqueBudgetCategories = useMemo(() => {
     const categoryNames = new Set(budgetCategories.map(c => c.name));
@@ -228,25 +229,72 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a budget category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {uniqueBudgetCategories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? uniqueBudgetCategories.find(
+                                (cat) => cat === field.value
+                              )
+                            : "Select a budget category"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search category..." />
+                        <CommandList>
+                        <CommandEmpty>
+                             <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={() => {
+                                    const newCategoryName = form.getValues('category');
+                                    if(newCategoryName && !uniqueBudgetCategories.includes(newCategoryName)) {
+                                        setBudgetCategories(prev => [...prev, {id: crypto.randomUUID(), name: newCategoryName}]);
+                                        field.onChange(newCategoryName);
+                                    }
+                                }}
+                                >
+                                Create "{form.getValues('category')}"
+                            </Button>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {uniqueBudgetCategories.map((category) => (
+                            <CommandItem
+                              value={category}
+                              key={category}
+                              onSelect={() => {
+                                form.setValue("category", category)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  category === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {category}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -255,27 +303,82 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="vendor"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Vendor (Optional)</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a vendor" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {vendors
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((vendor) => (
-                          <SelectItem key={vendor.id} value={vendor.name}>
-                            {vendor.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                   <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value
+                            ? vendors.find(
+                                (vendor) => vendor.name === field.value
+                              )?.name
+                            : "Select a vendor"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search vendor..." />
+                        <CommandList>
+                        <CommandEmpty>
+                             <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={() => {
+                                    const newVendorName = form.getValues('vendor');
+                                    if(newVendorName && !vendors.some(v => v.name === newVendorName)) {
+                                        const newVendor: Vendor = {
+                                            id: crypto.randomUUID(),
+                                            name: newVendorName,
+                                            trade: 'Uncategorized',
+                                            contactPerson: 'N/A',
+                                            phone: 'N/A',
+                                            email: 'N/A'
+                                        };
+                                        setVendors(prev => [...prev, newVendor]);
+                                        field.onChange(newVendorName);
+                                    }
+                                }}
+                                >
+                                Create "{form.getValues('vendor')}"
+                            </Button>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {vendors
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                            .map((vendor) => (
+                            <CommandItem
+                              value={vendor.name}
+                              key={vendor.id}
+                              onSelect={() => {
+                                form.setValue("vendor", vendor.name)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  vendor.name === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {vendor.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                         </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
