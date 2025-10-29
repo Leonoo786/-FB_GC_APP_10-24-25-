@@ -2,7 +2,7 @@
 'use client';
 
 import { TrendingUp } from 'lucide-react';
-import { Pie, PieChart } from 'recharts';
+import { Pie, PieChart, Cell } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
@@ -10,10 +10,11 @@ import {
 } from '@/components/ui/chart';
 import type { Project } from '@/lib/types';
 import { useMemo } from 'react';
+import { LabelList } from 'recharts';
 
 const chartConfig = {
   active: {
-    label: 'Active',
+    label: 'In Progress',
     color: 'hsl(var(--chart-1))',
   },
   planning: {
@@ -41,7 +42,7 @@ type ProjectStatusChartProps = {
 export function ProjectStatusChart({ projects }: ProjectStatusChartProps) {
   const chartData = useMemo(() => {
     const statusCounts = projects.reduce((acc, project) => {
-        const key = project.status.toLowerCase().replace(' ', '');
+        const key = project.status.toLowerCase().replace(/\s+/g, '');
         if (!acc[key]) {
             acc[key] = {
                 status: project.status,
@@ -76,9 +77,18 @@ export function ProjectStatusChart({ projects }: ProjectStatusChartProps) {
             innerRadius={60}
             strokeWidth={5}
           >
-             {chartData.map((entry) => (
-              <Pie.Cell key={entry.status} fill={entry.fill} />
+             {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}
+             <LabelList
+              dataKey="status"
+              className="fill-background"
+              stroke="none"
+              fontSize={12}
+              formatter={(value: string, entry: any) =>
+                `(${(entry.payload.count / totalProjects * 100).toFixed(0)}%)`
+              }
+            />
           </Pie>
         </PieChart>
       </ChartContainer>
