@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/chart';
 import type { Project } from '@/lib/types';
 import { useMemo } from 'react';
-import { LabelList } from 'recharts';
+import { Label, LabelList } from 'recharts';
 
 const chartConfig = {
   active: {
@@ -77,6 +77,35 @@ export function ProjectStatusChart({ projects }: ProjectStatusChartProps) {
             innerRadius={60}
             strokeWidth={5}
           >
+             <Label
+                content={({ viewBox }) => {
+                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                    return (
+                        <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        >
+                        <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                        >
+                            {totalProjects.toLocaleString()}
+                        </tspan>
+                        <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 20}
+                            className="fill-muted-foreground"
+                        >
+                            Projects
+                        </tspan>
+                        </text>
+                    );
+                    }
+                }}
+                />
              {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}
@@ -88,7 +117,9 @@ export function ProjectStatusChart({ projects }: ProjectStatusChartProps) {
               formatter={(value: string) => {
                 const entry = chartData.find(item => item.status === value);
                 if (!entry) return null;
-                return `(${(entry.count / totalProjects * 100).toFixed(0)}%)`
+                const percentage = totalProjects > 0 ? (entry.count / totalProjects * 100) : 0;
+                if (percentage < 5) return null;
+                return `${value} (${percentage.toFixed(0)}%)`
               }}
             />
           </Pie>
