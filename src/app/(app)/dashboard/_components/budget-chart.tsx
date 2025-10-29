@@ -23,7 +23,7 @@ import { AppStateContext } from "@/context/app-state-context"
 const chartConfig = {
   budget: {
     label: "Budget",
-    color: "hsl(var(--chart-3))",
+    color: "hsl(var(--chart-2))",
   },
   actual: {
     label: "Actual",
