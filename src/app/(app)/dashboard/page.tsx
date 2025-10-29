@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useContext, useMemo } from 'react';
@@ -94,9 +95,14 @@ export default function DashboardPage() {
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
               </TooltipTrigger>
-              <TooltipContent>
-                <ul>
-                  {activeProjects.map(p => <li key={p.id}>{p.name}</li>)}
+              <TooltipContent className="p-2">
+                <ul className="space-y-2">
+                  {activeProjects.map(p => (
+                    <li key={p.id}>
+                        <p className="font-bold">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.description}</p>
+                    </li>
+                  ))}
                 </ul>
               </TooltipContent>
             </Tooltip>
