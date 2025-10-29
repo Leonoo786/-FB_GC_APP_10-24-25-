@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -29,9 +29,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AddTaskDialog } from '../tasks/_components/add-task-dialog';
+import type { Task } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DashboardPage() {
   const appState = useContext(AppStateContext);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const { toast } = useToast();
 
   if (
     !appState ||
@@ -45,18 +50,33 @@ export default function DashboardPage() {
     return <div>Loading...</div>;
   }
 
-  const { projects, tasks, budgetItems, expenses, teamMembers, userName } = appState;
+  const { projects, tasks, budgetItems, expenses, teamMembers, userName, setTasks } = appState;
+  
+  const handleSaveTask = (task: Task) => {
+    if (task.id) { // Editing existing task
+        setTasks(current => current.map(t => t.id === task.id ? task : t));
+    } else { // Adding new task
+        setTasks(current => [{...task, id: crypto.randomUUID()}, ...current]);
+    }
+     toast({
+      title: `Task ${task.id ? 'Updated' : 'Created'}`,
+      description: `Successfully ${task.id ? 'updated' : 'created'} task: ${task.title}.`,
+    });
+  };
+
 
   const activeProjects = useMemo(() => projects.filter(p => p.status === 'In Progress'), [projects]);
   const activeProjectIds = useMemo(() => activeProjects.map(p => p.id), [activeProjects]);
 
   const activeProjectsCount = activeProjects.length;
   
-  const tasksDueTodayCount = tasks.filter(
-    (t) =>
-      new Date(t.dueDate).toDateString() === new Date().toDateString() &&
-      t.status !== 'Done'
-  ).length;
+  const tasksDueSoonCount = tasks.filter(t => {
+      const dueDate = new Date(t.dueDate);
+      const today = new Date();
+      const inAWeek = new Date();
+      inAWeek.setDate(today.getDate() + 7);
+      return dueDate >= today && dueDate <= inAWeek && t.status !== 'Done';
+    }).length;
   
   const activeBudgetItems = useMemo(() => budgetItems.filter(item => activeProjectIds.includes(item.projectId)), [budgetItems, activeProjectIds]);
   const activeExpenses = useMemo(() => expenses.filter(expense => activeProjectIds.includes(expense.projectId)), [expenses, activeProjectIds]);
@@ -80,6 +100,15 @@ export default function DashboardPage() {
   }, [activeExpenses]);
 
   return (
+    <>
+    <AddTaskDialog
+        open={isAddTaskOpen}
+        onOpenChange={setIsAddTaskOpen}
+        onSave={handleSaveTask}
+        task={null}
+        projects={projects}
+        teamMembers={teamMembers}
+    />
     <TooltipProvider>
       <div className="flex flex-col gap-6">
         <div>
@@ -96,12 +125,14 @@ export default function DashboardPage() {
                 </CardHeader>
               </TooltipTrigger>
               <TooltipContent>
-                <p className="font-bold mb-2">Active Projects</p>
-                <ul className="list-disc pl-4">
-                  {activeProjects.map(p => (
-                    <li key={p.id} className="text-sm">{p.name}</li>
-                  ))}
-                </ul>
+                 <p className="font-bold mb-2">Active Projects</p>
+                  <ul className="list-disc pl-4">
+                    {activeProjects.map(p => (
+                      <li key={p.id} className="text-sm">
+                        <span className="font-semibold">{p.name}:</span> {p.description}
+                      </li>
+                    ))}
+                  </ul>
               </TooltipContent>
             </Tooltip>
             <CardContent>
@@ -113,12 +144,12 @@ export default function DashboardPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tasks Due Today</CardTitle>
+              <CardTitle className="text-sm font-medium">Tasks Due Soon</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tasksDueTodayCount}</div>
-              <p className="text-xs text-muted-foreground">Needs attention</p>
+              <div className="text-2xl font-bold">{tasksDueSoonCount}</div>
+              <p className="text-xs text-muted-foreground">In the next 7 days</p>
             </CardContent>
           </Card>
           <Card>
@@ -209,7 +240,7 @@ export default function DashboardPage() {
               </div>
           </div>
           <div className="lg:col-span-1 space-y-6">
-              <TasksDueToday tasks={tasks} projects={projects} />
+              <TasksDueToday tasks={tasks} projects={projects} onAddTask={() => setIsAddTaskOpen(true)} />
               <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Team Members</CardTitle>
@@ -250,5 +281,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </TooltipProvider>
+    </>
   );
 }

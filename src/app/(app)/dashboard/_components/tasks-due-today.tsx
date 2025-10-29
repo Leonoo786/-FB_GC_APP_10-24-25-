@@ -6,27 +6,34 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import type { Task, Project } from '@/lib/types';
 import Link from 'next/link';
+import { addDays, startOfDay } from 'date-fns';
 
 type TasksDueTodayProps = {
     tasks: Task[];
     projects: Project[];
+    onAddTask: () => void;
 };
 
-export function TasksDueToday({ tasks, projects }: TasksDueTodayProps) {
-    const tasksDueToday = tasks.filter(t => new Date(t.dueDate).toDateString() === new Date().toDateString() && t.status !== 'Done');
+export function TasksDueToday({ tasks, projects, onAddTask }: TasksDueTodayProps) {
+    const tasksDueSoon = tasks.filter(t => {
+        const dueDate = new Date(t.dueDate);
+        const today = startOfDay(new Date());
+        const inAWeek = addDays(today, 7);
+        return dueDate >= today && dueDate <= inAWeek && t.status !== 'Done';
+    });
 
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Tasks Due Today</CardTitle>
+                <CardTitle>Tasks Due in Next 7 Days</CardTitle>
                 <Button variant="ghost" size="sm" asChild>
                     <Link href="/tasks">View All</Link>
                 </Button>
             </CardHeader>
             <CardContent>
-                {tasksDueToday.length > 0 ? (
+                {tasksDueSoon.length > 0 ? (
                     <ul className="space-y-4">
-                        {tasksDueToday.map(task => (
+                        {tasksDueSoon.map(task => (
                              <li key={task.id} className="flex items-center justify-between">
                                 <div>
                                     <p className="font-medium">{task.title}</p>
@@ -41,8 +48,8 @@ export function TasksDueToday({ tasks, projects }: TasksDueTodayProps) {
                 ) : (
                     <div className="text-center text-muted-foreground py-8">
                         <CheckCircle className="mx-auto h-8 w-8 mb-2" />
-                        <p>No tasks due today</p>
-                        <Button variant="outline" size="sm" className="mt-4">
+                        <p>No tasks due in the next 7 days</p>
+                        <Button variant="outline" size="sm" className="mt-4" onClick={onAddTask}>
                             Add New Task
                         </Button>
                     </div>
@@ -51,4 +58,3 @@ export function TasksDueToday({ tasks, projects }: TasksDueTodayProps) {
         </Card>
     );
 }
-
