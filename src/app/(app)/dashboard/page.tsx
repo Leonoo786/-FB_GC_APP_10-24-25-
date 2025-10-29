@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function DashboardPage() {
   const appState = useContext(AppStateContext);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { toast } = useToast();
 
   if (
@@ -62,6 +63,11 @@ export default function DashboardPage() {
       title: `Task ${task.id ? 'Updated' : 'Created'}`,
       description: `Successfully ${task.id ? 'updated' : 'created'} task: ${task.title}.`,
     });
+  };
+
+  const handleOpenTaskDialog = (task: Task | null) => {
+    setSelectedTask(task);
+    setIsAddTaskOpen(true);
   };
 
 
@@ -105,7 +111,7 @@ export default function DashboardPage() {
         open={isAddTaskOpen}
         onOpenChange={setIsAddTaskOpen}
         onSave={handleSaveTask}
-        task={null}
+        task={selectedTask}
         projects={projects}
         teamMembers={teamMembers}
     />
@@ -240,7 +246,12 @@ export default function DashboardPage() {
               </div>
           </div>
           <div className="lg:col-span-1 space-y-6">
-              <TasksDueToday tasks={tasks} projects={projects} onAddTask={() => setIsAddTaskOpen(true)} />
+              <TasksDueToday 
+                tasks={tasks} 
+                projects={projects} 
+                onAddTask={() => handleOpenTaskDialog(null)}
+                onViewTask={(task) => handleOpenTaskDialog(task)}
+              />
               <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Team Members</CardTitle>

@@ -12,9 +12,10 @@ type TasksDueTodayProps = {
     tasks: Task[];
     projects: Project[];
     onAddTask: () => void;
+    onViewTask: (task: Task) => void;
 };
 
-export function TasksDueToday({ tasks, projects, onAddTask }: TasksDueTodayProps) {
+export function TasksDueToday({ tasks, projects, onAddTask, onViewTask }: TasksDueTodayProps) {
     const tasksDueSoon = tasks.filter(t => {
         const dueDate = new Date(t.dueDate);
         const today = startOfDay(new Date());
@@ -41,7 +42,7 @@ export function TasksDueToday({ tasks, projects, onAddTask }: TasksDueTodayProps
                                         {projects.find(p => p.id === task.projectId)?.name || 'Unknown Project'}
                                     </p>
                                 </div>
-                                <Button variant="secondary" size="sm">View</Button>
+                                <Button variant="secondary" size="sm" onClick={() => onViewTask(task)}>View</Button>
                             </li>
                         ))}
                     </ul>
