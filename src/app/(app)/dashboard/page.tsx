@@ -90,15 +90,16 @@ export default function DashboardPage() {
           <Card>
             <Tooltip>
               <TooltipTrigger asChild>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer">
                   <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
               </TooltipTrigger>
-              <TooltipContent className="p-2">
-                <ul className="space-y-1">
+              <TooltipContent>
+                <p className="font-bold mb-2">Active Projects</p>
+                <ul className="list-disc pl-4">
                   {activeProjects.map(p => (
-                    <li key={p.id} className="font-medium text-sm">{p.name}</li>
+                    <li key={p.id} className="text-sm">{p.name}</li>
                   ))}
                 </ul>
               </TooltipContent>
