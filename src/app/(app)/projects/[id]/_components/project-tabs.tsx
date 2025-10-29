@@ -11,6 +11,7 @@ const tabs = [
     { name: "Budget", href: "" },
     { name: "Expenses", href: "expenses" },
     { name: "Change Orders", href: "change-orders" },
+    { name: "Get Reimbursed", href: "get-reimbursed" },
     { name: "Milestones", href: "milestones" },
     { name: "Drawings", href: "drawings" },
     { name: "Schedule", href: "schedule" },
