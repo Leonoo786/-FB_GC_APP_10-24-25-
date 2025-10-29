@@ -1,5 +1,4 @@
 
-
 import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder, Milestone } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 
@@ -370,3 +369,5 @@ export const milestones: Milestone[] = [
     { id: 'm-4', projectId: 'proj-2', name: 'Site Work Complete', description: 'All grading, utilities, and paving for the retail center are complete.', dueDate: '2023-10-01', status: 'Upcoming' },
 ];
 
+
+    
