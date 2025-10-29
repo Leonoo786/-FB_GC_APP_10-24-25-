@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Activity,
   CheckCircle,
@@ -22,7 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppStateContext } from '@/context/app-state-context';
-import { ProjectStatusChart } from './_components/project-status-chart';
+import { BudgetChart } from './_components/budget-chart';
 import { ProjectTimeline } from './_components/project-timeline';
 import { TasksDueToday } from './_components/tasks-due-today';
 import { Button } from '@/components/ui/button';
@@ -187,10 +186,11 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                       <CardHeader>
-                          <CardTitle>Project Status</CardTitle>
+                          <CardTitle>Budget vs. Actual</CardTitle>
+                          <CardDescription>For active projects</CardDescription>
                       </CardHeader>
                       <CardContent>
-                          <ProjectStatusChart projects={projects} />
+                          <BudgetChart />
                       </CardContent>
                   </Card>
                   <Card>
