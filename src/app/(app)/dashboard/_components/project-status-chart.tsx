@@ -86,7 +86,7 @@ export function ProjectStatusChart({ projects }: ProjectStatusChartProps) {
               stroke="none"
               fontSize={12}
               formatter={(value: string, entry: any) =>
-                `(${(entry.count / totalProjects * 100).toFixed(0)}%)`
+                `(${(entry.payload.count / totalProjects * 100).toFixed(0)}%)`
               }
             />
           </Pie>
