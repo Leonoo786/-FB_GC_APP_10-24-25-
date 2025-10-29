@@ -96,12 +96,9 @@ export default function DashboardPage() {
                 </CardHeader>
               </TooltipTrigger>
               <TooltipContent className="p-2">
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {activeProjects.map(p => (
-                    <li key={p.id}>
-                        <p className="font-bold">{p.name}</p>
-                        <p className="text-xs text-muted-foreground">{p.description}</p>
-                    </li>
+                    <li key={p.id} className="font-medium text-sm">{p.name}</li>
                   ))}
                 </ul>
               </TooltipContent>
