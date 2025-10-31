@@ -1,19 +1,23 @@
 
-import { notFound, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MoreVertical, Edit, Trash } from "lucide-react";
 import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use, Suspense, useContext, useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { use, Suspense } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 import { projects as initialProjects } from "@/lib/data";
+
+// These imports are moved inside the Client Component below
+// import { useRouter } from "next/navigation";
+// import { useContext, useState, useEffect } from "react";
+// import { useToast } from "@/hooks/use-toast";
 
 // This is a new Client Component that encapsulates all the client-side logic.
 function ProjectDetailLayoutContent({
@@ -24,6 +28,13 @@ function ProjectDetailLayoutContent({
     children: React.ReactNode;
 }) {
     'use client'; // This component is a client component.
+    
+    // All client-side hooks are now imported and used within this component
+    const { useRouter } = require("next/navigation");
+    const React = require("react");
+    const { useContext, useState, useEffect } = React;
+    const { useToast } = require("@/hooks/use-toast");
+    
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);
