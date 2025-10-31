@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import React, { useState, use, useContext, useRef, useMemo } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,6 +18,15 @@ import { TransactionsDialog } from "../_components/transactions-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParams } from "next/navigation";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  ColumnSizingState,
+} from '@tanstack/react-table';
+import { ResizableTable } from '@/components/ui/resizable-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 
 
 export default function ProjectBudgetPage() {
@@ -34,6 +42,7 @@ export default function ProjectBudgetPage() {
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('notes-asc');
+    const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
 
     const project = appState?.projects.find(p => p.id === params.id);
     
@@ -255,6 +264,135 @@ export default function ProjectBudgetPage() {
         }
     }, [projectBudgetItems, projectExpenses]);
 
+    const columns: ColumnDef<BudgetItem>[] = useMemo(() => [
+        {
+          id: 'select',
+          header: ({ table }) => (
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              onCheckedChange={(value) => {
+                table.toggleAllPageRowsSelected(!!value);
+                if (value) {
+                    setSelectedRowKeys(projectBudgetItems.map(item => item.id));
+                } else {
+                    setSelectedRowKeys([]);
+                }
+              }}
+              aria-label="Select all"
+            />
+          ),
+          cell: ({ row }) => (
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => {
+                row.toggleSelected(!!value);
+                 if(value) {
+                    setSelectedRowKeys(prev => [...prev, row.original.id]);
+                } else {
+                    setSelectedRowKeys(prev => prev.filter(id => id !== row.original.id));
+                }
+              }}
+              aria-label="Select row"
+            />
+          ),
+          size: 40,
+          enableResizing: false,
+        },
+        { accessorKey: 'notes', header: 'Notes', size: 250 },
+        { accessorKey: 'category', header: 'Category', size: 150 },
+        { accessorKey: 'costType', header: 'Cost Type', size: 100 },
+        {
+          accessorKey: 'originalBudget',
+          header: () => <div className="text-right">Original Budget</div>,
+          cell: ({ row }) => <div className="text-right">${row.original.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>,
+          size: 150,
+        },
+        {
+          accessorKey: 'approvedCOBudget',
+          header: () => <div className="text-right">Approved COs</div>,
+          cell: ({ row }) => <div className="text-right">${row.original.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>,
+          size: 150,
+        },
+        {
+          id: 'revisedBudget',
+          header: () => <div className="text-right">Revised Budget</div>,
+          cell: ({ row }) => <div className="text-right font-semibold">${(row.original.originalBudget + row.original.approvedCOBudget).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>,
+          size: 150,
+        },
+        {
+          id: 'committedCost',
+          header: () => <div className="text-right">Committed Cost</div>,
+          cell: ({ row }) => {
+             const committedCost = projectExpenses
+                                        .filter(exp => exp.category === row.original.category)
+                                        .reduce((sum, exp) => sum + exp.amount, 0);
+            return (
+                <div className="text-right">
+                    <Button variant="link" className="p-0 h-auto" onClick={() => handleTransactionsClick(row.original.category)}>
+                        ${committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Button>
+                </div>
+            )
+          },
+          size: 150,
+        },
+        {
+          accessorKey: 'projectedCost',
+          header: () => <div className="text-right">Projected Cost</div>,
+          cell: ({ row }) => <div className="text-right">${row.original.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>,
+          size: 150,
+        },
+        {
+          id: 'actions',
+          cell: ({ row }) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button aria-haspopup="true" size="icon" variant="ghost">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleEditItem(row.original)}>Edit</DropdownMenuItem>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete this budget item.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDeleteItem(row.original.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
+          size: 50,
+          enableResizing: false,
+        },
+      ], [projectBudgetItems, projectExpenses]);
+
+    const table = useReactTable({
+        data: projectBudgetItems,
+        columns,
+        state: {
+          columnSizing,
+        },
+        onColumnSizingChange: setColumnSizing,
+        columnResizeMode: 'onChange',
+        getCoreRowModel: getCoreRowModel(),
+      });
+
     return (
         <>
             <input
@@ -352,39 +490,21 @@ export default function ProjectBudgetPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[40px]">
-                                    <Checkbox
-                                        checked={selectedRowKeys.length > 0 && projectBudgetItems.length > 0 && selectedRowKeys.length === projectBudgetItems.length}
-                                        onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedRowKeys(projectBudgetItems.map(item => item.id));
-                                            } else {
-                                                setSelectedRowKeys([]);
-                                            }
-                                        }}
-                                        aria-label="Select all rows"
-                                        disabled={showGroupByCategory}
-                                    />
-                                </TableHead>
-                                <TableHead>{showGroupByCategory ? 'Category' : 'Notes'}</TableHead>
-                                {!showGroupByCategory && <TableHead>Category</TableHead>}
-                                {!showGroupByCategory && <TableHead>Cost Type</TableHead>}
-                                <TableHead className="text-right">Original Budget</TableHead>
-                                <TableHead className="text-right">Approved COs</TableHead>
-                                <TableHead className="text-right">Revised Budget</TableHead>
-                                <TableHead className="text-right">Committed Cost</TableHead>
-                                <TableHead className="text-right">Projected Cost</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        {showGroupByCategory && groupedBudgetItems ? (
+                    {showGroupByCategory && groupedBudgetItems ? (
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead className="text-right">Original Budget</TableHead>
+                                    <TableHead className="text-right">Approved COs</TableHead>
+                                    <TableHead className="text-right">Revised Budget</TableHead>
+                                    <TableHead className="text-right">Committed Cost</TableHead>
+                                    <TableHead className="text-right">Projected Cost</TableHead>
+                                </TableRow>
+                            </TableHeader>
                             <TableBody>
                                 {groupedBudgetItems.map(({ category, items, subtotals }) => (
                                     <TableRow key={category} className="bg-secondary hover:bg-secondary/80 font-bold">
-                                        <TableCell></TableCell>
                                         <TableCell>{category}</TableCell>
                                         <TableCell className="text-right">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                         <TableCell className="text-right">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -395,94 +515,23 @@ export default function ProjectBudgetPage() {
                                             </Button>
                                         </TableCell>
                                         <TableCell className="text-right">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        <TableCell></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
-                        ) : (
-                            <TableBody>
-                                {projectBudgetItems.map((item) => {
-                                    const revisedBudget = item.originalBudget + item.approvedCOBudget;
-                                    const committedCost = projectExpenses
-                                        .filter(exp => exp.category === item.category)
-                                        .reduce((sum, exp) => sum + exp.amount, 0);
-                                    return (
-                                        <TableRow key={item.id} data-state={selectedRowKeys.includes(item.id) && "selected"}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedRowKeys.includes(item.id)}
-                                                    onCheckedChange={(checked) => {
-                                                        if (checked) {
-                                                            setSelectedRowKeys(prev => [...prev, item.id]);
-                                                        } else {
-                                                            setSelectedRowKeys(prev => prev.filter(id => id !== item.id));
-                                                        }
-                                                    }}
-                                                    aria-label="Select row"
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-medium">{item.notes}</TableCell>
-                                            <TableCell>{item.category}</TableCell>
-                                            <TableCell>{item.costType}</TableCell>
-                                            <TableCell className="text-right">${item.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right">${item.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell className="text-right">
-                                                <Button variant="link" className="p-0 h-auto" onClick={() => handleTransactionsClick(item.category)}>
-                                                    ${committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell className="text-right">${item.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This action cannot be undone. This will permanently delete this budget item.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                                        Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        )}
-                        <TableFooter>
-                            <TableRow>
-                                <TableCell colSpan={showGroupByCategory ? 2 : 4} className="font-bold">Totals</TableCell>
-                                <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                        </TableFooter>
-                    </Table>
+                            <TableFooter>
+                                <TableRow>
+                                    <TableCell className="font-bold">Totals</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                </TableRow>
+                            </TableFooter>
+                        </Table>
+                    ) : (
+                        <ResizableTable columns={columns} data={projectBudgetItems} table={table} />
+                    )}
                 </CardContent>
             </Card>
         </>

@@ -18,14 +18,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -41,6 +33,14 @@ import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  ColumnSizingState,
+} from '@tanstack/react-table';
+import { ResizableTable } from '@/components/ui/resizable-table';
 
 export default function ProjectExpensesPage({
   params: paramsProp,
@@ -57,6 +57,8 @@ export default function ProjectExpensesPage({
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+
 
   if (!appState) {
     return <div>Loading...</div>;
@@ -249,6 +251,162 @@ export default function ProjectExpensesPage({
     }
   };
 
+  const columns = useMemo<ColumnDef<Expense>[]>(() => [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => {
+            table.toggleAllPageRowsSelected(!!value);
+            if (value) {
+                setSelectedRowKeys(sortedExpenses.map(exp => exp.id));
+            } else {
+                setSelectedRowKeys([]);
+            }
+          }}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => {
+            row.toggleSelected(!!value);
+            if(value) {
+                setSelectedRowKeys(prev => [...prev, row.original.id]);
+            } else {
+                setSelectedRowKeys(prev => prev.filter(id => id !== row.original.id));
+            }
+          }}
+          aria-label="Select row"
+        />
+      ),
+      size: 40,
+      enableResizing: false,
+    },
+    {
+      accessorKey: 'date',
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => requestSort('date')}>
+          Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => format(new Date(row.getValue('date')), 'PP'),
+      size: 150,
+    },
+    {
+      accessorKey: 'category',
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => requestSort('category')}>
+          Category
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      size: 150,
+    },
+    {
+      accessorKey: 'vendorName',
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => requestSort('vendorName')}>
+          Vendor
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      size: 150,
+    },
+    {
+      accessorKey: 'description',
+      header: 'Description',
+      size: 250,
+    },
+    {
+      accessorKey: 'paymentMethod',
+      header: 'Payment Method',
+      size: 150,
+    },
+    {
+      accessorKey: 'paymentReference',
+      header: 'Reference',
+      size: 120,
+    },
+    {
+      accessorKey: 'invoiceNumber',
+      header: 'Invoice #',
+      size: 120,
+    },
+    {
+      accessorKey: 'amount',
+      header: ({ column }) => (
+        <div className="text-right">
+            <Button variant="ghost" onClick={() => requestSort('amount')}>
+                Amount
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-right">
+          {row.original.amount.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+          })}
+        </div>
+      ),
+      size: 120,
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button aria-haspopup="true" size="icon" variant="ghost">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => handleEditExpense(row.original)}>Edit</DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete this expense.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDeleteExpense(row.original.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+      size: 50,
+      enableResizing: false,
+    },
+  ], [requestSort, sortedExpenses]);
+
+  const table = useReactTable({
+    data: sortedExpenses,
+    columns,
+    state: {
+      columnSizing,
+    },
+    onColumnSizingChange: setColumnSizing,
+    columnResizeMode: 'onChange',
+    getCoreRowModel: getCoreRowModel(),
+  });
+
 
   return (
     <>
@@ -343,128 +501,7 @@ export default function ProjectExpensesPage({
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                 <TableHead className="w-[40px]">
-                    <Checkbox
-                        checked={selectedRowKeys.length > 0 && sortedExpenses.length > 0 && selectedRowKeys.length === sortedExpenses.length}
-                        onCheckedChange={(checked) => {
-                            if (checked) {
-                                setSelectedRowKeys(sortedExpenses.map(exp => exp.id));
-                            } else {
-                                setSelectedRowKeys([]);
-                            }
-                        }}
-                        aria-label="Select all rows"
-                    />
-                 </TableHead>
-                <TableHead>
-                  <Button variant="ghost" onClick={() => requestSort('date')}>
-                    Date
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>
-                   <Button variant="ghost" onClick={() => requestSort('category')}>
-                    Category
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button variant="ghost" onClick={() => requestSort('vendorName')}>
-                    Vendor
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Payment Method</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Invoice #</TableHead>
-                <TableHead className="text-right">
-                  <Button variant="ghost" onClick={() => requestSort('amount')}>
-                    Amount
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedExpenses.map((expense) => (
-                <TableRow key={expense.id} data-state={selectedRowKeys.includes(expense.id) && "selected"}>
-                  <TableCell>
-                      <Checkbox
-                          checked={selectedRowKeys.includes(expense.id)}
-                          onCheckedChange={(checked) => {
-                              if (checked) {
-                                  setSelectedRowKeys(prev => [...prev, expense.id]);
-                              } else {
-                                  setSelectedRowKeys(prev => prev.filter(id => id !== expense.id));
-                              }
-                          }}
-                          aria-label="Select row"
-                      />
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(expense.date), 'PP')}
-                  </TableCell>
-                  <TableCell>{expense.category}</TableCell>
-                  <TableCell>{expense.vendorName}</TableCell>
-                  <TableCell>{expense.description}</TableCell>
-                  <TableCell>{expense.paymentMethod}</TableCell>
-                  <TableCell>{expense.paymentReference}</TableCell>
-                  <TableCell>{expense.invoiceNumber}</TableCell>
-                  <TableCell className="text-right">
-                    {expense.amount.toLocaleString('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEditExpense(expense)}>Edit</DropdownMenuItem>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete this expense.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteExpense(expense.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-               {sortedExpenses.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center h-24">
-                    No expenses recorded for this project yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <ResizableTable columns={columns} data={sortedExpenses} table={table} />
         </CardContent>
       </Card>
     </>
