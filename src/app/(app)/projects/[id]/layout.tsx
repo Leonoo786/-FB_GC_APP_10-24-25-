@@ -1,7 +1,4 @@
 
-
-'use client';
-
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MoreVertical, Edit, Trash } from "lucide-react";
@@ -16,7 +13,9 @@ import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
+import { projects as initialProjects } from "@/lib/data";
 
+// This is a new Client Component that encapsulates all the client-side logic.
 function ProjectDetailLayoutContent({
     params,
     children,
@@ -24,6 +23,7 @@ function ProjectDetailLayoutContent({
     params: { id: string };
     children: React.ReactNode;
 }) {
+    'use client'; // This component is a client component.
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);
@@ -225,15 +225,14 @@ function ProjectDetailLayoutContent({
     );
 }
 
-// This is a workaround because `use` is not fully compatible with client components that are not at the top-level
+// This is the parent Server Component.
 export default function ProjectDetailLayout({
-    params: paramsProp,
+    params,
     children,
 }: {
-    params: Promise<{ id: string }>;
+    params: { id: string };
     children: React.ReactNode;
 }) {
-    const params = use(paramsProp);
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <ProjectDetailLayoutContent params={params}>
@@ -241,4 +240,11 @@ export default function ProjectDetailLayout({
             </ProjectDetailLayoutContent>
         </Suspense>
     )
+}
+
+export async function generateStaticParams() {
+    // This function now correctly resides in a Server Component.
+    return initialProjects.map((project) => ({
+        id: project.id,
+    }));
 }
