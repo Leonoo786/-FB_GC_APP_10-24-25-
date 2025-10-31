@@ -387,12 +387,3 @@ export const milestones: Milestone[] = [
     { id: 'm-3', projectId: 'proj-1', name: 'Building Weather-Tight', description: 'Exterior cladding and roofing are complete, making the building weather-tight.', dueDate: '2025-02-28', status: 'Upcoming' },
     { id: 'm-4', projectId: 'proj-2', name: 'Site Work Complete', description: 'All grading, utilities, and paving for the retail center are complete.', dueDate: '2023-10-01', status: 'Upcoming' },
 ];
-
-
-    
-
-    
-
-    
-
-    
