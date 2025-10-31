@@ -41,6 +41,7 @@ import {
   ColumnSizingState,
 } from '@tanstack/react-table';
 import { ResizableTable } from '@/components/ui/resizable-table';
+import React from 'react';
 
 export default function ProjectExpensesPage({
   params: paramsProp,
