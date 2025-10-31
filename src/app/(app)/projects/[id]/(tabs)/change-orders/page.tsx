@@ -1,4 +1,4 @@
-
+// app/(app)/projects/[id]/(tabs)/change-orders/page.tsx
 'use client';
 
 import { useState, use, useContext } from 'react';
@@ -41,16 +41,11 @@ export default function ProjectChangeOrdersPage({
   const params = use(paramsProp);
   const appState = useContext(AppStateContext);
 
-  if (!appState) {
-    return <div>Loading...</div>;
-  }
+  if (!appState) return <div>Loading...</div>;
 
   const { projects, changeOrders } = appState;
-
   const project = projects.find((p) => p.id === params.id);
-  if (!project) {
-    notFound();
-  }
+  if (!project) notFound();
 
   const projectChangeOrders = changeOrders.filter(
     (co) => co.projectId === params.id
@@ -142,3 +137,4 @@ export default function ProjectChangeOrdersPage({
     </>
   );
 }
+

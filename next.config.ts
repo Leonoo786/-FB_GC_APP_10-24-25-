@@ -2,6 +2,8 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: 'export', // ← add this
+  trailingSlash: true, // ← add this
   typescript: {
     ignoreBuildErrors: true,
   },
