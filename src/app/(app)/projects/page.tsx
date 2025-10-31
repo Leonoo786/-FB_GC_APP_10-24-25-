@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
 import { differenceInDays, formatDistanceToNowStrict, parseISO } from 'date-fns';
+import { projects as initialProjects } from '@/lib/data';
 
 
 export default function ProjectsPage() {
@@ -242,4 +243,3 @@ export default function ProjectsPage() {
         </>
     );
 }
-

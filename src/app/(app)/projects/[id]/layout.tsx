@@ -19,10 +19,3 @@ export default function ProjectDetailLayout({
         </Suspense>
     )
 }
-
-export async function generateStaticParams() {
-    // This function now correctly resides in a Server Component layout.
-    return initialProjects.map((project) => ({
-        id: project.id,
-    }));
-}
