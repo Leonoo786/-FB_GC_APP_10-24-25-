@@ -255,6 +255,24 @@ export const projects: Project[] = [
     finalBidAmount: 550000,
     imageUrl: 'https://picsum.photos/seed/temple/600/400',
     imageHint: 'construction site',
+  },
+  {
+    id: 'proj-5',
+    projectNumber: 'PM-001',
+    name: 'Power Mart',
+    ownerName: 'Power Mart Corp',
+    addressStreet: '789 Power Dr',
+    city: 'Houston',
+    zip: '77001',
+    description: 'New convenience store and gas station.',
+    status: 'Planning',
+    percentComplete: 5,
+    startDate: '2024-09-01',
+    endDate: '2025-03-31',
+    revisedContract: 2000000,
+    finalBidAmount: 2200000,
+    imageUrl: 'https://picsum.photos/seed/powermart/600/400',
+    imageHint: 'gas station',
   }
 ];
 
@@ -370,5 +388,7 @@ export const milestones: Milestone[] = [
     { id: 'm-4', projectId: 'proj-2', name: 'Site Work Complete', description: 'All grading, utilities, and paving for the retail center are complete.', dueDate: '2023-10-01', status: 'Upcoming' },
 ];
 
+
+    
 
     
