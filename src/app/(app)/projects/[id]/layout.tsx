@@ -6,7 +6,9 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { use, Suspense } from "react";
+import { Suspense, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
@@ -14,26 +16,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 import { projects as initialProjects } from "@/lib/data";
 
-// These imports are moved inside the Client Component below
-// import { useRouter } from "next/navigation";
-// import { useContext, useState, useEffect } from "react";
-// import { useToast } from "@/hooks/use-toast";
-
-// This is a new Client Component that encapsulates all the client-side logic.
-function ProjectDetailLayoutContent({
+// This is the Client Component that encapsulates all the client-side logic.
+function ProjectDetailLayoutClient({
     params,
     children,
 }: {
     params: { id: string };
     children: React.ReactNode;
 }) {
-    'use client'; // This component is a client component.
-    
-    // All client-side hooks are now imported and used within this component
-    const { useRouter } = require("next/navigation");
-    const React = require("react");
-    const { useContext, useState, useEffect } = React;
-    const { useToast } = require("@/hooks/use-toast");
+    'use client'; 
     
     const { toast } = useToast();
     const router = useRouter();
@@ -246,9 +237,9 @@ export default function ProjectDetailLayout({
 }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <ProjectDetailLayoutContent params={params}>
+            <ProjectDetailLayoutClient params={params}>
                 {children}
-            </ProjectDetailLayoutContent>
+            </ProjectDetailLayoutClient>
         </Suspense>
     )
 }
