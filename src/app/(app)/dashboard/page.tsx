@@ -20,7 +20,7 @@ import {
   ArrowUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import { AppStateContext } from '@/context/app-state-context';
+import { AppStateContext, useAppState } from '@/context/app-state-context';
 import { BudgetChart } from './_components/budget-chart';
 import { ProjectTimeline } from './_components/project-timeline';
 import { TasksDueToday } from './_components/tasks-due-today';
@@ -31,12 +31,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { AddTaskDialog } from '../tasks/_components/add-task-dialog';
 import type { Task } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 export default function DashboardPage() {
-  const appState = useContext(AppStateContext);
+  const appState = useAppState();
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { toast } = useToast();
+  const firestore = useFirestore();
+
 
   if (
     !appState ||
@@ -50,14 +54,13 @@ export default function DashboardPage() {
     return <div>Loading...</div>;
   }
 
-  const { projects, tasks, budgetItems, expenses, teamMembers, userName, setTasks } = appState;
+  const { projects, tasks, budgetItems, expenses, teamMembers, user } = appState;
   
   const handleSaveTask = (task: Task) => {
-    if (task.id) { // Editing existing task
-        setTasks(current => current.map(t => t.id === task.id ? task : t));
-    } else { // Adding new task
-        setTasks(current => [{...task, id: crypto.randomUUID()}, ...current]);
-    }
+    const taskToSave = task.id ? task : {...task, id: doc(collection(firestore, 'tasks')).id};
+    const docRef = doc(firestore, 'tasks', taskToSave.id);
+    setDoc(docRef, taskToSave, { merge: true });
+    
      toast({
       title: `Task ${task.id ? 'Updated' : 'Created'}`,
       description: `Successfully ${task.id ? 'updated' : 'created'} task: ${task.title}.`,
@@ -118,7 +121,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
+          <p className="text-muted-foreground">Welcome back, {user?.name.split(' ')[0]}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -295,3 +298,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    

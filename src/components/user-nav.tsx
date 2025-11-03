@@ -19,17 +19,22 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "./theme-toggle"
 import Link from "next/link"
-import { AppStateContext } from "@/context/app-state-context";
+import { AppStateContext, useAppState } from "@/context/app-state-context";
 
 export function UserNav() {
-  const appState = useContext(AppStateContext);
+  const appState = useAppState();
 
-  if (!appState) {
-    return null;
+  if (!appState || !appState.user) {
+    return (
+        <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+        </div>
+    );
   }
 
-  const { userName, userAvatarUrl, userEmail } = appState;
-  const initials = userName.split(' ').map(n => n[0]).join('');
+  const { user } = appState;
+  const initials = user.name ? user.name.split(' ').map(n => n[0]).join('') : '';
 
 
   return (
@@ -39,7 +44,7 @@ export function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={userAvatarUrl} alt={userName} />
+              <AvatarImage src={user.avatarUrl} alt={user.name} />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
           </Button>
@@ -47,9 +52,9 @@ export function UserNav() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{userName}</p>
+              <p className="text-sm font-medium leading-none">{user.name}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {userEmail}
+                {user.email}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -74,3 +79,5 @@ export function UserNav() {
     </div>
   )
 }
+
+    
