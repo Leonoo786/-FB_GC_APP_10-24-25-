@@ -4,26 +4,30 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Helper function to check if a user is signed in
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Allow signed-in users to read and write to their own user profile
+    // Users can read and write their own profile
     match /users/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
     
-    // Allow any signed-in user to read company profile
+    // Any signed-in user can read the company profile
     match /company/profile {
-        allow read: if isSignedIn();
-        allow write: if isSignedIn(); // Or more specific admin rules
+        allow read, write: if isSignedIn();
     }
 
-    // Generic rule for most collections: allow read/write for any signed-in user.
-    // This is a common starting point. We can restrict this further if needed.
+    // Rules for all other collections
+    // This allows any signed-in user to read, write, and list documents.
     match /{collection}/{docId} {
       allow read, write, delete: if isSignedIn();
+    }
+    
+    // This is the crucial addition: It allows collection-wide reads (list operations).
+    match /{path=**}/documents {
+      allow list: if isSignedIn();
     }
   }
 }
