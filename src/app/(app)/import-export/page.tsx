@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useContext, useRef } from 'react';
+import { useContext, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, HardDrive } from 'lucide-react';
 import type {
   Project,
   BudgetItem,
@@ -89,6 +89,38 @@ export default function ImportExportPage() {
     setUserAvatarUrl,
     setUserEmail,
   } = appState;
+  
+  const allData: AllData = {
+    projects,
+    vendors,
+    teamMembers,
+    budgetCategories,
+    tasks,
+    budgetItems,
+    expenses,
+    changeOrders,
+    rfis,
+    issues,
+    milestones,
+    companyName,
+    companyLogoUrl,
+    userName,
+    userAvatarUrl,
+    userEmail,
+  };
+  
+  const dataSize = useMemo(() => {
+    try {
+      const jsonString = JSON.stringify(allData);
+      const sizeInBytes = new Blob([jsonString]).size;
+      if (sizeInBytes < 1024) return `${sizeInBytes.toFixed(2)} Bytes`;
+      if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(2)} KB`;
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
+    } catch {
+      return "N/A";
+    }
+  }, [allData]);
+
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -148,25 +180,6 @@ export default function ImportExportPage() {
 
   const handleExport = () => {
     try {
-      const allData: AllData = {
-        projects,
-        vendors,
-        teamMembers,
-        budgetCategories,
-        tasks,
-        budgetItems,
-        expenses,
-        changeOrders,
-        rfis,
-        issues,
-        milestones,
-        companyName,
-        companyLogoUrl,
-        userName,
-        userAvatarUrl,
-        userEmail,
-      };
-
       const jsonString = JSON.stringify(allData, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -216,7 +229,7 @@ export default function ImportExportPage() {
             Download a single backup file of all your data, or upload a backup file to restore your application state.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
             <div
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4"
             >
@@ -239,6 +252,21 @@ export default function ImportExportPage() {
                 </Button>
               </div>
             </div>
+             <Card>
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                    <HardDrive className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                        <CardTitle>Current Data Size</CardTitle>
+                        <CardDescription>The total size of your data stored in the browser.</CardDescription>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-3xl font-bold">{dataSize}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        This is an estimate of your local storage usage. The free tier of Firestore provides 1 GiB of storage.
+                    </p>
+                </CardContent>
+            </Card>
         </CardContent>
       </Card>
     </div>
