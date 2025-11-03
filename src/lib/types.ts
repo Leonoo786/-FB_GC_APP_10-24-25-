@@ -141,3 +141,16 @@ export type ClientUpload = {
   uploadedAt: string;
   uploadedBy: string; // TeamMember ID
 };
+
+export type AppUser = {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string;
+};
+
+export type CompanyProfile = {
+    id: string;
+    name: string;
+    logoUrl: string;
+};
