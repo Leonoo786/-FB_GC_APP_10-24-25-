@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useContext, useRef } from 'react';
+import { useState, useContext, useRef, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
+import { useFirestore } from '@/firebase';
+import { collection, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 
 export default function VendorsPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -21,6 +24,7 @@ export default function VendorsPage() {
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
+    const firestore = useFirestore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -28,7 +32,7 @@ export default function VendorsPage() {
         return <div>Loading...</div>;
     }
 
-    const { vendors, setVendors } = appState;
+    const { vendors } = appState;
 
     const sortedVendors = vendors.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -43,7 +47,7 @@ export default function VendorsPage() {
     };
 
     const handleDeleteVendor = (vendorId: string) => {
-        setVendors(current => current.filter(v => v.id !== vendorId));
+        deleteDoc(doc(firestore, 'vendors', vendorId));
         toast({
             title: "Vendor Deleted",
             description: "The vendor has been successfully deleted.",
@@ -52,23 +56,18 @@ export default function VendorsPage() {
     };
 
      const handleDeleteSelected = () => {
-        setVendors(current => current.filter(v => !selectedRowKeys.includes(v.id)));
+        const batch = writeBatch(firestore);
+        selectedRowKeys.forEach(id => {
+            const docRef = doc(firestore, 'vendors', id);
+            batch.delete(docRef);
+        });
+        batch.commit();
         toast({
             title: `${selectedRowKeys.length} Vendor(s) Deleted`,
             description: "The selected vendors have been removed.",
             variant: "destructive"
         });
         setSelectedRowKeys([]);
-    };
-
-    const handleSave = (vendor: Vendor) => {
-        if (selectedVendor && vendor.id) {
-            // Edit
-            setVendors(current => current.map(v => v.id === vendor.id ? vendor : v));
-        } else {
-            // Add
-            setVendors(current => [{...vendor, id: crypto.randomUUID()}, ...current]);
-        }
     };
 
     const handleImportClick = () => {
@@ -87,21 +86,25 @@ export default function VendorsPage() {
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+                
+                const batch = writeBatch(firestore);
 
                 const newVendors = json.slice(1).map(row => {
                     if (!row || row.length === 0 || !row[0]) return null;
-                    return {
-                        id: crypto.randomUUID(),
+                    const newDocRef = doc(collection(firestore, "vendors"));
+                    const vendorData = {
                         name: row[0] || '',
                         trade: row[1] || 'N/A',
                         contactPerson: row[2] || 'N/A',
                         phone: row[3] || 'N/A',
                         email: row[4] || 'N/A'
                     };
-                }).filter((v): v is Vendor => v !== null);
+                    batch.set(newDocRef, vendorData);
+                    return vendorData;
+                }).filter(v => v !== null);
 
                 if (newVendors.length > 0) {
-                    setVendors(current => [...current, ...newVendors]);
+                    batch.commit();
                     toast({
                         title: 'Import Successful',
                         description: `${newVendors.length} vendors have been imported.`,
@@ -143,7 +146,6 @@ export default function VendorsPage() {
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 vendor={selectedVendor}
-                onSave={handleSave}
             />
             <div className="space-y-6">
                 <div className="flex items-center justify-between">

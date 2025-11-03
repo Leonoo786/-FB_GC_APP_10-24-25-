@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useContext, use } from 'react';
+import { useState, useContext } from 'react';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +21,8 @@ import { format, isPast } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { collection, deleteDoc, doc, setDoc } from 'firebase/firestore';
 
 export default function ProjectMilestonesPage({
   params,
@@ -29,12 +32,13 @@ export default function ProjectMilestonesPage({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const { toast } = useToast();
+  const firestore = useFirestore();
   const appState = useContext(AppStateContext);
 
   if (!appState) {
     return <div>Loading...</div>;
   }
-  const { projects, milestones, setMilestones } = appState;
+  const { projects, milestones } = appState;
   const project = projects.find((p) => p.id === params.id);
   if (!project) {
     notFound();
@@ -55,7 +59,7 @@ export default function ProjectMilestonesPage({
   };
 
   const handleDeleteMilestone = (milestoneId: string) => {
-    setMilestones((current) => current.filter((m) => m.id !== milestoneId));
+    deleteDoc(doc(firestore, 'milestones', milestoneId));
     toast({
       title: 'Milestone Deleted',
       description: 'The milestone has been successfully removed.',
@@ -64,16 +68,16 @@ export default function ProjectMilestonesPage({
   };
 
   const handleSaveMilestone = (milestone: Milestone) => {
-    if (milestone.id) {
-      setMilestones((current) =>
-        current.map((m) => (m.id === milestone.id ? milestone : m))
-      );
-    } else {
-      setMilestones((current) => [
-        ...current,
-        { ...milestone, id: crypto.randomUUID(), projectId: project.id },
-      ]);
+    const milestoneId = milestone.id ? milestone.id : doc(collection(firestore, 'milestones')).id;
+    const docRef = doc(firestore, 'milestones', milestoneId);
+    const milestoneToSave = {
+        ...milestone,
+        projectId: project.id,
+    };
+    if (!milestoneToSave.id) {
+        delete (milestoneToSave as any).id;
     }
+    setDoc(docRef, milestoneToSave, { merge: true });
   };
 
   const statusVariant: Record<Milestone['status'], 'default' | 'secondary' | 'outline'> = {

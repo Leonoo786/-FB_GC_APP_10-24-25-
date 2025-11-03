@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -25,6 +26,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import type { Vendor } from '@/lib/types';
+import { useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Vendor name is required.'),
@@ -40,14 +43,13 @@ export function AddEditVendorDialog({
   open,
   onOpenChange,
   vendor,
-  onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vendor: Vendor | null;
-  onSave: (vendor: Vendor) => void;
 }) {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -67,11 +69,11 @@ export function AddEditVendorDialog({
   }, [vendor, form, open]);
 
   const onSubmit = (data: FormValues) => {
-    const vendorToSave: Vendor = {
-      id: vendor?.id || '',
-      ...data,
-    };
-    onSave(vendorToSave);
+    const vendorId = vendor ? vendor.id : doc(collection(firestore, 'vendors')).id;
+    const docRef = doc(firestore, 'vendors', vendorId);
+    
+    setDoc(docRef, data, { merge: true });
+
     toast({
       title: `Vendor ${vendor ? 'Updated' : 'Created'}`,
       description: `Successfully ${vendor ? 'updated' : 'created'} vendor: ${data.name}.`,

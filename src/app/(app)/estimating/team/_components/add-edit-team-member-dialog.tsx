@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -28,6 +29,8 @@ import type { TeamMember } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import Image from 'next/image';
+import { useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -43,14 +46,13 @@ export function AddEditTeamMemberDialog({
   open,
   onOpenChange,
   member,
-  onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   member: TeamMember | null;
-  onSave: (member: TeamMember) => void;
 }) {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -103,8 +105,10 @@ export function AddEditTeamMemberDialog({
       });
     }
 
-    const memberToSave: TeamMember = {
-      id: member?.id || '',
+    const memberId = member ? member.id : doc(collection(firestore, 'teamMembers')).id;
+    const docRef = doc(firestore, 'teamMembers', memberId);
+
+    const memberToSave: Omit<TeamMember, 'id'> = {
       name: data.name,
       role: data.role,
       email: data.email,
@@ -112,7 +116,7 @@ export function AddEditTeamMemberDialog({
       avatarUrl,
     };
 
-    onSave(memberToSave);
+    setDoc(docRef, memberToSave, { merge: true });
 
     toast({
       title: `Member ${isEditing ? 'Updated' : 'Created'}`,

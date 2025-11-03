@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useContext } from 'react';
@@ -12,18 +13,21 @@ import { AddEditBudgetCategoryDialog } from './_components/add-edit-budget-categ
 import type { BudgetCategory } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { deleteDoc, doc } from 'firebase/firestore';
 
 export default function BudgetCategoriesPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
     const appState = useContext(AppStateContext);
+    const firestore = useFirestore();
     const { toast } = useToast();
 
     if (!appState) {
         return <div>Loading...</div>;
     }
 
-    const { budgetCategories, setBudgetCategories } = appState;
+    const { budgetCategories } = appState;
 
     const handleNewCategory = () => {
         setSelectedCategory(null);
@@ -36,7 +40,8 @@ export default function BudgetCategoriesPage() {
     };
 
     const handleDeleteCategory = (categoryId: string) => {
-        setBudgetCategories(current => current.filter(c => c.id !== categoryId));
+        const docRef = doc(firestore, 'budgetCategories', categoryId);
+        deleteDoc(docRef);
         toast({
             title: "Category Deleted",
             description: "The budget category has been successfully deleted.",
@@ -44,24 +49,12 @@ export default function BudgetCategoriesPage() {
         });
     };
 
-    const handleSave = (category: BudgetCategory) => {
-        if (selectedCategory && category.id) {
-            // Edit
-            setBudgetCategories(current => current.map(c => c.id === category.id ? category : c));
-        } else {
-            // Add
-            setBudgetCategories(current => [{...category, id: crypto.randomUUID()}, ...current]);
-        }
-    };
-
-
     return (
         <>
             <AddEditBudgetCategoryDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 category={selectedCategory}
-                onSave={handleSave}
             />
             <div className="space-y-6">
                 <div className="flex items-center justify-between">

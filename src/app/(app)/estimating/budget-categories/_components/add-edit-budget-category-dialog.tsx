@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -25,6 +26,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import type { BudgetCategory } from '@/lib/types';
+import { useFirestore } from '@/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Category name is required.'),
@@ -36,14 +39,13 @@ export function AddEditBudgetCategoryDialog({
   open,
   onOpenChange,
   category,
-  onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category: BudgetCategory | null;
-  onSave: (category: BudgetCategory) => void;
 }) {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -57,11 +59,11 @@ export function AddEditBudgetCategoryDialog({
   }, [category, form, open]);
 
   const onSubmit = (data: FormValues) => {
-    const categoryToSave: BudgetCategory = {
-      id: category?.id || '',
-      name: data.name,
-    };
-    onSave(categoryToSave);
+    const categoryId = category ? category.id : doc(collection(firestore, 'budgetCategories')).id;
+    const categoryRef = doc(firestore, 'budgetCategories', categoryId);
+    
+    setDoc(categoryRef, { name: data.name }, { merge: true });
+    
     toast({
       title: `Category ${category ? 'Updated' : 'Created'}`,
       description: `Successfully ${category ? 'updated' : 'created'} category: ${data.name}.`,

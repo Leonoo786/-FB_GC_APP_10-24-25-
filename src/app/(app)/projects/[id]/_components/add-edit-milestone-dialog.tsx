@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -51,7 +52,7 @@ export function AddEditMilestoneDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   milestone: Milestone | null;
-  onSave: (milestone: Milestone) => void;
+  onSave: (milestone: Omit<Milestone, 'projectId'>) => void;
 }) {
   const { toast } = useToast();
   const isEditing = !!milestone;
@@ -80,9 +81,8 @@ export function AddEditMilestoneDialog({
   }, [milestone, isEditing, open, form]);
 
   const onSubmit = (data: FormValues) => {
-    const milestoneToSave: Milestone = {
+    const milestoneToSave = {
       id: milestone?.id || '',
-      projectId: milestone?.projectId || '',
       name: data.name,
       description: data.description,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),

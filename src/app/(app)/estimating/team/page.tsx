@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useContext, useState } from 'react';
@@ -13,18 +14,21 @@ import { AddEditTeamMemberDialog } from './_components/add-edit-team-member-dial
 import type { TeamMember } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { deleteDoc, doc } from 'firebase/firestore';
 
 export default function TeamPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const appState = useContext(AppStateContext);
+    const firestore = useFirestore();
     const { toast } = useToast();
 
     if (!appState) {
         return <div>Loading...</div>;
     }
     
-    const { teamMembers, setTeamMembers } = appState;
+    const { teamMembers } = appState;
 
     const handleNewMember = () => {
         setSelectedMember(null);
@@ -37,7 +41,7 @@ export default function TeamPage() {
     };
 
     const handleDeleteMember = (memberId: string) => {
-        setTeamMembers(current => current.filter(m => m.id !== memberId));
+        deleteDoc(doc(firestore, 'teamMembers', memberId));
         toast({
             title: "Team Member Deleted",
             description: "The team member has been successfully removed.",
@@ -45,24 +49,12 @@ export default function TeamPage() {
         });
     };
 
-    const handleSave = (member: TeamMember) => {
-        if (selectedMember && member.id) {
-            // Edit
-            setTeamMembers(current => current.map(m => m.id === member.id ? member : m));
-        } else {
-            // Add
-            setTeamMembers(current => [{...member, id: crypto.randomUUID()}, ...current]);
-        }
-    };
-
-
     return (
         <>
             <AddEditTeamMemberDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 member={selectedMember}
-                onSave={handleSave}
             />
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
