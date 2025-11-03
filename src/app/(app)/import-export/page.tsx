@@ -13,8 +13,6 @@ import {
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Upload } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import { format, isValid, parseISO } from 'date-fns';
 import type {
   Project,
   BudgetItem,
@@ -23,62 +21,35 @@ import type {
   TeamMember,
   BudgetCategory,
   Task,
+  ChangeOrder,
+  RFI,
+  Issue,
+  Milestone,
 } from '@/lib/types';
 
-type DataType =
-  | 'projects'
-  | 'vendors'
-  | 'team'
-  | 'budgetCategories'
-  | 'tasks'
-  | 'budgetItems'
-  | 'expenses';
-
-// Helper function to robustly parse amounts
-const parseAmount = (value: any): number => {
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'string') {
-    // Remove currency symbols, commas, and whitespace
-    const cleaned = value.replace(/[^0-9.-]+/g, '');
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? 0 : num;
-  }
-  return 0;
+type AllData = {
+  projects: Project[];
+  vendors: Vendor[];
+  teamMembers: TeamMember[];
+  budgetCategories: BudgetCategory[];
+  tasks: Task[];
+  budgetItems: BudgetItem[];
+  expenses: Expense[];
+  changeOrders: ChangeOrder[];
+  rfis: RFI[];
+  issues: Issue[];
+  milestones: Milestone[];
+  companyName: string;
+  companyLogoUrl: string;
+  userName: string;
+  userAvatarUrl: string;
+  userEmail: string;
 };
-
-// Helper function to robustly parse dates
-const parseDate = (value: any): Date | null => {
-    if (!value) return null;
-    if (value instanceof Date && isValid(value)) {
-        return value;
-    }
-    // Handle Excel's numeric date format
-    if (typeof value === 'number') {
-        // Excel's epoch starts on 1900-01-01, but has a bug treating 1900 as a leap year.
-        // The adjustment is to subtract 2 (one for the bug, one for the 0-based vs 1-based day).
-        // This formula works for dates after Feb 1900.
-        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-        const date = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
-        if (isValid(date)) return date;
-    }
-    // Handle string dates (e.g., 'MM/DD/YYYY' or 'YYYY-MM-DD')
-    if (typeof value === 'string') {
-        // Remove extra characters that might interfere, like trailing periods.
-        const cleanedValue = value.replace(/[.,]/g, '');
-        const date = new Date(cleanedValue);
-        if (isValid(date)) return date;
-    }
-    return null;
-}
-
 
 export default function ImportExportPage() {
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const currentImportType = useRef<DataType | null>(null);
 
   if (!appState) {
     return <div>Loading...</div>;
@@ -92,6 +63,15 @@ export default function ImportExportPage() {
     tasks,
     budgetItems,
     expenses,
+    changeOrders,
+    rfis,
+    issues,
+    milestones,
+    companyName,
+    companyLogoUrl,
+    userName,
+    userAvatarUrl,
+    userEmail,
     setProjects,
     setVendors,
     setTeamMembers,
@@ -99,215 +79,119 @@ export default function ImportExportPage() {
     setTasks,
     setBudgetItems,
     setExpenses,
+    setChangeOrders,
+    setRfis,
+    setIssues,
+    setMilestones,
+    setCompanyName,
+    setCompanyLogoUrl,
+    setUserName,
+    setUserAvatarUrl,
+    setUserEmail,
   } = appState;
 
-  const handleImportClick = (type: DataType) => {
-    currentImportType.current = type;
+  const handleImportClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !currentImportType.current) return;
-
-    const importType = currentImportType.current;
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        // Convert to array of arrays, ignoring headers
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+        const text = e.target?.result as string;
+        const data: AllData = JSON.parse(text);
 
-        if (rows.length < 2) {
-            toast({
-                title: 'Import Warning',
-                description: 'The file is empty or only contains a header row.',
-                variant: 'destructive',
-            });
-            return;
-        }
+        // Here we could add validation with Zod if we had schemas for AllData
+        // For now, we'll trust the structure.
 
-        // Remove header row
-        const dataRows = rows.slice(1);
-        let count = 0;
+        setProjects(data.projects || []);
+        setVendors(data.vendors || []);
+        setTeamMembers(data.teamMembers || []);
+        setBudgetCategories(data.budgetCategories || []);
+        setTasks(data.tasks || []);
+        setBudgetItems(data.budgetItems || []);
+        setExpenses(data.expenses || []);
+        setChangeOrders(data.changeOrders || []);
+        setRfis(data.rfis || []);
+        setIssues(data.issues || []);
+        setMilestones(data.milestones || []);
+        setCompanyName(data.companyName || 'FancyBuilders');
+        setCompanyLogoUrl(data.companyLogoUrl || '/your-logo.png');
+        setUserName(data.userName || 'John Doe');
+        setUserAvatarUrl(data.userAvatarUrl || 'https://i.pravatar.cc/150?u=john');
+        setUserEmail(data.userEmail || 'john.doe@constructai.com');
 
-        switch (importType) {
-          case 'expenses':
-            const newExpenses = dataRows
-              .map((row): Expense | null => {
-                const date = parseDate(row[0]);
-                const amount = parseAmount(row[7]);
-
-                if (!date || !amount) {
-                    return null; // Skip invalid rows
-                }
-
-                count++;
-                return {
-                  id: crypto.randomUUID(),
-                  projectId: 'proj-4', // Default for now
-                  date: format(date, 'yyyy-MM-dd'),
-                  category: row[1] || 'Uncategorized',
-                  vendorName: row[2] || '',
-                  description: row[3] || 'N/A',
-                  amount: amount,
-                  paymentMethod: row[4] || 'N/A',
-                  paymentReference: row[5] || '',
-                  invoiceNumber: row[6] || '',
-                };
-              })
-              .filter((i): i is Expense => i !== null);
-            setExpenses((current) => [...current, ...newExpenses]);
-            count = newExpenses.length;
-            break;
-            // Add cases for other data types here
-        }
-        
-        if (count > 0) {
-            toast({
-              title: 'Import Successful',
-              description: `${count} ${importType} record(s) have been imported.`,
-            });
-        } else {
-            toast({
-                title: 'Import Warning',
-                description: `Could not import any valid ${importType}. Please check your file's format and column content.`,
-                variant: 'destructive',
-            });
-        }
-
+        toast({
+          title: 'Import Successful',
+          description: 'All application data has been restored from your file.',
+        });
       } catch (error) {
-        console.error(`Error importing ${importType}:`, error);
+        console.error('Error importing data:', error);
         toast({
           title: 'Import Failed',
           description:
-            'There was an error processing the file. Please check the file format.',
+            'There was an error processing the file. Please ensure it is a valid JSON backup file.',
           variant: 'destructive',
         });
       }
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsText(file);
 
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    currentImportType.current = null;
   };
-  
-  const handleExport = (dataType: DataType) => {
+
+  const handleExport = () => {
     try {
-        let dataToExport;
-        let sheetName: string;
+      const allData: AllData = {
+        projects,
+        vendors,
+        teamMembers,
+        budgetCategories,
+        tasks,
+        budgetItems,
+        expenses,
+        changeOrders,
+        rfis,
+        issues,
+        milestones,
+        companyName,
+        companyLogoUrl,
+        userName,
+        userAvatarUrl,
+        userEmail,
+      };
 
-        switch (dataType) {
-            case 'projects':
-                dataToExport = projects;
-                sheetName = 'Projects';
-                break;
-            case 'expenses':
-                dataToExport = expenses;
-                sheetName = 'Expenses';
-                break;
-            case 'budgetItems':
-                dataToExport = budgetItems;
-                sheetName = 'BudgetItems';
-                break;
-             case 'vendors':
-                dataToExport = vendors;
-                sheetName = 'Vendors';
-                break;
-             case 'team':
-                dataToExport = teamMembers;
-                sheetName = 'TeamMembers';
-                break;
-             case 'budgetCategories':
-                dataToExport = budgetCategories;
-                sheetName = 'BudgetCategories';
-                break;
-            case 'tasks':
-                dataToExport = tasks;
-                sheetName = 'Tasks';
-                break;
-            default:
-                throw new Error('Invalid data type for export');
-        }
+      const jsonString = JSON.stringify(allData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const date = new Date().toISOString().split('T')[0];
+      link.download = `constructai-backup-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-        if (dataToExport.length === 0) {
-            toast({
-                title: "Export Empty",
-                description: `There is no data to export for ${sheetName}.`,
-                variant: 'destructive'
-            });
-            return;
-        }
-
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-        XLSX.writeFile(workbook, `${sheetName}_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-        toast({
-            title: "Export Successful",
-            description: `${sheetName} data has been exported.`,
-        });
-
+      toast({
+        title: 'Export Successful',
+        description: 'All application data has been downloaded.',
+      });
     } catch (error) {
-        console.error('Export failed:', error);
-        toast({
-            title: "Export Failed",
-            description: "An unexpected error occurred during the export.",
-            variant: "destructive"
-        });
+      console.error('Export failed:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'An unexpected error occurred during the export.',
+        variant: 'destructive',
+      });
     }
   };
-
-
-  const dataTypes: {
-    key: DataType;
-    label: string;
-    description: string;
-  }[] = [
-    {
-      key: 'projects',
-      label: 'Projects',
-      description: 'Import or export core project information.',
-    },
-    {
-      key: 'expenses',
-      label: 'Expenses',
-      description: 'Import or export all expense and cost records.',
-    },
-    {
-      key: 'budgetItems',
-      label: 'Budget Items',
-      description: 'Import or export detailed budget line items.',
-    },
-     {
-      key: 'vendors',
-      label: 'Vendors',
-      description: 'Import or export the master vendor list.',
-    },
-     {
-      key: 'team',
-      label: 'Team',
-      description: 'Import or export internal team member data.',
-    },
-    {
-      key: 'budgetCategories',
-      label: 'Budget Categories',
-      description: 'Import or export the master list of budget categories.',
-    },
-    {
-      key: 'tasks',
-      label: 'Tasks',
-      description: 'Import or export all tasks across all projects.',
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -316,7 +200,7 @@ export default function ImportExportPage() {
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileChange}
-        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+        accept=".json"
       />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Import / Export</h1>
@@ -329,35 +213,32 @@ export default function ImportExportPage() {
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
           <CardDescription>
-            Select a data type to import from or export to an Excel file.
+            Download a single backup file of all your data, or upload a backup file to restore your application state.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {dataTypes.map(({ key, label, description }) => (
+        <CardContent>
             <div
-              key={key}
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4"
             >
               <div className='mb-4 sm:mb-0'>
-                <p className="font-medium">{label}</p>
+                <p className="font-medium">All Application Data</p>
                 <p className="text-sm text-muted-foreground">
-                  {description}
+                  Save or load a snapshot of your entire application.
                 </p>
               </div>
               <div className="flex w-full sm:w-auto items-center gap-2">
                 <Button
                   variant="outline"
                   className='w-1/2 sm:w-auto'
-                  onClick={() => handleImportClick(key)}
+                  onClick={handleImportClick}
                 >
                   <Upload className="mr-2 h-4 w-4" /> Import
                 </Button>
-                <Button variant="default" className='w-1/2 sm:w-auto' onClick={() => handleExport(key)}>
+                <Button variant="default" className='w-1/2 sm:w-auto' onClick={handleExport}>
                   <Download className="mr-2 h-4 w-4" /> Export
                 </Button>
               </div>
             </div>
-          ))}
         </CardContent>
       </Card>
     </div>
