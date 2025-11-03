@@ -27,6 +27,7 @@ import type {
   Milestone,
 } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type AllData = {
   projects: Project[];
