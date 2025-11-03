@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext, useMemo } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import { notFound } from 'next/navigation';
 import {
   Card,
@@ -25,13 +25,12 @@ import { TransactionsDialog } from '../../_components/transactions-dialog';
 import { cn } from '@/lib/utils';
 
 export default function ProjectReportsPage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const params = use(paramsProp);
   
   const appState = useContext(AppStateContext);
   

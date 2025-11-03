@@ -18,13 +18,12 @@ import { ProjectSummaryChart } from "./_components/project-summary-chart";
 
 // This is the Client Component that encapsulates all the client-side logic.
 export default function ProjectDetailLayout({
-    params: paramsProp,
+    params,
     children,
 }: {
-    params: Promise<{ id: string }>;
+    params: { id: string };
     children: React.ReactNode;
 }) {
-    const params = use(paramsProp);
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);

@@ -35,15 +35,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function ProjectGetReimbursedPage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc'});
-  const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
 

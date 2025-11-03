@@ -1,7 +1,7 @@
 // app/(app)/projects/[id]/(tabs)/change-orders/page.tsx
 'use client';
 
-import { useState, use, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle, FileText } from 'lucide-react';
 import {
@@ -33,12 +33,11 @@ import type { ChangeOrder } from '@/lib/types';
 import { notFound } from 'next/navigation';
 
 export default function ProjectChangeOrdersPage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [isAddChangeOrderOpen, setIsAddChangeOrderOpen] = useState(false);
-  const params = use(paramsProp);
   const appState = useContext(AppStateContext);
 
   if (!appState) return <div>Loading...</div>;

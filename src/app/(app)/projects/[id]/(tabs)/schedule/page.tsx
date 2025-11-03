@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
 import {
@@ -35,12 +35,11 @@ import { AppStateContext } from '@/context/app-state-context';
 
 
 export default function ProjectSchedulePage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
-  const params = use(paramsProp);
   const appState = useContext(AppStateContext);
   
   if (!appState) {

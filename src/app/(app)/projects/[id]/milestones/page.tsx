@@ -22,14 +22,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 
 export default function ProjectMilestonesPage({
-  params: paramsProp,
+  params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const { toast } = useToast();
-  const params = use(paramsProp);
   const appState = useContext(AppStateContext);
 
   if (!appState) {

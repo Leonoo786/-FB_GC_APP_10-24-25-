@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   MoreHorizontal,
@@ -44,10 +44,9 @@ import {
 } from '@/components/ui/accordion';
 import { AppStateContext } from '@/context/app-state-context';
 
-export default function ProjectRFIsPage({ params: paramsProp }: { params: Promise<{ id: string }> }) {
+export default function ProjectRFIsPage({ params }: { params: { id: string } }) {
   const [isAddRfiOpen, setIsAddRfiOpen] = useState(false);
   const appState = useContext(AppStateContext);
-  const params = use(paramsProp);
 
   if (!appState) {
     return <div>Loading...</div>
