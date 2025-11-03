@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useContext, useEffect } from "react";
@@ -40,9 +41,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast";
-import { AppStateContext, useAppState } from "@/context/app-state-context";
-import { doc, setDoc } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
+import { AppStateContext } from "@/context/app-state-context";
 
 
 const notificationItems = [
@@ -56,8 +55,7 @@ const notificationItems = [
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const appState = useAppState();
-  const firestore = useFirestore();
+  const appState = useContext(AppStateContext);
 
   // Profile State
   const [photoUrl, setPhotoUrl] = useState("");
@@ -81,14 +79,12 @@ export default function SettingsPage() {
   const [companyWebsite, setCompanyWebsite] = useState("https://www.fancybuilders.com");
 
   useEffect(() => {
-    if (appState?.user) {
-        setName(appState.user.name);
-        setPhotoUrl(appState.user.avatarUrl);
-        setEmail(appState.user.email);
-    }
-     if (appState?.companyProfile) {
-        setCompanyName(appState.companyProfile.name);
-        setCompanyLogoUrl(appState.companyProfile.logoUrl);
+    if (appState) {
+        setName(appState.userName);
+        setPhotoUrl(appState.userAvatarUrl);
+        setEmail(appState.userEmail);
+        setCompanyName(appState.companyName);
+        setCompanyLogoUrl(appState.companyLogoUrl);
     }
   }, [appState]);
 
@@ -96,7 +92,16 @@ export default function SettingsPage() {
     return <div>Loading...</div>
   }
 
-  const { user, companyProfile } = appState;
+  const {
+      userName,
+      setUserName,
+      userAvatarUrl,
+      setUserAvatarUrl,
+      userEmail,
+      setUserEmail,
+      setCompanyName: setGlobalCompanyName,
+      setCompanyLogoUrl: setGlobalCompanyLogoUrl,
+  } = appState;
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -122,10 +127,9 @@ export default function SettingsPage() {
   };
 
   const handleSaveChanges = () => {
-    if (user) {
-        const userRef = doc(firestore, 'users', user.id);
-        setDoc(userRef, { name, avatarUrl: photoUrl, email }, { merge: true });
-    }
+    setUserName(name);
+    setUserAvatarUrl(photoUrl);
+    setUserEmail(email);
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
@@ -133,10 +137,8 @@ export default function SettingsPage() {
   };
   
   const handleCompanySaveChanges = () => {
-    if (companyProfile) {
-        const companyRef = doc(firestore, 'company', 'profile');
-        setDoc(companyRef, { name: companyName, logoUrl: companyLogoUrl }, { merge: true });
-    }
+    setGlobalCompanyName(companyName);
+    setGlobalCompanyLogoUrl(companyLogoUrl);
     toast({
       title: "Changes Saved",
       description: "Your company information has been updated.",
@@ -160,7 +162,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Welcome back, {user?.name.split(' ')[0]}</p>
+        <p className="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
       </div>
 
       <Tabs defaultValue="profile">
@@ -594,5 +596,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

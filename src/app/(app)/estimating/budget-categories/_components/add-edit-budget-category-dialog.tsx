@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,8 +26,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import type { BudgetCategory } from '@/lib/types';
-import { useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { AppStateContext } from '@/context/app-state-context';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Category name is required.'),
@@ -45,7 +44,7 @@ export function AddEditBudgetCategoryDialog({
   category: BudgetCategory | null;
 }) {
   const { toast } = useToast();
-  const firestore = useFirestore();
+  const appState = useContext(AppStateContext);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -59,10 +58,15 @@ export function AddEditBudgetCategoryDialog({
   }, [category, form, open]);
 
   const onSubmit = (data: FormValues) => {
-    const categoryId = category ? category.id : doc(collection(firestore, 'budgetCategories')).id;
-    const categoryRef = doc(firestore, 'budgetCategories', categoryId);
-    
-    setDoc(categoryRef, { name: data.name }, { merge: true });
+    if (!appState) return;
+    const { setBudgetCategories } = appState;
+    const isEditing = !!category;
+
+    if (isEditing) {
+        setBudgetCategories(prev => prev.map(c => c.id === category.id ? { ...c, ...data } : c));
+    } else {
+        setBudgetCategories(prev => [...prev, { id: crypto.randomUUID(), ...data }]);
+    }
     
     toast({
       title: `Category ${category ? 'Updated' : 'Created'}`,

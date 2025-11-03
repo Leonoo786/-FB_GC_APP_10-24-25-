@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -28,9 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { TeamMember } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
-import Image from 'next/image';
-import { useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { AppStateContext } from '@/context/app-state-context';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -52,7 +50,7 @@ export function AddEditTeamMemberDialog({
   member: TeamMember | null;
 }) {
   const { toast } = useToast();
-  const firestore = useFirestore();
+  const appState = useContext(AppStateContext);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -95,6 +93,8 @@ export function AddEditTeamMemberDialog({
   };
 
   const onSubmit = async (data: FormValues) => {
+    if (!appState) return;
+
     let avatarUrl = member?.avatarUrl || `https://i.pravatar.cc/150?u=${crypto.randomUUID()}`;
     if (data.avatar && data.avatar[0]) {
       const file = data.avatar[0] as File;
@@ -105,9 +105,6 @@ export function AddEditTeamMemberDialog({
       });
     }
 
-    const memberId = member ? member.id : doc(collection(firestore, 'teamMembers')).id;
-    const docRef = doc(firestore, 'teamMembers', memberId);
-
     const memberToSave: Omit<TeamMember, 'id'> = {
       name: data.name,
       role: data.role,
@@ -115,8 +112,12 @@ export function AddEditTeamMemberDialog({
       phone: data.phone,
       avatarUrl,
     };
-
-    setDoc(docRef, memberToSave, { merge: true });
+    
+    if (isEditing && member) {
+        appState.setTeamMembers(prev => prev.map(m => m.id === member.id ? { ...member, ...memberToSave } : m));
+    } else {
+        appState.setTeamMembers(prev => [...prev, { id: crypto.randomUUID(), ...memberToSave }]);
+    }
 
     toast({
       title: `Member ${isEditing ? 'Updated' : 'Created'}`,

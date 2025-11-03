@@ -17,8 +17,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
 import { differenceInDays, formatDistanceToNowStrict, parseISO } from 'date-fns';
-import { useFirestore } from '@/firebase';
-import { deleteDoc, doc } from 'firebase/firestore';
 
 
 export default function ProjectsPage() {
@@ -26,7 +24,6 @@ export default function ProjectsPage() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
-    const firestore = useFirestore();
     const [hasMounted, setHasMounted] = useState(false);
 
     useEffect(() => {
@@ -70,6 +67,8 @@ export default function ProjectsPage() {
     if (!appState || !hasMounted) {
         return <div>Loading...</div>; // Or some other loading state/skeleton
     }
+    
+    const { setProjects } = appState;
 
     const statusVariant = {
         'In Progress': 'default',
@@ -88,8 +87,7 @@ export default function ProjectsPage() {
     };
     
     const handleDelete = (projectId: string, projectName: string) => {
-        const docRef = doc(firestore, 'projects', projectId);
-        deleteDoc(docRef);
+        setProjects(current => current.filter(p => p.id !== projectId));
         toast({
             title: "Project Deleted",
             description: `Project "${projectName}" has been removed.`,

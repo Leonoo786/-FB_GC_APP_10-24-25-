@@ -42,8 +42,6 @@ import { useContext, useEffect, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
 import Image from 'next/image';
-import { useFirestore } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Project name is required.'),
@@ -77,7 +75,6 @@ export function AddEditProjectDialog({
 }) {
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
-  const firestore = useFirestore();
   const isEditing = !!project;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -147,9 +144,6 @@ export function AddEditProjectDialog({
         reader.readAsDataURL(file);
       });
     }
-    
-    const projectId = isEditing && project ? project.id : doc(collection(firestore, 'projects')).id;
-    const projectRef = doc(firestore, 'projects', projectId);
 
     const projectData: Omit<Project, 'id'> = {
       projectNumber: isEditing && project ? project.projectNumber : `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
@@ -168,8 +162,12 @@ export function AddEditProjectDialog({
       imageUrl: imageUrl,
       imageHint: 'custom project',
     };
-
-    setDoc(projectRef, projectData, { merge: true });
+    
+    if (isEditing && project) {
+        appState.setProjects(current => current.map(p => p.id === project.id ? { ...project, ...projectData } : p));
+    } else {
+        appState.setProjects(current => [...current, { id: crypto.randomUUID(), ...projectData }]);
+    }
     
     toast({
       title: `Project ${isEditing ? 'Updated' : 'Created'}`,

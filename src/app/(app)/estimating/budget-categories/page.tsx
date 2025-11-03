@@ -13,21 +13,18 @@ import { AddEditBudgetCategoryDialog } from './_components/add-edit-budget-categ
 import type { BudgetCategory } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
-import { deleteDoc, doc } from 'firebase/firestore';
 
 export default function BudgetCategoriesPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | null>(null);
     const appState = useContext(AppStateContext);
-    const firestore = useFirestore();
     const { toast } = useToast();
 
     if (!appState) {
         return <div>Loading...</div>;
     }
 
-    const { budgetCategories } = appState;
+    const { budgetCategories, setBudgetCategories } = appState;
 
     const handleNewCategory = () => {
         setSelectedCategory(null);
@@ -40,8 +37,7 @@ export default function BudgetCategoriesPage() {
     };
 
     const handleDeleteCategory = (categoryId: string) => {
-        const docRef = doc(firestore, 'budgetCategories', categoryId);
-        deleteDoc(docRef);
+        setBudgetCategories(prev => prev.filter(c => c.id !== categoryId));
         toast({
             title: "Category Deleted",
             description: "The budget category has been successfully deleted.",

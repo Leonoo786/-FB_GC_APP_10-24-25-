@@ -3,25 +3,43 @@
 'use client';
 
 import React, { createContext, ReactNode, useContext } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone, AppUser, CompanyProfile } from '@/lib/types';
-import { useCollection, useDoc } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
+import * as data from '@/lib/data';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 type AppStateContextType = {
-  companyProfile: CompanyProfile | null;
-  user: AppUser | null;
+  companyName: string;
+  setCompanyName: React.Dispatch<React.SetStateAction<string>>;
+  companyLogoUrl: string;
+  setCompanyLogoUrl: React.Dispatch<React.SetStateAction<string>>;
+  userName: string;
+  setUserName: React.Dispatch<React.SetStateAction<string>>;
+  userAvatarUrl: string;
+  setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
+  userEmail: string;
+  setUserEmail: React.Dispatch<React.SetStateAction<string>>;
   projects: Project[];
+  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   budgetCategories: BudgetCategory[];
+  setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
   vendors: Vendor[];
+  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
   budgetItems: BudgetItem[];
+  setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
   teamMembers: TeamMember[];
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   tasks: Task[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   expenses: Expense[];
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   changeOrders: ChangeOrder[];
+  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   rfis: RFI[];
+  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   issues: Issue[];
+  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
   milestones: Milestone[];
+  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -36,36 +54,57 @@ export function useAppState() {
 
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-    const firestore = useFirestore();
+    const [companyName, setCompanyName] = useLocalStorage<string>('companyName', 'FancyBuilders');
+    const [companyLogoUrl, setCompanyLogoUrl] = useLocalStorage<string>('companyLogoUrl', '/your-logo.png');
+    const [userName, setUserName] = useLocalStorage<string>('userName', 'John Doe');
+    const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage<string>('userAvatarUrl', 'https://i.pravatar.cc/150?u=john');
+    const [userEmail, setUserEmail] = useLocalStorage<string>('userEmail', 'john.doe@constructai.com');
 
-    const { data: companyProfile } = useDoc<CompanyProfile>(doc(firestore, 'company/profile'));
-    const { data: user } = useDoc<AppUser>(doc(firestore, 'users/user-1')); // Assuming a single user for now
-    const { data: projects } = useCollection<Project>(collection(firestore, 'projects'));
-    const { data: budgetCategories } = useCollection<BudgetCategory>(collection(firestore, 'budgetCategories'));
-    const { data: vendors } = useCollection<Vendor>(collection(firestore, 'vendors'));
-    const { data: budgetItems } = useCollection<BudgetItem>(collection(firestore, 'budgetItems'));
-    const { data: teamMembers } = useCollection<TeamMember>(collection(firestore, 'teamMembers'));
-    const { data: tasks } = useCollection<Task>(collection(firestore, 'tasks'));
-    const { data: expenses } = useCollection<Expense>(collection(firestore, 'expenses'));
-    const { data: changeOrders } = useCollection<ChangeOrder>(collection(firestore, 'changeOrders'));
-    const { data: rfis } = useCollection<RFI>(collection(firestore, 'rfis'));
-    const { data: issues } = useCollection<Issue>(collection(firestore, 'issues'));
-    const { data: milestones } = useCollection<Milestone>(collection(firestore, 'milestones'));
+    const [projects, setProjects] = useLocalStorage<Project[]>('projects', data.projects);
+    const [budgetCategories, setBudgetCategories] = useLocalStorage<BudgetCategory[]>('budgetCategories', data.budgetCategories);
+    const [vendors, setVendors] = useLocalStorage<Vendor[]>('vendors', data.vendors);
+    const [budgetItems, setBudgetItems] = useLocalStorage<BudgetItem[]>('budgetItems', data.budgetItems);
+    const [teamMembers, setTeamMembers] = useLocalStorage<TeamMember[]>('teamMembers', data.teamMembers);
+    const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', data.tasks);
+    const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', data.expenses);
+    const [changeOrders, setChangeOrders] = useLocalStorage<ChangeOrder[]>('changeOrders', data.changeOrders);
+    const [rfis, setRfis] = useLocalStorage<RFI[]>('rfis', data.rfis);
+    const [issues, setIssues] = useLocalStorage<Issue[]>('issues', data.issues);
+    const [milestones, setMilestones] = useLocalStorage<Milestone[]>('milestones', data.milestones);
 
-  const value: AppStateContextType = {
-    companyProfile: companyProfile || null,
-    user: user || null,
-    projects: projects || [],
-    budgetCategories: budgetCategories || [],
-    vendors: vendors || [],
-    budgetItems: budgetItems || [],
-    teamMembers: teamMembers || [],
-    tasks: tasks || [],
-    expenses: expenses || [],
-    changeOrders: changeOrders || [],
-    rfis: rfis || [],
-    issues: issues || [],
-    milestones: milestones || [],
+  const value = {
+    companyName,
+    setCompanyName,
+    companyLogoUrl,
+    setCompanyLogoUrl,
+    userName,
+    setUserName,
+    userAvatarUrl,
+    setUserAvatarUrl,
+    userEmail,
+    setUserEmail,
+    projects,
+    setProjects,
+    budgetCategories,
+    setBudgetCategories,
+    vendors,
+    setVendors,
+    budgetItems,
+    setBudgetItems,
+    teamMembers,
+    setTeamMembers,
+    tasks,
+    setTasks,
+    expenses,
+    setExpenses,
+    changeOrders,
+    setChangeOrders,
+    rfis,
+    setRfis,
+    issues,
+    setIssues,
+    milestones,
+    setMilestones
   };
 
   return (
@@ -74,5 +113,3 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     </AppStateContext.Provider>
   );
 }
-
-    

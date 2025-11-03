@@ -52,7 +52,7 @@ export function AddEditMilestoneDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   milestone: Milestone | null;
-  onSave: (milestone: Omit<Milestone, 'projectId'>) => void;
+  onSave: (milestone: Milestone) => void;
 }) {
   const { toast } = useToast();
   const isEditing = !!milestone;
@@ -83,6 +83,7 @@ export function AddEditMilestoneDialog({
   const onSubmit = (data: FormValues) => {
     const milestoneToSave = {
       id: milestone?.id || '',
+      projectId: milestone?.projectId || '', // This should be handled in parent
       name: data.name,
       description: data.description,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),

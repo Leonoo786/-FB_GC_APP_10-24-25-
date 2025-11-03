@@ -16,8 +16,6 @@ import { AppStateContext } from "@/context/app-state-context";
 import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
-import { useFirestore } from "@/firebase";
-import { deleteDoc, doc } from "firebase/firestore";
 
 // This is the Client Component that encapsulates all the client-side logic.
 export default function ProjectDetailLayout({
@@ -30,7 +28,6 @@ export default function ProjectDetailLayout({
     const params = use(paramsProp);
     const { toast } = useToast();
     const router = useRouter();
-    const firestore = useFirestore();
     const appState = useContext(AppStateContext);
     const [hasMounted, setHasMounted] = useState(false);
 
@@ -43,7 +40,7 @@ export default function ProjectDetailLayout({
         return <div>Loading...</div>;
     }
 
-    const { projects, budgetItems, expenses } = appState;
+    const { projects, setProjects, budgetItems, expenses } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
@@ -78,8 +75,7 @@ export default function ProjectDetailLayout({
     };
 
     const handleDelete = () => {
-        const docRef = doc(firestore, 'projects', project.id);
-        deleteDoc(docRef);
+        setProjects(currentProjects => currentProjects.filter(p => p.id !== project.id));
         toast({
             title: "Project Deleted",
             description: `The "${project.name}" project has been deleted.`,

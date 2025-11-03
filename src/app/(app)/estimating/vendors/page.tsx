@@ -15,8 +15,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
-import { useFirestore } from '@/firebase';
-import { collection, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 
 export default function VendorsPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -24,7 +22,6 @@ export default function VendorsPage() {
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
-    const firestore = useFirestore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -32,7 +29,7 @@ export default function VendorsPage() {
         return <div>Loading...</div>;
     }
 
-    const { vendors } = appState;
+    const { vendors, setVendors } = appState;
 
     const sortedVendors = vendors.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -47,7 +44,7 @@ export default function VendorsPage() {
     };
 
     const handleDeleteVendor = (vendorId: string) => {
-        deleteDoc(doc(firestore, 'vendors', vendorId));
+        setVendors(prev => prev.filter(v => v.id !== vendorId));
         toast({
             title: "Vendor Deleted",
             description: "The vendor has been successfully deleted.",
@@ -56,12 +53,7 @@ export default function VendorsPage() {
     };
 
      const handleDeleteSelected = () => {
-        const batch = writeBatch(firestore);
-        selectedRowKeys.forEach(id => {
-            const docRef = doc(firestore, 'vendors', id);
-            batch.delete(docRef);
-        });
-        batch.commit();
+        setVendors(current => current.filter(v => !selectedRowKeys.includes(v.id)));
         toast({
             title: `${selectedRowKeys.length} Vendor(s) Deleted`,
             description: "The selected vendors have been removed.",
@@ -87,24 +79,20 @@ export default function VendorsPage() {
                 const worksheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
                 
-                const batch = writeBatch(firestore);
-
-                const newVendors = json.slice(1).map(row => {
+                const newVendors: Vendor[] = json.slice(1).map(row => {
                     if (!row || row.length === 0 || !row[0]) return null;
-                    const newDocRef = doc(collection(firestore, "vendors"));
-                    const vendorData = {
+                    return {
+                        id: crypto.randomUUID(),
                         name: row[0] || '',
                         trade: row[1] || 'N/A',
                         contactPerson: row[2] || 'N/A',
                         phone: row[3] || 'N/A',
                         email: row[4] || 'N/A'
                     };
-                    batch.set(newDocRef, vendorData);
-                    return vendorData;
-                }).filter(v => v !== null);
+                }).filter((v): v is Vendor => v !== null);
 
                 if (newVendors.length > 0) {
-                    batch.commit();
+                    setVendors(current => [...current, ...newVendors]);
                     toast({
                         title: 'Import Successful',
                         description: `${newVendors.length} vendors have been imported.`,

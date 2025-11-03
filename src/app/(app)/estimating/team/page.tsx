@@ -14,21 +14,18 @@ import { AddEditTeamMemberDialog } from './_components/add-edit-team-member-dial
 import type { TeamMember } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
-import { deleteDoc, doc } from 'firebase/firestore';
 
 export default function TeamPage() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
     const appState = useContext(AppStateContext);
-    const firestore = useFirestore();
     const { toast } = useToast();
 
     if (!appState) {
         return <div>Loading...</div>;
     }
     
-    const { teamMembers } = appState;
+    const { teamMembers, setTeamMembers } = appState;
 
     const handleNewMember = () => {
         setSelectedMember(null);
@@ -41,7 +38,7 @@ export default function TeamPage() {
     };
 
     const handleDeleteMember = (memberId: string) => {
-        deleteDoc(doc(firestore, 'teamMembers', memberId));
+        setTeamMembers(prev => prev.filter(m => m.id !== memberId));
         toast({
             title: "Team Member Deleted",
             description: "The team member has been successfully removed.",

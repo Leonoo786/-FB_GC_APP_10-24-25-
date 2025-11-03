@@ -18,63 +18,54 @@ import { Logo } from '@/components/icons';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FirebaseClientProvider } from '@/firebase';
-import { initializeFirebase } from '@/firebase';
 import { AppStateProvider } from '@/context/app-state-context';
 
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
-    const { app, auth, firestore } = initializeFirebase();
-
-    if (!app || !auth || !firestore) {
-        return <div>Loading...</div>;
-    }
 
     return (
-        <FirebaseClientProvider firebaseApp={app} firestore={firestore} auth={auth}>
-            <AppStateProvider>
-                <SidebarProvider>
-                    <Sidebar>
-                        <SidebarHeader className="p-4">
-                            <Link href="/dashboard" className="flex items-center gap-2">
-                                <Logo className="size-8" />
-                                <span className="text-lg font-semibold">ConstructAI</span>
-                            </Link>
-                        </SidebarHeader>
-                        <SidebarContent>
-                            <MainNav />
-                        </SidebarContent>
-                    </Sidebar>
+        <AppStateProvider>
+            <SidebarProvider>
+                <Sidebar>
+                    <SidebarHeader className="p-4">
+                        <Link href="/dashboard" className="flex items-center gap-2">
+                            <Logo className="size-8" />
+                            <span className="text-lg font-semibold">ConstructAI</span>
+                        </Link>
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <MainNav />
+                    </SidebarContent>
+                </Sidebar>
 
-                    <SidebarInset className="flex flex-col">
-                        <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
-                            <div className="flex items-center gap-2">
-                                <SidebarTrigger className="md:hidden" />
-                                <div className="relative hidden md:block">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="search"
-                                        placeholder="Search projects..."
-                                        className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[320px]"
-                                    />
-                                </div>
+                <SidebarInset className="flex flex-col">
+                    <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
+                        <div className="flex items-center gap-2">
+                            <SidebarTrigger className="md:hidden" />
+                            <div className="relative hidden md:block">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="search"
+                                    placeholder="Search projects..."
+                                    className="w-full rounded-lg bg-secondary pl-8 md:w-[200px] lg:w-[320px]"
+                                />
                             </div>
+                        </div>
 
-                            <div className="flex items-center gap-4">
-                                <Button variant="ghost" size="icon" className="md:hidden">
-                                    <Search className="h-5 w-5" />
-                                    <span className="sr-only">Search</span>
-                                </Button>
-                                <UserNav />
-                            </div>
-                        </header>
-                        <main className="flex-1 overflow-auto p-4 sm:p-6">
-                            {children}
-                        </main>
-                    </SidebarInset>
-                </SidebarProvider>
-            </AppStateProvider>
-        </FirebaseClientProvider>
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="icon" className="md:hidden">
+                                <Search className="h-5 w-5" />
+                                <span className="sr-only">Search</span>
+                            </Button>
+                            <UserNav />
+                        </div>
+                    </header>
+                    <main className="flex-1 overflow-auto p-4 sm:p-6">
+                        {children}
+                    </main>
+                </SidebarInset>
+            </SidebarProvider>
+        </AppStateProvider>
     );
 }
 
