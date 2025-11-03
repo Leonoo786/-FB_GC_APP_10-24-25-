@@ -6,12 +6,12 @@
 // import * as admin from 'firebase-admin';
 
 const firebaseConfig = {
-  apiKey: "TODO: Your api key",
-  authDomain: "TODO: Your auth domain",
-  projectId: "TODO: Your project id",
-  storageBucket: "TODO: Your storage bucket",
-  messagingSenderId: "TODO: Your messaging sender id",
-  appId: "TODO: Your app id",
+  "projectId": "studio-8302502127-557bf",
+  "appId": "1:259840996333:web:7de21ed4a3798cea26ade4",
+  "apiKey": "AIzaSyA3VW-0Eb5eD1zl5iTV7JA-Lbf6NaDdNjY",
+  "authDomain": "studio-8302502127-557bf.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "259840996333"
 };
 
 export function getFirebaseConfig() {
