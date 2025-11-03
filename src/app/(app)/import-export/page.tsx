@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload, HardDrive } from 'lucide-react';
+import { Download, Upload, HardDrive, Database, BookOpen, PenSquare, Trash2 } from 'lucide-react';
 import type {
   Project,
   BudgetItem,
@@ -26,6 +26,7 @@ import type {
   Issue,
   Milestone,
 } from '@/lib/types';
+import { Progress } from '@/components/ui/progress';
 
 type AllData = {
   projects: Project[];
@@ -45,6 +46,8 @@ type AllData = {
   userAvatarUrl: string;
   userEmail: string;
 };
+
+const ONE_GIB_IN_BYTES = 1 * 1024 * 1024 * 1024;
 
 export default function ImportExportPage() {
   const appState = useContext(AppStateContext);
@@ -109,18 +112,27 @@ export default function ImportExportPage() {
     userEmail,
   };
   
-  const dataSize = useMemo(() => {
+  const { sizeInBytes, displaySize } = useMemo(() => {
     try {
       const jsonString = JSON.stringify(allData);
-      const sizeInBytes = new Blob([jsonString]).size;
-      if (sizeInBytes < 1024) return `${sizeInBytes.toFixed(2)} Bytes`;
-      if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(2)} KB`;
-      return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
+      const bytes = new Blob([jsonString]).size;
+      let sizeLabel: string;
+      if (bytes < 1024) {
+        sizeLabel = `${bytes.toFixed(2)} Bytes`;
+      } else if (bytes < 1024 * 1024) {
+        sizeLabel = `${(bytes / 1024).toFixed(2)} KB`;
+      } else if (bytes < 1024 * 1024 * 1024){
+        sizeLabel = `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      } else {
+        sizeLabel = `${(bytes / ONE_GIB_IN_BYTES).toFixed(2)} GB`;
+      }
+      return { sizeInBytes: bytes, displaySize: sizeLabel };
     } catch {
-      return "N/A";
+      return { sizeInBytes: 0, displaySize: "N/A" };
     }
   }, [allData]);
 
+  const storageUsagePercentage = (sizeInBytes / ONE_GIB_IN_BYTES) * 100;
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -218,7 +230,7 @@ export default function ImportExportPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Import / Export</h1>
         <p className="text-muted-foreground">
-          Manage your application data in bulk.
+          Manage your application data in bulk and monitor storage usage.
         </p>
       </div>
 
@@ -253,20 +265,67 @@ export default function ImportExportPage() {
               </div>
             </div>
              <Card>
-                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                     <HardDrive className="h-8 w-8 text-muted-foreground" />
                     <div>
                         <CardTitle>Current Data Size</CardTitle>
-                        <CardDescription>The total size of your data stored in the browser.</CardDescription>
+                        <CardDescription>The total size of your data stored in the browser relative to Firestore's 1 GiB free tier.</CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-3xl font-bold">{dataSize}</p>
+                    <p className="text-3xl font-bold">{displaySize}</p>
+                    <Progress value={storageUsagePercentage} className="mt-2" />
                     <p className="text-xs text-muted-foreground mt-1">
-                        This is an estimate of your local storage usage. The free tier of Firestore provides 1 GiB of storage.
+                      You've used {storageUsagePercentage.toFixed(4)}% of the 1 GiB free limit.
                     </p>
                 </CardContent>
             </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Reads</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
+                        of 50,000 per day (free tier)
+                        </p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Writes</CardTitle>
+                        <PenSquare className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
+                        of 20,000 per day (free tier)
+                        </p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Deletes</CardTitle>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
+                        of 20,000 per day (free tier)
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+            <Alert>
+              <Database className="h-4 w-4" />
+              <AlertTitle>Note on Usage Metrics</AlertTitle>
+              <AlertDescription>
+                The read, write, and delete counts are currently zero because the application is using local browser storage. Migrating to Firebase Firestore would enable these real-time metrics.
+              </AlertDescription>
+            </Alert>
         </CardContent>
       </Card>
     </div>
