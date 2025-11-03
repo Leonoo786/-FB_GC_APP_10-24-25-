@@ -21,27 +21,74 @@ import { Button } from '@/components/ui/button';
 import { AppStateProvider } from '@/context/app-state-context';
 import { vendors as initialVendors, teamMembers as initialTeamMembers, tasks as initialTasks, budgetCategories as initialBudgetCategories, projects as initialProjects, budgetItems as initialBudgetItems, expenses as initialExpenses, changeOrders as initialChangeOrders, rfis as initialRfis, issues as initialIssues, milestones as initialMilestones } from '@/lib/data';
 import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 import { AppStateContext } from '@/context/app-state-context';
 import { useContext, useEffect, useState } from 'react';
 
 function AppStateInitializer({ children }: { children: React.ReactNode }) {
-    const [companyName, setCompanyName] = useLocalStorage('companyName', 'FancyBuilders');
-    const [companyLogoUrl, setCompanyLogoUrl] = useLocalStorage('companyLogoUrl', '/your-logo.png');
-    const [projects, setProjects] = useLocalStorage<Project[]>('projects', initialProjects);
-    const [budgetCategories, setBudgetCategories] = useLocalStorage<BudgetCategory[]>('budgetCategories', initialBudgetCategories);
-    const [vendors, setVendors] = useLocalStorage<Vendor[]>('vendors', initialVendors);
-    const [budgetItems, setBudgetItems] = useLocalStorage<BudgetItem[]>('budgetItems', initialBudgetItems);
-    const [teamMembers, setTeamMembers] = useLocalStorage<TeamMember[]>('teamMembers', initialTeamMembers);
-    const [tasks, setTasks] = useLocalStorage<Task[]>('tasks', initialTasks);
-    const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', initialExpenses);
-    const [changeOrders, setChangeOrders] = useLocalStorage<ChangeOrder[]>('changeOrders', initialChangeOrders);
-    const [rfis, setRfis] = useLocalStorage<RFI[]>('rfis', initialRfis);
-    const [issues, setIssues] = useLocalStorage<Issue[]>('issues', initialIssues);
-    const [milestones, setMilestones] = useLocalStorage<Milestone[]>('milestones', initialMilestones);
-    const [userName, setUserName] = useLocalStorage('userName', 'John Doe');
-    const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage('userAvatarUrl', 'https://i.pravatar.cc/150?u=john');
-    const [userEmail, setUserEmail] = useLocalStorage('userEmail', 'john.doe@constructai.com');
+    const [companyName, setCompanyName] = useState('FancyBuilders');
+    const [companyLogoUrl, setCompanyLogoUrl] = useState('/your-logo.png');
+    const [projects, setProjects] = useState<Project[]>(initialProjects);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(initialBudgetCategories);
+    const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(initialBudgetItems);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+    const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(initialChangeOrders);
+    const [rfis, setRfis] = useState<RFI[]>(initialRfis);
+    const [issues, setIssues] = useState<Issue[]>(initialIssues);
+    const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones);
+    const [userName, setUserName] = useState('John Doe');
+    const [userAvatarUrl, setUserAvatarUrl] = useState('https://i.pravatar.cc/150?u=john');
+    const [userEmail, setUserEmail] = useState('john.doe@constructai.com');
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        try {
+            const savedState = localStorage.getItem('appState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                setCompanyName(state.companyName || 'FancyBuilders');
+                setCompanyLogoUrl(state.companyLogoUrl || '/your-logo.png');
+                setProjects(state.projects || initialProjects);
+                setBudgetCategories(state.budgetCategories || initialBudgetCategories);
+                setVendors(state.vendors || initialVendors);
+                setBudgetItems(state.budgetItems || initialBudgetItems);
+                setTeamMembers(state.teamMembers || initialTeamMembers);
+                setTasks(state.tasks || initialTasks);
+                setExpenses(state.expenses || initialExpenses);
+                setChangeOrders(state.changeOrders || initialChangeOrders);
+                setRfis(state.rfis || initialRfis);
+                setIssues(state.issues || initialIssues);
+                setMilestones(state.milestones || initialMilestones);
+                setUserName(state.userName || 'John Doe');
+                setUserAvatarUrl(state.userAvatarUrl || 'https://i.pravatar.cc/150?u=john');
+                setUserEmail(state.userEmail || 'john.doe@constructai.com');
+            }
+        } catch (error) {
+            console.error("Failed to load state from localStorage", error);
+        }
+        setIsLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (isLoaded) {
+            const appState = {
+                companyName, companyLogoUrl, projects, budgetCategories, vendors,
+                budgetItems, teamMembers, tasks, expenses, changeOrders, rfis,
+                issues, milestones, userName, userAvatarUrl, userEmail
+            };
+            localStorage.setItem('appState', JSON.stringify(appState));
+        }
+    }, [
+        companyName, companyLogoUrl, projects, budgetCategories, vendors,
+        budgetItems, teamMembers, tasks, expenses, changeOrders, rfis,
+        issues, milestones, userName, userAvatarUrl, userEmail, isLoaded
+    ]);
+
+    if (!isLoaded) {
+      return null; // Or a loading spinner
+    }
     
     return (
         <AppStateProvider 
