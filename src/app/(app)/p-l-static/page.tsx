@@ -1,193 +1,138 @@
+"use client";
 
-'use client';
-
-import { useState, useMemo, useContext } from 'react';
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  DollarSign,
-  BarChart,
-  TrendingDown,
+  Calculator,
+  CheckCircle2,
+  ClipboardCheck,
+  FolderKanban,
+  LayoutDashboard,
+  MessageCircle,
+  Settings,
+  AlertCircle,
+  Tag,
+  Truck,
+  Users,
+  ChevronDown,
   TrendingUp,
-  Wallet,
-} from 'lucide-react';
-import { FinancialBreakdown } from './_components/financial-breakdown';
-import { AppStateContext } from '@/context/app-state-context';
+  Database,
+  FileText,
+} from "lucide-react";
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 
-export default function ProfitLossStaticPage() {
-    const [selectedProjectId, setSelectedProjectId] = useState('all');
-    const appState = useContext(AppStateContext);
+const mainNavLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/profit-loss", label: "Profit & Loss", icon: TrendingUp },
+  { href: "/tasks", label: "Tasks", icon: CheckCircle2 },
+  { href: "/daily-reports", label: "Daily Reports", icon: ClipboardCheck },
+  { href: "/issues", label: "Issues", icon: AlertCircle },
+  { href: "/chat", label: "Chat", icon: MessageCircle },
+  { href: "/aia", label: "AIA", icon: FileText },
+];
 
-    if (!appState) {
-        return <div>Loading...</div>;
-    }
+const estimatingLinks = [
+  { href: "/estimating/job-estimator", label: "AI Job Estimator", icon: Calculator },
+  { href: "/estimating/budget-categories", label: "Budget Categories", icon: Tag },
+  { href: "/estimating/vendors", label: "Vendors", icon: Truck },
+  { href: "/estimating/team", label: "Team", icon: Users },
+];
 
-    const { projects, budgetItems, expenses: allExpenses } = appState;
+export function MainNav() {
+  const pathname = usePathname();
 
-    const financialData = useMemo(() => {
-        const relevantProjects =
-        selectedProjectId === 'all'
-            ? projects
-            : projects.filter((p) => p.id === selectedProjectId);
-
-        const projectIds = relevantProjects.map((p) => p.id);
-        
-        const bidAmount = relevantProjects.reduce((acc, p) => acc + p.finalBidAmount, 0);
-        
-        const relevantBudgetItems = budgetItems.filter((item) =>
-          projectIds.includes(item.projectId)
-        );
-        
-        const budget = relevantBudgetItems.reduce(
-          (acc, item) => acc + item.originalBudget + item.approvedCOBudget,
-          0
-        );
-
-        const relevantExpenses = allExpenses.filter((expense) =>
-            projectIds.includes(expense.projectId)
-        );
-        const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
-
-        const actualProfitLoss = bidAmount - expenses;
-        const remainingBudget = budget - expenses;
-
-        return { budget, expenses, actualProfitLoss, remainingBudget };
-    }, [selectedProjectId, projects, allExpenses, budgetItems]);
-
+  const isEstimatingActive = pathname.startsWith("/estimating");
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Profit & Loss Reports (Static)
-          </h1>
-          <p className="text-muted-foreground">
-            View financial performance across projects or for specific projects
-          </p>
-        </div>
-        <Select defaultValue="all" onValueChange={setSelectedProjectId}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a project" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Projects</SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <SidebarMenu>
+      {mainNavLinks.map((link) => (
+        <SidebarMenuItem key={link.href}>
+          <SidebarMenuButton
+            asChild
+            isActive={pathname === link.href}
+            tooltip={link.label}
+          >
+            <Link href={link.href}>
+              <link.icon />
+              <span>{link.label}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
 
-      <Tabs defaultValue="summary">
-        <TabsList>
-          <TabsTrigger value="summary">Summary</TabsTrigger>
-          <TabsTrigger value="detailed-analysis" disabled>
-            Detailed Analysis
-          </TabsTrigger>
-          <TabsTrigger value="project-comparison" disabled>
-            Project Comparison
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="summary" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-                <BarChart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {financialData.budget.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Sum of all budget line items</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Spent so far
-                </CardTitle>
-                <TrendingDown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {financialData.expenses.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Actual expenditure to date
-                </p>
-              </CardContent>
-            </Card>
-             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Remaining
-                </CardTitle>
-                <Wallet className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {financialData.remainingBudget.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Budget - Spent</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Profit/Loss
-                </CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {financialData.actualProfitLoss.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground">Bid - Expenses</p>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="mt-6">
-            <FinancialBreakdown 
-                budget={financialData.budget}
-                expenses={financialData.expenses}
-                remaining={financialData.actualProfitLoss}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+      <Collapsible defaultOpen={isEstimatingActive}>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton
+              className="justify-between"
+              isActive={isEstimatingActive}
+            >
+              <div className="flex items-center gap-2">
+                <Calculator />
+                <span>Estimating</span>
+              </div>
+              <ChevronDown className="size-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+        </SidebarMenuItem>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {estimatingLinks.map((link) => (
+              <SidebarMenuItem key={link.href}>
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={pathname.startsWith(link.href)}
+                >
+                  <Link href={link.href}>
+                    <link.icon />
+                    <span>{link.label}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <SidebarMenuItem>
+        <SidebarMenuButton
+            asChild
+            isActive={pathname === "/import-export"}
+            tooltip="Import/Export"
+        >
+            <Link href="/import-export">
+                <Database />
+                <span>Import / Export</span>
+            </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+      
+      <SidebarMenuItem className="mt-auto">
+        <SidebarMenuButton
+          asChild
+          isActive={pathname === "/settings"}
+          tooltip="Settings"
+        >
+          <Link href="/settings">
+            <Settings />
+            <span>Settings</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
