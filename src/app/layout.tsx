@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'ConstructAI',
   description: 'Construction Project Management Application',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
