@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
-import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
+import { AddEditExpenseDialog } from '../../_components/add-edit-expense-dialog';
 import { format, isValid } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
