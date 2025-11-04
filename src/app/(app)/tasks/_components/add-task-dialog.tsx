@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useContext, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -28,9 +28,11 @@ import type { Task, Project, TeamMember } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { AppStateContext } from '@/context/app-state-context';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Task title is required.'),
@@ -49,7 +51,6 @@ export function AddTaskDialog({
   onSave,
   task,
   projects,
-  teamMembers,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -60,6 +61,11 @@ export function AddTaskDialog({
 }) {
   const { toast } = useToast();
   const isEditing = !!task;
+  const appState = useContext(AppStateContext);
+  const [assigneePopoverOpen, setAssigneePopoverOpen] = useState(false);
+  const { teamMembers, setTeamMembers } = appState || {};
+
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -99,12 +105,12 @@ export function AddTaskDialog({
       dueDate: data.dueDate ? format(data.dueDate, 'yyyy-MM-dd') : new Date().toISOString().split('T')[0],
     };
     onSave(taskToSave);
-    toast({
-      title: `Task ${isEditing ? 'Updated' : 'Created'}`,
-      description: `Successfully ${isEditing ? 'updated' : 'created'} task: ${data.title}.`,
-    });
     onOpenChange(false);
   };
+  
+  if (!appState) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -205,28 +211,90 @@ export function AddTaskDialog({
             
             <div className="grid grid-cols-2 gap-4">
                 <FormField
-                control={form.control}
-                name="assigneeId"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Assign To (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a team member" />
-                        </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                        {teamMembers.map(member => (
-                            <SelectItem key={member.id} value={member.id}>
-                            {member.name}
-                            </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
+                  control={form.control}
+                  name="assigneeId"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Assign To (Optional)</FormLabel>
+                      <Popover open={assigneePopoverOpen} onOpenChange={setAssigneePopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? teamMembers.find(
+                                    (member) => member.id === field.value
+                                  )?.name
+                                : "Select a team member"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search team member..." />
+                            <CommandList>
+                              <CommandEmpty>
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-start"
+                                  onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      const newMemberName = form.getValues('assigneeId'); // a bit of a hack, it holds the search query
+                                      if(newMemberName && teamMembers && setTeamMembers && !teamMembers.some(m => m.name.toLowerCase() === newMemberName.toLowerCase())) {
+                                          const newMember: TeamMember = {
+                                              id: crypto.randomUUID(),
+                                              name: newMemberName,
+                                              role: 'New Member',
+                                              email: 'tbd@email.com',
+                                              phone: 'N/A',
+                                              avatarUrl: `https://i.pravatar.cc/150?u=${crypto.randomUUID()}`
+                                          };
+                                          setTeamMembers(prev => [...prev, newMember]);
+                                          field.onChange(newMember.id);
+                                          toast({ title: "Team Member Added", description: `Added "${newMemberName}" to the team.` });
+                                      }
+                                      setAssigneePopoverOpen(false);
+                                  }}
+                                  >
+                                  Create "{form.getValues('assigneeId')}"
+                                </Button>
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {teamMembers?.map((member) => (
+                                  <CommandItem
+                                    value={member.name}
+                                    key={member.id}
+                                    onSelect={() => {
+                                      form.setValue("assigneeId", member.id)
+                                      setAssigneePopoverOpen(false)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        member.id === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {member.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
                     </FormItem>
-                )}
+                  )}
                 />
                 <FormField
                 control={form.control}
