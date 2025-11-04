@@ -16,43 +16,43 @@ service cloud.firestore {
     
     // Grant access to all of the user's subcollections
     match /users/{userId}/projects/{projectId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/budgetCategories/{budgetCategoryId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/vendors/{vendorId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/teamMembers/{teamMemberId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/budgetItems/{budgetItemId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/expenses/{expenseId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/changeOrders/{changeOrderId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/tasks/{taskId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/rfis/{rfiId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/issues/{issueId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/drawings/{drawingId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/clientUploads/{clientUploadId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
     match /users/{userId}/milestones/{milestoneId} {
-      allow read, write, delete: if isOwner(userId);
+      allow read, write, delete, list: if isOwner(userId);
     }
   }
 }
