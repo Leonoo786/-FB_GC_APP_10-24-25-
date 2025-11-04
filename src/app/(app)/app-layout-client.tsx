@@ -16,17 +16,26 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppStateProvider, useAppState } from '@/context/app-state-context';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider, useAuth, useUser } from '@/firebase';
 import { useEffect, useState } from 'react';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
     const [hasMounted, setHasMounted] = useState(false);
     const appState = useAppState();
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
 
     useEffect(() => {
         setHasMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (auth && !user && !isUserLoading) {
+            initiateAnonymousSignIn(auth);
+        }
+    }, [auth, user, isUserLoading]);
 
     if (!hasMounted || !appState) {
         return null;
