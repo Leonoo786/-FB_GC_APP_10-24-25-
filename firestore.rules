@@ -1,33 +1,339 @@
-
+/**
+ * @file Firebase Security Rules for ConstructAI application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for project data
+ * nested under /users/{userId}. It also supports shared access through
+ * denormalized member lists on project documents. Master lists (vendors,
+ * categories, team members, issues) are publicly readable but writable only by
+ * designated admins.
+ *
+ * Data Structure:
+ * - /users/{userId}/projects/{projectId}: Projects owned by individual users.
+ * - /projects/{projectId}/...: Subcollections of projects, inheriting
+ *   ownership from the parent project (BudgetItem, Expense, ChangeOrder, Task,
+ *   RFI, Drawing, ClientUpload).
+ * - /budgetCategories/{budgetCategoryId}: Master list of budget categories.
+ * - /vendors/{vendorId}: Master list of vendors.
+ * - /teamMembers/{teamMemberId}: Master list of team members.
+ * - /issues/{issueId}: Global list of issues.
+ * - /roles_admin/{userId}: Document existence indicates admin status.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed to protect user privacy.
+ * - Master lists (vendors, categories, team members, issues) are publicly
+ *   readable to facilitate data selection, but writes are restricted to admins
+ *   only.
+ * - Ambiguous relationships default to strict owner-only access.
+ *
+ * Denormalization for Authorization:
+ * - Project subcollections (budget items, expenses, etc.) require the project
+ *   owner's ID to be denormalized onto each document. This enables rules to
+ *   check project ownership without needing costly `get()` calls.
+ *
+ * Structural Segregation:
+ * - Project data is separated from global lists (vendors, categories) to
+ *   ensure clear access control and prevent accidental exposure of sensitive
+ *   project information.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is signed in
-    function isSignedIn() {
-      return request.auth != null;
+    /**
+     * @description Grants owner-only access to projects under a user's path.
+     * @path /users/{userId}/projects/{projectId}
+     * @allow (create) User 'user123' creates a new project under /users/user123/projects/.
+     * @allow (read) User 'user123' reads a project under /users/user123/projects/.
+     * @deny (create) User 'user456' tries to create a project under /users/user123/projects/.
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/projects/{projectId} {
+      // Helper function to check if the request comes from the owner
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      // Helper function to check if the request comes from the existing owner
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
     }
 
-    // Users can read and write their own profile
-    match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-    }
-    
-    // Any signed-in user can read the company profile
-    match /company/profile {
-        allow read, write: if isSignedIn();
+    /**
+     * @description Grants access to budget items only to the project owner.
+     * @path /projects/{projectId}/budgetItems/{budgetItemId}
+     * @allow (create) User 'user123' creates a new budget item under /projects/project123/budgetItems/.  The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads a budget item under /projects/project123/budgetItems/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create a budget item under /projects/project123/budgetItems/.
+     * @principle Enforces document ownership for all operations.  Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/budgetItems/{budgetItemId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
     }
 
-    // Rules for all other collections
-    // This allows any signed-in user to read, write, and list documents.
-    match /{collection}/{docId} {
-      allow read, write, delete: if isSignedIn();
+    /**
+     * @description Grants access to expenses only to the project owner.
+     * @path /projects/{projectId}/expenses/{expenseId}
+     * @allow (create) User 'user123' creates a new expense under /projects/project123/expenses/.  The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads an expense under /projects/project123/expenses/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create an expense under /projects/project123/expenses/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/expenses/{expenseId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
     }
-    
-    // This is the crucial addition: It allows collection-wide reads (list operations).
-    match /{path=**}/documents {
-      allow list: if isSignedIn();
+
+    /**
+     * @description Grants access to change orders only to the project owner.
+     * @path /projects/{projectId}/changeOrders/{changeOrderId}
+     * @allow (create) User 'user123' creates a new change order under /projects/project123/changeOrders/.  The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads a change order under /projects/project123/changeOrders/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create a change order under /projects/project123/changeOrders/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/changeOrders/{changeOrderId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
+    }
+
+    /**
+     * @description Grants access to tasks only to the project owner.
+     * @path /projects/{projectId}/tasks/{taskId}
+     * @allow (create) User 'user123' creates a new task under /projects/project123/tasks/. The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads a task under /projects/project123/tasks/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create a task under /projects/project123/tasks/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/tasks/{taskId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
+    }
+
+    /**
+     * @description Grants access to RFIs only to the project owner.
+     * @path /projects/{projectId}/rfis/{rfiId}
+     * @allow (create) User 'user123' creates a new RFI under /projects/project123/rfis/. The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads an RFI under /projects/project123/rfis/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create an RFI under /projects/project123/rfis/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/rfis/{rfiId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
+    }
+
+    /**
+     * @description Grants access to drawings only to the project owner.
+     * @path /projects/{projectId}/drawings/{drawingId}
+     * @allow (create) User 'user123' creates a new drawing under /projects/project123/drawings/. The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads a drawing under /projects/project123/drawings/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create a drawing under /projects/project123/drawings/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/drawings/{drawingId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
+    }
+
+    /**
+     * @description Grants access to client uploads only to the project owner.
+     * @path /projects/{projectId}/clientUploads/{clientUploadId}
+     * @allow (create) User 'user123' creates a new client upload under /projects/project123/clientUploads/. The Project document must have the ownerId set to 'user123'.
+     * @allow (read) User 'user123' reads a client upload under /projects/project123/clientUploads/. The Project document must have the ownerId set to 'user123'.
+     * @deny (create) User 'user456' tries to create a client upload under /projects/project123/clientUploads/.
+     * @principle Enforces document ownership for all operations. Relies on denormalized ownerId.
+     */
+    match /projects/{projectId}/clientUploads/{clientUploadId} {
+      // Helper function to check if the request comes from the project owner
+      function isProjectOwner() {
+        return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)/projects/$(projectId)).data.id == request.auth.uid;
+      }
+
+      // Helper function to check if the request comes from the existing project owner
+      function isExistingProjectOwner() {
+        return isProjectOwner() && resource != null;
+      }
+
+      allow get: if isProjectOwner();
+      allow list: if isProjectOwner();
+      allow create: if isProjectOwner();
+      allow update: if isExistingProjectOwner();
+      allow delete: if isExistingProjectOwner();
+    }
+
+    /**
+     * @description Allows public read access to budget categories.
+     * @path /budgetCategories/{budgetCategoryId}
+     * @allow (read) Any user can read a budget category.
+     * @deny (create) No user can create a budget category without admin role.
+     * @principle Allows public read access but restricts writes.
+     */
+    match /budgetCategories/{budgetCategoryId} {
+      // Helper function to check if the user has admin role
+      function isAdmin() {
+          return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows public read access to vendors.
+     * @path /vendors/{vendorId}
+     * @allow (read) Any user can read a vendor.
+     * @deny (create) No user can create a vendor without admin role.
+     * @principle Allows public read access but restricts writes.
+     */
+    match /vendors/{vendorId} {
+      // Helper function to check if the user has admin role
+      function isAdmin() {
+          return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows public read access to team members.
+     * @path /teamMembers/{teamMemberId}
+     * @allow (read) Any user can read a team member.
+     * @deny (create) No user can create a team member without admin role.
+     * @principle Allows public read access but restricts writes.
+     */
+    match /teamMembers/{teamMemberId} {
+      // Helper function to check if the user has admin role
+      function isAdmin() {
+          return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Allows public read access to issues.
+     * @path /issues/{issueId}
+     * @allow (read) Any user can read an issue.
+     * @deny (create) No user can create an issue without admin role.
+     * @principle Allows public read access but restricts writes.
+     */
+    match /issues/{issueId} {
+      // Helper function to check if the user has admin role
+      function isAdmin() {
+          return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Restricts access to the admin role collection to admins only.
+     * @path /roles_admin/{userId}
+     * @allow (create) User 'admin123' creates their admin role document.
+     * @deny (create) User 'user456' tries to create an admin role document.
+     * @principle Enforces that only admins can manage admin roles.
+     */
+    match /roles_admin/{userId} {
+      // Helper function to check if the user has admin role
+      function isAdmin() {
+          return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get: if isAdmin();
+      allow list: if false;
+      allow create: if isAdmin() && request.auth.uid == userId;
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

@@ -1,243 +1,781 @@
 {
   "entities": {
     "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Project",
-      "description": "Represents a single construction project.",
       "type": "object",
+      "description": "Represents a construction project.",
       "properties": {
-        "projectNumber": { "type": "string" },
-        "name": { "type": "string" },
-        "ownerName": { "type": "string" },
-        "addressStreet": { "type": "string" },
-        "city": { "type": "string" },
-        "zip": { "type": "string" },
-        "description": { "type": "string" },
-        "status": { "type": "string", "enum": ["Planning", "In Progress", "Completed"] },
-        "percentComplete": { "type": "number" },
-        "startDate": { "type": "string", "format": "date" },
-        "endDate": { "type": "string", "format": "date" },
-        "revisedContract": { "type": "number" },
-        "finalBidAmount": { "type": "number" },
-        "imageUrl": { "type": "string" },
-        "imageHint": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Project entity."
+        },
+        "projectNumber": {
+          "type": "string",
+          "description": "The project number."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "ownerName": {
+          "type": "string",
+          "description": "Name of the project owner."
+        },
+        "addressStreet": {
+          "type": "string",
+          "description": "Street address of the project."
+        },
+        "city": {
+          "type": "string",
+          "description": "City of the project address."
+        },
+        "zip": {
+          "type": "string",
+          "description": "Zip code of the project address."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the project."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the project (e.g., Planning, In Progress, Completed)."
+        },
+        "percentComplete": {
+          "type": "number",
+          "description": "Percentage of project completion."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date of the project.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date of the project.",
+          "format": "date-time"
+        },
+        "revisedContract": {
+          "type": "number",
+          "description": "Revised contract amount for the project."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the project image.",
+          "format": "uri"
+        }
       },
-      "required": ["name", "ownerName", "description", "status", "startDate", "endDate"]
+      "required": [
+        "id",
+        "projectNumber",
+        "name",
+        "status",
+        "percentComplete"
+      ]
     },
     "BudgetCategory": {
-      "title": "Budget Category",
-      "description": "A category for budget items.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BudgetCategory",
       "type": "object",
+      "description": "Represents a category in the project budget.",
       "properties": {
-        "name": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BudgetCategory entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the budget category."
+        }
       },
-      "required": ["name"]
+      "required": [
+        "id",
+        "name"
+      ]
     },
     "Vendor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Vendor",
-      "description": "A vendor or subcontractor.",
       "type": "object",
+      "description": "Represents a vendor or subcontractor.",
       "properties": {
-        "name": { "type": "string" },
-        "contactPerson": { "type": "string" },
-        "phone": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "trade": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Vendor entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the vendor."
+        },
+        "contactPerson": {
+          "type": "string",
+          "description": "Contact person at the vendor."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the vendor."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the vendor.",
+          "format": "email"
+        },
+        "trade": {
+          "type": "string",
+          "description": "Trade of the vendor (e.g., Electrical, Plumbing)."
+        }
       },
-      "required": ["name", "trade"]
+      "required": [
+        "id",
+        "name",
+        "trade"
+      ]
     },
     "TeamMember": {
-      "title": "Team Member",
-      "description": "An internal team member.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TeamMember",
       "type": "object",
+      "description": "Represents a team member working on the projects.",
       "properties": {
-        "name": { "type": "string" },
-        "role": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "avatarUrl": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the TeamMember entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the team member."
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the team member."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the team member.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the team member."
+        }
       },
-      "required": ["name", "role", "email"]
+      "required": [
+        "id",
+        "name",
+        "role"
+      ]
     },
     "BudgetItem": {
-      "title": "Budget Item",
-      "description": "A single line item in a project's budget.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BudgetItem",
       "type": "object",
+      "description": "Represents a line item in the project budget.",
       "properties": {
-        "projectId": { "type": "string" },
-        "category": { "type": "string" },
-        "costType": { "type": "string", "enum": ["labor", "material", "both"] },
-        "notes": { "type": "string" },
-        "originalBudget": { "type": "number" },
-        "approvedCOBudget": { "type": "number" },
-        "committedCost": { "type": "number" },
-        "projectedCost": { "type": "number" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BudgetItem entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N BudgetItem)"
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to BudgetCategory. (Relationship: BudgetCategory 1:N BudgetItem)"
+        },
+        "costType": {
+          "type": "string",
+          "description": "Type of cost (e.g., labor, material, both)."
+        },
+        "originalBudget": {
+          "type": "number",
+          "description": "Original budget amount for the item."
+        },
+        "approvedCOBudget": {
+          "type": "number",
+          "description": "Approved change order budget amount."
+        },
+        "committedCost": {
+          "type": "number",
+          "description": "Committed cost amount."
+        },
+        "projectedCost": {
+          "type": "number",
+          "description": "Projected cost amount."
+        }
       },
-      "required": ["projectId", "category", "costType", "originalBudget"]
+      "required": [
+        "id",
+        "projectId",
+        "categoryId",
+        "costType",
+        "originalBudget"
+      ]
     },
     "Expense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Expense",
-      "description": "A single expense record for a project.",
       "type": "object",
+      "description": "Represents an expense incurred on a project.",
       "properties": {
-        "projectId": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "category": { "type": "string" },
-        "vendorName": { "type": "string" },
-        "description": { "type": "string" },
-        "amount": { "type": "number" },
-        "paymentMethod": { "type": "string" },
-        "paymentReference": { "type": "string" },
-        "invoiceNumber": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Expense entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Expense)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date of the expense.",
+          "format": "date-time"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the expense."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the expense."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the expense."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used for the expense."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "Invoice number for the expense."
+        }
       },
-      "required": ["projectId", "date", "category", "description", "amount", "paymentMethod"]
+      "required": [
+        "id",
+        "projectId",
+        "date",
+        "amount"
+      ]
     },
     "ChangeOrder": {
-      "title": "Change Order",
-      "description": "A change order for a project.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChangeOrder",
       "type": "object",
+      "description": "Represents a change order for a project.",
       "properties": {
-        "projectId": { "type": "string" },
-        "coNumber": { "type": "string" },
-        "description": { "type": "string" },
-        "totalRequest": { "type": "number" },
-        "status": { "type": "string", "enum": ["Submitted", "Approved", "Executed", "Rejected"] }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ChangeOrder entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N ChangeOrder)"
+        },
+        "coNumber": {
+          "type": "string",
+          "description": "Change order number."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the change order."
+        },
+        "totalRequest": {
+          "type": "number",
+          "description": "Total amount requested for the change order."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the change order (e.g., Submitted, Approved, Executed)."
+        }
       },
-      "required": ["projectId", "coNumber", "description", "totalRequest", "status"]
+      "required": [
+        "id",
+        "projectId",
+        "coNumber",
+        "status"
+      ]
     },
     "Task": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Task",
-      "description": "A single task for a project.",
       "type": "object",
+      "description": "Represents a task within a project.",
       "properties": {
-        "projectId": { "type": "string" },
-        "title": { "type": "string" },
-        "status": { "type": "string", "enum": ["To Do", "In Progress", "Done"] },
-        "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
-        "assigneeId": { "type": "string" },
-        "dueDate": { "type": "string", "format": "date" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Task entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Task)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the task."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the task (e.g., To Do, In Progress, Done)."
+        },
+        "priority": {
+          "type": "string",
+          "description": "Priority of the task (e.g., Low, Medium, High)."
+        },
+        "assigneeId": {
+          "type": "string",
+          "description": "Reference to TeamMember. (Relationship: TeamMember 1:N Task)"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Due date of the task.",
+          "format": "date-time"
+        }
       },
-      "required": ["projectId", "title", "status", "priority"]
+      "required": [
+        "id",
+        "projectId",
+        "title",
+        "status",
+        "priority"
+      ]
     },
     "RFI": {
-      "title": "Request for Information",
-      "description": "A Request for Information (RFI) for a project.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RFI",
       "type": "object",
+      "description": "Represents a Request for Information.",
       "properties": {
-        "projectId": { "type": "string" },
-        "rfiNumber": { "type": "string" },
-        "dateSubmitted": { "type": "string", "format": "date" },
-        "subject": { "type": "string" },
-        "question": { "type": "string" },
-        "status": { "type": "string", "enum": ["Open", "Closed"] },
-        "answer": { "type": "string" },
-        "dateAnswered": { "type": "string", "format": "date" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the RFI entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N RFI)"
+        },
+        "rfiNumber": {
+          "type": "string",
+          "description": "RFI number."
+        },
+        "dateSubmitted": {
+          "type": "string",
+          "description": "Date the RFI was submitted.",
+          "format": "date-time"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject of the RFI."
+        },
+        "question": {
+          "type": "string",
+          "description": "Question asked in the RFI."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the RFI (e.g., Open, Closed)."
+        },
+        "answer": {
+          "type": "string",
+          "description": "Answer to the RFI."
+        },
+        "dateAnswered": {
+          "type": "string",
+          "description": "Date the RFI was answered.",
+          "format": "date-time"
+        }
       },
-      "required": ["projectId", "rfiNumber", "dateSubmitted", "subject", "question", "status"]
+      "required": [
+        "id",
+        "projectId",
+        "rfiNumber",
+        "dateSubmitted",
+        "subject",
+        "question",
+        "status"
+      ]
     },
     "Issue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Issue",
-      "description": "An issue or problem on a project.",
       "type": "object",
+      "description": "Represents an issue encountered during the project.",
       "properties": {
-        "projectId": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "severity": { "type": "string", "enum": ["Low", "Medium", "High"] },
-        "description": { "type": "string" },
-        "status": { "type": "string", "enum": ["Open", "Closed"] },
-        "correctiveAction": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Issue entity."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date the issue was reported.",
+          "format": "date-time"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the issue (e.g., Low, Medium, High)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the issue."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the issue (e.g., Open, Closed)."
+        },
+        "correctiveAction": {
+          "type": "string",
+          "description": "Corrective action taken to resolve the issue."
+        }
       },
-      "required": ["projectId", "date", "severity", "description", "status"]
+      "required": [
+        "id",
+        "date",
+        "severity",
+        "description",
+        "status"
+      ]
     },
-    "Milestone": {
-      "title": "Milestone",
-      "description": "A major milestone in a project.",
+    "Drawing": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Drawing",
       "type": "object",
+      "description": "Represents a project drawing.",
       "properties": {
-        "projectId": { "type": "string" },
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "dueDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["Upcoming", "In Progress", "Completed"] }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Drawing entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Drawing)"
+        },
+        "sheetNo": {
+          "type": "string",
+          "description": "Sheet number of the drawing."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the drawing."
+        },
+        "versions": {
+          "type": "array",
+          "description": "Versions of the drawing.",
+          "items": {
+            "type": "string"
+          }
+        }
       },
-      "required": ["projectId", "name", "dueDate", "status"]
+      "required": [
+        "id",
+        "projectId",
+        "sheetNo",
+        "title"
+      ]
     },
-    "AppUser": {
-      "title": "App User",
-      "description": "A user of the application.",
+    "ClientUpload": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ClientUpload",
       "type": "object",
+      "description": "Represents a file uploaded by a client.",
       "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "avatarUrl": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ClientUpload entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N ClientUpload)"
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Name of the uploaded file."
+        },
+        "fileType": {
+          "type": "string",
+          "description": "Type of the uploaded file."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL of the uploaded file.",
+          "format": "uri"
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "Size of the uploaded file (in bytes)."
+        },
+        "uploadedAt": {
+          "type": "string",
+          "description": "Date and time the file was uploaded.",
+          "format": "date-time"
+        },
+        "uploadedBy": {
+          "type": "string",
+          "description": "User who uploaded the file."
+        }
       },
-      "required": ["name", "email"]
-    },
-    "CompanyProfile": {
-      "title": "Company Profile",
-      "description": "The profile of the company using the app.",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "logoUrl": { "type": "string" }
-      },
-      "required": ["name"]
+      "required": [
+        "id",
+        "projectId",
+        "fileName",
+        "fileType",
+        "fileUrl",
+        "fileSize",
+        "uploadedAt",
+        "uploadedBy"
+      ]
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/projects/{projectId}": {
-      "schema": { "$ref": "#/entities/Project" },
-      "description": "Stores individual project details."
-    },
-    "/budgetCategories/{categoryId}": {
-      "schema": { "$ref": "#/entities/BudgetCategory" },
-      "description": "Stores the master list of budget categories."
-    },
-    "/vendors/{vendorId}": {
-      "schema": { "$ref": "#/entities/Vendor" },
-      "description": "Stores the master list of vendors."
-    },
-    "/teamMembers/{memberId}": {
-      "schema": { "$ref": "#/entities/TeamMember" },
-      "description": "Stores the master list of internal team members."
-    },
-    "/budgetItems/{itemId}": {
-      "schema": { "$ref": "#/entities/BudgetItem" },
-      "description": "Stores all budget items across all projects."
-    },
-    "/expenses/{expenseId}": {
-      "schema": { "$ref": "#/entities/Expense" },
-      "description": "Stores all expenses across all projects."
-    },
-    "/changeOrders/{changeOrderId}": {
-      "schema": { "$ref": "#/entities/ChangeOrder" },
-      "description": "Stores all change orders across all projects."
-    },
-    "/tasks/{taskId}": {
-      "schema": { "$ref": "#/entities/Task" },
-      "description": "Stores all tasks across all projects."
-    },
-    "/rfis/{rfiId}": {
-      "schema": { "$ref": "#/entities/RFI" },
-      "description": "Stores all RFIs across all projects."
-    },
-    "/issues/{issueId}": {
-      "schema": { "$ref": "#/entities/Issue" },
-      "description": "Stores all issues across all projects."
-    },
-    "/milestones/{milestoneId}": {
-      "schema": { "$ref": "#/entities/Milestone" },
-      "description": "Stores all milestones across all projects."
-    },
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/AppUser" },
-      "description": "Stores public user profile information."
-    },
-    "/company/profile": {
-        "schema": { "$ref": "#/entities/CompanyProfile"},
-        "description": "Stores the company's profile information."
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores project data for individual users. Supports path-based ownership. Includes denormalized 'ownerId' field for authorization independence in subcollections.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The ID of the user who owns the project."
+            },
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/budgetItems/{budgetItemId}",
+        "definition": {
+          "entityName": "BudgetItem",
+          "schema": {
+            "$ref": "#/backend/entities/BudgetItem"
+          },
+          "description": "Stores budget items associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "budgetItemId",
+              "description": "The unique ID of the budget item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/expenses/{expenseId}",
+        "definition": {
+          "entityName": "Expense",
+          "schema": {
+            "$ref": "#/backend/entities/Expense"
+          },
+          "description": "Stores expenses associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "expenseId",
+              "description": "The unique ID of the expense."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/changeOrders/{changeOrderId}",
+        "definition": {
+          "entityName": "ChangeOrder",
+          "schema": {
+            "$ref": "#/backend/entities/ChangeOrder"
+          },
+          "description": "Stores change orders associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "changeOrderId",
+              "description": "The unique ID of the change order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/tasks/{taskId}",
+        "definition": {
+          "entityName": "Task",
+          "schema": {
+            "$ref": "#/backend/entities/Task"
+          },
+          "description": "Stores tasks associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "taskId",
+              "description": "The unique ID of the task."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/rfis/{rfiId}",
+        "definition": {
+          "entityName": "RFI",
+          "schema": {
+            "$ref": "#/backend/entities/RFI"
+          },
+          "description": "Stores RFIs associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "rfiId",
+              "description": "The unique ID of the RFI."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/drawings/{drawingId}",
+        "definition": {
+          "entityName": "Drawing",
+          "schema": {
+            "$ref": "#/backend/entities/Drawing"
+          },
+          "description": "Stores drawings associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "drawingId",
+              "description": "The unique ID of the drawing."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/clientUploads/{clientUploadId}",
+        "definition": {
+          "entityName": "ClientUpload",
+          "schema": {
+            "$ref": "#/backend/entities/ClientUpload"
+          },
+          "description": "Stores client uploads associated with a specific project. Includes denormalized 'ownerId' from the parent project for authorization independence.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique ID of the project."
+            },
+            {
+              "name": "clientUploadId",
+              "description": "The unique ID of the client upload."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/budgetCategories/{budgetCategoryId}",
+        "definition": {
+          "entityName": "BudgetCategory",
+          "schema": {
+            "$ref": "#/backend/entities/BudgetCategory"
+          },
+          "description": "Stores a master list of budget categories.",
+          "params": [
+            {
+              "name": "budgetCategoryId",
+              "description": "The unique ID of the budget category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/vendors/{vendorId}",
+        "definition": {
+          "entityName": "Vendor",
+          "schema": {
+            "$ref": "#/backend/entities/Vendor"
+          },
+          "description": "Stores a master list of vendors.",
+          "params": [
+            {
+              "name": "vendorId",
+              "description": "The unique ID of the vendor."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/teamMembers/{teamMemberId}",
+        "definition": {
+          "entityName": "TeamMember",
+          "schema": {
+            "$ref": "#/backend/entities/TeamMember"
+          },
+          "description": "Stores a master list of team members.",
+          "params": [
+            {
+              "name": "teamMemberId",
+              "description": "The unique ID of the team member."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/issues/{issueId}",
+        "definition": {
+          "entityName": "Issue",
+          "schema": {
+            "$ref": "#/backend/entities/Issue"
+          },
+          "description": "Stores issues encountered during any project. Consider relating to specific project via projectId if needed.",
+          "params": [
+            {
+              "name": "issueId",
+              "description": "The unique ID of the issue."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "user",
+          "schema": {
+            "$ref": "#/backend/entities/user"
+          },
+          "description": "This collection indicates that the user is an administrator. Authorization rules will check for the existence of this document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the ConstructAI application, emphasizing security, scalability, and ease of debugging, especially considering the Firebase free tier limitations. It adheres to the core design principles, particularly Authorization Independence, and leverages Structural Segregation and Access Modeling for enhanced security and clarity.\n\nAuthorization Independence is achieved through denormalization. The application primarily uses path-based ownership for user-specific data and membership maps for collaborative data.  For instance, projects are owned by the user who created them.  Subcollections, such as budget items, expenses, change orders, tasks, RFIs, drawings, and client uploads, are nested under the `/projects/{projectId}` collection. To maintain authorization independence, any information needed to authorize access to these subcollections that is derived from the project itself (such as project owner or members) will need to be denormalized into the documents within the subcollections.\n\nStructural Segregation is applied by separating different types of data into distinct collections based on their access requirements. Project-related data is kept separate from global vendor and category lists.\n\nAccess Modeling utilizes path-based ownership for private user data (e.g., projects) and membership maps for collaborative scenarios (if implemented in the future, e.g., shared project access). Global roles, if needed, will be managed using existence checks in dedicated collections.\n\nThis structure ensures that security rules can be written without relying on complex `get()` calls, which improves performance and reduces the risk of security vulnerabilities. The clear and predictable schema, along with explicit state modeling, enhances debuggability and maintainability.\n\nTo support the QAPs (Rules are not Filters), the structure avoids mixing data with different access needs within the same collection. Path-based ownership and membership maps allow secure list operations, as rules can efficiently filter based on the user's identity and role without requiring data filtering within the rules themselves."
   }
 }
