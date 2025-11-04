@@ -18,13 +18,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -81,6 +74,8 @@ export function AddEditExpenseDialog({
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
+  const [vendorPopoverOpen, setVendorPopoverOpen] = useState(false);
   const form = useForm<AddExpenseFormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -231,7 +226,7 @@ export function AddEditExpenseDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Category</FormLabel>
-                  <Popover>
+                  <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -259,12 +254,14 @@ export function AddEditExpenseDialog({
                              <Button
                                 variant="ghost"
                                 className="w-full justify-start"
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
                                     const newCategoryName = form.getValues('category');
                                     if(newCategoryName && !uniqueBudgetCategories.includes(newCategoryName)) {
                                         setBudgetCategories(prev => [...prev, {id: crypto.randomUUID(), name: newCategoryName}]);
                                         field.onChange(newCategoryName);
                                     }
+                                    setCategoryPopoverOpen(false);
                                 }}
                                 >
                                 Create "{form.getValues('category')}"
@@ -277,6 +274,7 @@ export function AddEditExpenseDialog({
                               key={category}
                               onSelect={() => {
                                 form.setValue("category", category)
+                                setCategoryPopoverOpen(false)
                               }}
                             >
                               <Check
@@ -305,7 +303,7 @@ export function AddEditExpenseDialog({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Vendor (Optional)</FormLabel>
-                   <Popover>
+                   <Popover open={vendorPopoverOpen} onOpenChange={setVendorPopoverOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
@@ -327,13 +325,14 @@ export function AddEditExpenseDialog({
                     </PopoverTrigger>
                     <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
-                        <CommandInput placeholder="Search vendor..." />
+                        <CommandInput placeholder="Search vendor..." onValueChange={(value) => field.onChange(value)} />
                         <CommandList>
                         <CommandEmpty>
                              <Button
                                 variant="ghost"
                                 className="w-full justify-start"
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
                                     const newVendorName = form.getValues('vendor');
                                     if(newVendorName && !vendors.some(v => v.name === newVendorName)) {
                                         const newVendor: Vendor = {
@@ -347,6 +346,7 @@ export function AddEditExpenseDialog({
                                         setVendors(prev => [...prev, newVendor]);
                                         field.onChange(newVendorName);
                                     }
+                                    setVendorPopoverOpen(false);
                                 }}
                                 >
                                 Create "{form.getValues('vendor')}"
@@ -361,6 +361,7 @@ export function AddEditExpenseDialog({
                               key={vendor.id}
                               onSelect={() => {
                                 form.setValue("vendor", vendor.name)
+                                setVendorPopoverOpen(false)
                               }}
                             >
                               <Check
@@ -433,7 +434,7 @@ export function AddEditExpenseDialog({
                       <SelectItem value="Groundbreaking">Groundbreaking</SelectItem>
                       <SelectItem value="to be paid">To be paid</SelectItem>
                       <SelectItem value="Bank ACH">Bank ACH</SelectItem>
-                      <SelectItem value="Karim's Card">Karim&apos;s Card</SelectItem>
+                      <SelectItem value="Karim's Card">Karim's Card</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
