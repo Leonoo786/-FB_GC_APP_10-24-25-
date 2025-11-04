@@ -18,6 +18,14 @@ type AppStateContextType = {
   setUserAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
   userEmail: string;
   setUserEmail: React.Dispatch<React.SetStateAction<string>>;
+  userPhone: string;
+  setUserPhone: React.Dispatch<React.SetStateAction<string>>;
+  userJobTitle: string;
+  setUserJobTitle: React.Dispatch<React.SetStateAction<string>>;
+  userDepartment: string;
+  setUserDepartment: React.Dispatch<React.SetStateAction<string>>;
+  userBio: string;
+  setUserBio: React.Dispatch<React.SetStateAction<string>>;
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   budgetCategories: BudgetCategory[];
@@ -59,6 +67,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const [userName, setUserName] = useLocalStorage<string>('userName', data.appUser.name);
     const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage<string>('userAvatarUrl', data.appUser.avatarUrl);
     const [userEmail, setUserEmail] = useLocalStorage<string>('userEmail', data.appUser.email);
+    const [userPhone, setUserPhone] = useLocalStorage<string>('userPhone', "(555) 123-4567");
+    const [userJobTitle, setUserJobTitle] = useLocalStorage<string>('userJobTitle', "Admin");
+    const [userDepartment, setUserDepartment] = useLocalStorage<string>('userDepartment', "Construction");
+    const [userBio, setUserBio] = useLocalStorage<string>('userBio', "A brief description about yourself");
+
 
     const [projects, setProjects] = useLocalStorage<Project[]>('projects', data.projects);
     const [budgetCategories, setBudgetCategories] = useLocalStorage<BudgetCategory[]>('budgetCategories', data.budgetCategories);
@@ -83,6 +96,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setUserAvatarUrl,
     userEmail,
     setUserEmail,
+    userPhone,
+    setUserPhone,
+    userJobTitle,
+    setUserJobTitle,
+    userDepartment,
+    setUserDepartment,
+    userBio,
+    setUserBio,
     projects,
     setProjects,
     budgetCategories,

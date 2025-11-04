@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,17 +56,18 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
+  const isInitialLoad = useRef(true);
 
   // Profile State
   const [photoUrl, setPhotoUrl] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("(555) 123-4567");
-  const [jobTitle, setJobTitle] = useState("Admin");
-  const [department, setDepartment] = useState("Construction");
+  const [phone, setPhone] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [department, setDepartment] = useState("");
   const [bio, setBio] = useState("");
 
-  // Company State - Initialize from context but allow local edits
+  // Company State
   const [companyName, setCompanyName] = useState("");
   const [companyLogoUrl, setCompanyLogoUrl] = useState("");
   const [industry, setIndustry] = useState("Construction");
@@ -79,12 +80,19 @@ export default function SettingsPage() {
   const [companyWebsite, setCompanyWebsite] = useState("https://www.fancybuilders.com");
 
   useEffect(() => {
-    if (appState) {
+    if (appState && isInitialLoad.current) {
         setName(appState.userName);
         setPhotoUrl(appState.userAvatarUrl);
         setEmail(appState.userEmail);
+        setPhone(appState.userPhone);
+        setJobTitle(appState.userJobTitle);
+        setDepartment(appState.userDepartment);
+        setBio(appState.userBio);
+
         setCompanyName(appState.companyName);
         setCompanyLogoUrl(appState.companyLogoUrl);
+
+        isInitialLoad.current = false;
     }
   }, [appState]);
 
@@ -93,12 +101,13 @@ export default function SettingsPage() {
   }
 
   const {
-      userName,
       setUserName,
-      userAvatarUrl,
       setUserAvatarUrl,
-      userEmail,
       setUserEmail,
+      setUserPhone,
+      setUserJobTitle,
+      setUserDepartment,
+      setUserBio,
       setCompanyName: setGlobalCompanyName,
       setCompanyLogoUrl: setGlobalCompanyLogoUrl,
   } = appState;
@@ -130,6 +139,11 @@ export default function SettingsPage() {
     setUserName(name);
     setUserAvatarUrl(photoUrl);
     setUserEmail(email);
+    setUserPhone(phone);
+    setUserJobTitle(jobTitle);
+    setUserDepartment(department);
+    setUserBio(bio);
+
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
@@ -162,7 +176,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
+        <p className="text-muted-foreground">Welcome back, {name.split(' ')[0]}</p>
       </div>
 
       <Tabs defaultValue="profile">
@@ -596,3 +610,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
