@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, use, useContext, useRef, useMemo } from 'react';
+import { useState, useContext, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,7 +37,7 @@ import { AddEditExpenseDialog } from '../../_components/add-edit-expense-dialog'
 import { format, isValid } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
-import type { Expense, BudgetCategory } from '@/lib/types';
+import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,12 +45,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export function ExpensesClientPage({
   projectId,
-  initialExpenses,
-  budgetCategories,
 }: {
   projectId: string;
-  initialExpenses: Expense[];
-  budgetCategories: BudgetCategory[];
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
@@ -65,7 +61,7 @@ export function ExpensesClientPage({
   if (!appState) {
     return <div>Loading...</div>;
   }
-  const { expenses, setExpenses } = appState;
+  const { expenses, budgetCategories, setExpenses } = appState;
   
   const projectExpenses = useMemo(() => expenses.filter(
     (exp) => exp.projectId === projectId
