@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
+import { notFound } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -22,16 +23,38 @@ import { Button } from '@/components/ui/button';
 import { TransactionsDialog } from '../../_components/transactions-dialog';
 import { cn } from '@/lib/utils';
 import type { BudgetItem, Expense } from '@/lib/types';
+import { AppStateContext } from '@/context/app-state-context';
 
 export function ReportsClientPage({
-    projectBudgetItems,
-    projectExpenses,
+    projectId,
 }: {
-    projectBudgetItems: BudgetItem[],
-    projectExpenses: Expense[],
+    projectId: string,
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  const appState = useContext(AppStateContext);
+  
+  if (!appState) {
+    return <div>Loading...</div>;
+  }
+
+  const { projects, budgetItems, expenses } = appState;
+  const project = projects.find((p) => p.id === projectId);
+
+  const projectBudgetItems = useMemo(() => 
+    budgetItems.filter((item) => item.projectId === projectId) || [],
+    [budgetItems, projectId]
+  );
+  
+  const projectExpenses = useMemo(() =>
+    expenses.filter((expense) => expense.projectId === projectId) || [],
+    [expenses, projectId]
+  );
+
+  if (!project) {
+    notFound();
+  }
 
   const getExpensesForCategory = (category: string) => {
     return projectExpenses.filter((expense) => expense.category === category);
