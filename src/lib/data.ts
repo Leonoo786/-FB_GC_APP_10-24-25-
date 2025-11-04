@@ -4,7 +4,7 @@ import { PlaceHolderImages } from './placeholder-images';
 
 export const companyProfile: CompanyProfile = {
   id: 'comp-1',
-  name: 'FancyBuilders',
+  name: 'Fancy Brothers Constructions APP',
   logoUrl: '/your-logo.png',
 };
 
@@ -326,7 +326,7 @@ export const expenses: Expense[] = [
   { id: 'exp-8', projectId: 'proj-4', date: '2025-08-20', category: 'Get Reimbursed', vendorName: 'City Of Temple TX', description: 'Temporary fire hydrant water meter', amount: 600, paymentMethod: 'Credit Card', paymentReference: '5663', invoiceNumber: '13' },
   { id: 'exp-9', projectId: 'proj-4', date: '2025-08-20', category: 'Steel', vendorName: 'Triple-S Steel Holdings Inc', description: 'Material for barjoist (material cost $42,688.29 + (freight cost $1055.44)', amount: 1055.45, paymentMethod: 'Credit Card', paymentReference: '1769', invoiceNumber: 'RS-651836' },
   { id: 'exp-10', projectId: 'proj-4', date: '2025-08-22', category: 'Steel', vendorName: 'Carlos Osorto', description: 'Ttl Cntrct $55k labor, prv bal $55k, pd tdy $5k, new bal $50k', amount: 5000, paymentMethod: 'Check', paymentReference: '5433', invoiceNumber: '1st pmt' },
-  { id: 'exp-11', projectId: 'proj-4', date: '2025-08-22', category: 'Pollution Control', vendorName: 'Jose Ramirez', description: 'White Cap - 140N 15\\\' x 360\\\' Non Woven 600 SY Mirafi', amount: 790.21, paymentMethod: 'Check', paymentReference: '5434', invoiceNumber: '67839274' },
+  { id: 'exp-11', projectId: 'proj-4', date: '2025-08-22', category: 'Pollution Control', vendorName: 'Jose Ramirez', description: 'White Cap - 140N 15\' x 360\' Non Woven 600 SY Mirafi', amount: 790.21, paymentMethod: 'Check', paymentReference: '5434', invoiceNumber: '67839274' },
   { id: 'exp-12', projectId: 'proj-4', date: '2025-08-22', category: 'Pollution Control', vendorName: 'Jose Ramirez', description: 'Terrazas Construction - 24 yrd bullrock load', amount: 825, paymentMethod: 'Check', paymentReference: '5434', invoiceNumber: 'Bullrock' },
   { id: 'exp-13', projectId: 'proj-4', date: '2025-08-22', category: 'Dirtwork-Lbr', vendorName: 'Jose Ramirez', description: 'Labor to cut all the trees and clear the land with vegetation (Haul off separate approx 40 loads)', amount: 7500, paymentMethod: 'Check', paymentReference: '5434', invoiceNumber: 'Dirtwork' },
   { id: 'exp-14', projectId: 'proj-4', date: '2025-08-23', category: 'Steel', vendorName: 'Triple-S Steel Holdings Inc', description: 'Material for barjoist (material cost $32,281.85 + tax + freight cost $650)', amount: 32281.85, paymentMethod: 'Credit Card', paymentReference: '5663', invoiceNumber: 'RS-659821' },

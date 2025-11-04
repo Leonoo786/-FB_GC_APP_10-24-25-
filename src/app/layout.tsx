@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
+import { FirebaseClientProvider } from '@/firebase';
+import { AppStateProvider } from '@/context/app-state-context';
 
 export const metadata: Metadata = {
-  title: 'Company Name',
+  title: 'Fancy Brothers Constructions APP',
   description: 'Construction Project Management Application',
   manifest: '/manifest.json',
 };
@@ -35,7 +37,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <FirebaseClientProvider>
+            <AppStateProvider>
+              {children}
+            </AppStateProvider>
+          </FirebaseClientProvider>
           <Toaster />
         </ThemeProvider>
       </body>
