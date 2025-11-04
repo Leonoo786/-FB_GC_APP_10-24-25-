@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'ConstructAI',
+  title: 'Company Name',
   description: 'Construction Project Management Application',
   manifest: '/manifest.json',
 };
