@@ -145,7 +145,7 @@ export function AddEditProjectDialog({
       });
     }
 
-    const projectData: Omit<Project, 'id'> = {
+    const projectData = {
       projectNumber: isEditing && project ? project.projectNumber : `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
       name: data.name,
       ownerName: data.client,
@@ -164,9 +164,9 @@ export function AddEditProjectDialog({
     };
     
     if (isEditing && project) {
-        appState.setProjects(current => current.map(p => p.id === project.id ? { ...project, ...projectData } : p));
+        appState.updateProject({ ...project, ...projectData });
     } else {
-        appState.setProjects(current => [...current, { id: crypto.randomUUID(), ...projectData }]);
+        appState.addProject(projectData);
     }
     
     toast({

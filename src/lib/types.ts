@@ -2,6 +2,7 @@
 
 export type Project = {
   id: string;
+  ownerId: string;
   projectNumber: string;
   name: string;
   ownerName: string;
@@ -21,11 +22,13 @@ export type Project = {
 
 export type BudgetCategory = {
   id: string;
+  ownerId: string;
   name: string;
 };
 
 export type Vendor = {
   id: string;
+  ownerId: string;
   name: string;
   contactPerson: string;
   phone: string;
@@ -35,6 +38,7 @@ export type Vendor = {
 
 export type TeamMember = {
   id: string;
+  ownerId: string;
   name: string;
   role: string;
   email: string;
@@ -44,6 +48,7 @@ export type TeamMember = {
 
 export type BudgetItem = {
   id: string;
+  ownerId: string;
   projectId: string;
   category: string;
   costType: 'labor' | 'material' | 'both';
@@ -56,6 +61,7 @@ export type BudgetItem = {
 
 export type Expense = {
   id: string;
+  ownerId: string;
   projectId: string;
   date: string;
   category: string;
@@ -69,6 +75,7 @@ export type Expense = {
 
 export type ChangeOrder = {
   id: string;
+  ownerId: string;
   projectId: string;
   coNumber: string;
   description: string;
@@ -78,6 +85,7 @@ export type ChangeOrder = {
 
 export type Task = {
   id: string;
+  ownerId: string;
   projectId: string;
   title: string;
   status: 'To Do' | 'In Progress' | 'Done';
@@ -88,6 +96,7 @@ export type Task = {
 
 export type RFI = {
   id: string;
+  ownerId: string;
   projectId: string;
   rfiNumber: string;
   dateSubmitted: string;
@@ -100,6 +109,7 @@ export type RFI = {
 
 export type Issue = {
   id: string;
+  ownerId: string;
   projectId: string;
   date: string;
   severity: 'Low' | 'Medium' | 'High';
@@ -110,6 +120,7 @@ export type Issue = {
 
 export type Milestone = {
   id: string;
+  ownerId: string;
   projectId: string;
   name: string;
   description: string;
@@ -120,6 +131,7 @@ export type Milestone = {
 
 export type Drawing = {
   id: string;
+  ownerId: string;
   projectId: string;
   sheetNo: string;
   title: string;
@@ -133,6 +145,7 @@ export type Drawing = {
 
 export type ClientUpload = {
   id: string;
+  ownerId: string;
   projectId: string;
   fileName: string;
   fileType: string;
@@ -151,6 +164,7 @@ export type AppUser = {
 
 export type CompanyProfile = {
     id: string;
+    ownerId: string;
     name: string;
     logoUrl: string;
 };

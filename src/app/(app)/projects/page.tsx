@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -16,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Project } from '@/lib/types';
-import { differenceInDays, formatDistanceToNowStrict, parseISO } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 
 
 export default function ProjectsPage() {
@@ -31,7 +32,7 @@ export default function ProjectsPage() {
     }, []);
 
     const projectData = useMemo(() => {
-        if (!appState) return [];
+        if (!appState || !appState.projects) return [];
         const { projects, budgetItems, expenses } = appState;
         
         return projects.map(project => {
@@ -68,7 +69,7 @@ export default function ProjectsPage() {
         return <div>Loading...</div>; // Or some other loading state/skeleton
     }
     
-    const { setProjects } = appState;
+    const { deleteProject } = appState;
 
     const statusVariant = {
         'In Progress': 'default',
@@ -87,7 +88,7 @@ export default function ProjectsPage() {
     };
     
     const handleDelete = (projectId: string, projectName: string) => {
-        setProjects(current => current.filter(p => p.id !== projectId));
+        deleteProject(projectId);
         toast({
             title: "Project Deleted",
             description: `Project "${projectName}" has been removed.`,
