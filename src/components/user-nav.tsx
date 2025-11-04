@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -24,8 +24,13 @@ import { AppStateContext } from "@/context/app-state-context";
 
 export function UserNav() {
   const appState = useContext(AppStateContext);
+  const [hasMounted, setHasMounted] = useState(false);
 
-  if (!appState) {
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!appState || !hasMounted) {
     return (
         <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -35,7 +40,7 @@ export function UserNav() {
   }
 
   const { userName, userAvatarUrl, userEmail } = appState;
-  const initials = userName.split(' ').map(n => n[0]).join('');
+  const initials = userName ? userName.split(' ').map(n => n[0]).join('') : '';
 
 
   return (

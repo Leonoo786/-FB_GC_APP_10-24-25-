@@ -19,9 +19,19 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AppStateProvider } from '@/context/app-state-context';
+import { useEffect, useState } from 'react';
 
 
 function AppLayoutClient({ children }: { children: React.ReactNode }) {
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!hasMounted) {
+        return null;
+    }
 
     return (
         <AppStateProvider>
