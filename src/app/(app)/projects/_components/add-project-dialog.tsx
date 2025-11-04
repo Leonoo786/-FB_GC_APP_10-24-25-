@@ -145,7 +145,7 @@ export function AddEditProjectDialog({
       });
     }
 
-    const projectData = {
+    const projectData: Omit<Project, 'id'> = {
       projectNumber: isEditing && project ? project.projectNumber : `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
       name: data.name,
       ownerName: data.client,
