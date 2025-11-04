@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AppStateContext, useAppState } from '@/context/app-state-context';
+import { AppStateContext } from '@/context/app-state-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Download, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,10 +49,10 @@ type FormValues = {
 };
 
 export default function AIAPage() {
-  const appState = useAppState();
+  const appState = useContext(AppStateContext);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
-  const { control, watch, setValue, getValues } = useForm<FormValues>({
+  const { control, watch, setValue } = useForm<FormValues>({
     defaultValues: {
       applicationNo: '',
       architectName: '',
@@ -83,7 +83,7 @@ export default function AIAPage() {
     return <div>Loading...</div>;
   }
 
-  const { projects, companyProfile, changeOrders } = appState;
+  const { projects, companyName, changeOrders } = appState;
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
   const projectChangeOrders: ChangeOrder[] = selectedProject
@@ -165,7 +165,7 @@ export default function AIAPage() {
                 </div>
                 <div>
                     <Label>From (Contractor)</Label>
-                    <Input readOnly value={companyProfile?.name || 'N/A'} />
+                    <Input readOnly value={companyName || 'N/A'} />
                 </div>
                 <div>
                     <Label>Project</Label>
@@ -367,5 +367,3 @@ export default function AIAPage() {
     </div>
   );
 }
-
-    

@@ -3,7 +3,7 @@
 'use client';
 
 import React, { createContext, ReactNode, useContext } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone, AppUser, CompanyProfile } from '@/lib/types';
 import * as data from '@/lib/data';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
@@ -54,11 +54,11 @@ export function useAppState() {
 
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-    const [companyName, setCompanyName] = useLocalStorage<string>('companyName', 'FancyBuilders');
-    const [companyLogoUrl, setCompanyLogoUrl] = useLocalStorage<string>('companyLogoUrl', '/your-logo.png');
-    const [userName, setUserName] = useLocalStorage<string>('userName', 'John Doe');
-    const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage<string>('userAvatarUrl', 'https://i.pravatar.cc/150?u=john');
-    const [userEmail, setUserEmail] = useLocalStorage<string>('userEmail', 'john.doe@constructai.com');
+    const [companyName, setCompanyName] = useLocalStorage<string>('companyName', data.companyProfile.name);
+    const [companyLogoUrl, setCompanyLogoUrl] = useLocalStorage<string>('companyLogoUrl', data.companyProfile.logoUrl);
+    const [userName, setUserName] = useLocalStorage<string>('userName', data.appUser.name);
+    const [userAvatarUrl, setUserAvatarUrl] = useLocalStorage<string>('userAvatarUrl', data.appUser.avatarUrl);
+    const [userEmail, setUserEmail] = useLocalStorage<string>('userEmail', data.appUser.email);
 
     const [projects, setProjects] = useLocalStorage<Project[]>('projects', data.projects);
     const [budgetCategories, setBudgetCategories] = useLocalStorage<BudgetCategory[]>('budgetCategories', data.budgetCategories);
