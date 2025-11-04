@@ -14,7 +14,6 @@ import {
   Activity,
   CheckCircle,
   DollarSign,
-  User,
   MoreVertical,
   CircleHelp,
   ArrowUp,
@@ -200,14 +199,14 @@ export default function DashboardPage() {
                           <CardDescription>For active projects</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                          <div className="flex justify-between">
+                          <div className="space-y-2">
                               <div>
                                   <p className="text-sm text-muted-foreground">Total Budget</p>
                                   <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
                               </div>
                               <div>
-                                  <p className="text-sm text-muted-foreground text-right">Spent to Date</p>
-                                  <p className="text-2xl font-bold text-right">${totalSpent.toLocaleString()}</p>
+                                  <p className="text-sm text-muted-foreground">Spent to Date</p>
+                                  <p className="text-2xl font-bold">${totalSpent.toLocaleString()}</p>
                               </div>
                           </div>
                           <div>
