@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useContext, useRef, useMemo } from 'react';
+import { useContext, useRef, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,9 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AppStateContext } from '@/context/app-state-context';
+import { AppStateContext, useAppState } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload, HardDrive, Database, BookOpen, PenSquare, Trash2 } from 'lucide-react';
+import { Download, Upload, HardDrive, Database, BookOpen, PenSquare, Trash2, Loader2 } from 'lucide-react';
 import type {
   Project,
   BudgetItem,
@@ -28,6 +28,9 @@ import type {
 } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useFirebase } from '@/firebase';
+import { doc, writeBatch } from 'firebase/firestore';
+
 
 type AllData = {
   projects: Project[];
@@ -51,13 +54,11 @@ type AllData = {
 const ONE_GIB_IN_BYTES = 1 * 1024 * 1024 * 1024;
 
 export default function ImportExportPage() {
-  const appState = useContext(AppStateContext);
+  const appState = useAppState();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (!appState) {
-    return <div>Loading...</div>;
-  }
+  const { firestore, user } = useFirebase();
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const {
     projects,
@@ -149,9 +150,6 @@ export default function ImportExportPage() {
         const text = e.target?.result as string;
         const data: AllData = JSON.parse(text);
 
-        // Here we could add validation with Zod if we had schemas for AllData
-        // For now, we'll trust the structure.
-
         setProjects(data.projects || []);
         setVendors(data.vendors || []);
         setTeamMembers(data.teamMembers || []);
@@ -185,7 +183,6 @@ export default function ImportExportPage() {
     };
     reader.readAsText(file);
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -219,6 +216,67 @@ export default function ImportExportPage() {
     }
   };
 
+  const handleMigrate = async () => {
+    if (!firestore || !user) {
+      toast({
+        title: 'Migration Failed',
+        description: 'You must be logged in to migrate data.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsMigrating(true);
+    toast({
+      title: 'Migration Started',
+      description: 'Copying your local data to Firebase. Please wait...',
+    });
+
+    try {
+      const batch = writeBatch(firestore);
+
+      // User-specific data
+      const userDocRef = doc(firestore, 'users', user.uid);
+      batch.set(userDocRef, {
+        companyName,
+        companyLogoUrl,
+        userName,
+        userAvatarUrl,
+        userEmail,
+      });
+
+      // Collections
+      projects.forEach(item => batch.set(doc(firestore, `users/${user.uid}/projects`, item.id), item));
+      vendors.forEach(item => batch.set(doc(firestore, `users/${user.uid}/vendors`, item.id), item));
+      teamMembers.forEach(item => batch.set(doc(firestore, `users/${user.uid}/teamMembers`, item.id), item));
+      budgetCategories.forEach(item => batch.set(doc(firestore, `users/${user.uid}/budgetCategories`, item.id), item));
+      tasks.forEach(item => batch.set(doc(firestore, `users/${user.uid}/tasks`, item.id), item));
+      budgetItems.forEach(item => batch.set(doc(firestore, `users/${user.uid}/budgetItems`, item.id), item));
+      expenses.forEach(item => batch.set(doc(firestore, `users/${user.uid}/expenses`, item.id), item));
+      changeOrders.forEach(item => batch.set(doc(firestore, `users/${user.uid}/changeOrders`, item.id), item));
+      rfis.forEach(item => batch.set(doc(firestore, `users/${user.uid}/rfis`, item.id), item));
+      issues.forEach(item => batch.set(doc(firestore, `users/${user.uid}/issues`, item.id), item));
+      milestones.forEach(item => batch.set(doc(firestore, `users/${user.uid}/milestones`, item.id), item));
+
+      await batch.commit();
+
+      toast({
+        title: 'Migration Successful!',
+        description: 'All your data has been copied to Firebase.',
+      });
+
+    } catch (error) {
+      console.error('Firebase migration error:', error);
+      toast({
+        title: 'Migration Failed',
+        description: error instanceof Error ? error.message : 'An unknown error occurred.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <input
@@ -239,7 +297,7 @@ export default function ImportExportPage() {
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
           <CardDescription>
-            Download a single backup file of all your data, or upload a backup file to restore your application state.
+            Download a backup file, restore from a backup, or migrate to the cloud.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -247,9 +305,9 @@ export default function ImportExportPage() {
               className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4"
             >
               <div className='mb-4 sm:mb-0'>
-                <p className="font-medium">All Application Data</p>
+                <p className="font-medium">Local Backup & Restore</p>
                 <p className="text-sm text-muted-foreground">
-                  Save or load a snapshot of your entire application.
+                  Save or load a snapshot of your application data to/from a file.
                 </p>
               </div>
               <div className="flex w-full sm:w-auto items-center gap-2">
@@ -265,6 +323,30 @@ export default function ImportExportPage() {
                 </Button>
               </div>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cloud Migration</CardTitle>
+                    <CardDescription>Copy your current local data to your Firebase account to enable cross-device access and real-time collaboration.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Alert>
+                        <Database className="h-4 w-4" />
+                        <AlertTitle>One-Way Copy</AlertTitle>
+                        <AlertDescription>
+                            This will copy your current local data to the cloud. It will not delete your local data. If you have existing data in the cloud, it may be overwritten.
+                        </AlertDescription>
+                    </Alert>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleMigrate} disabled={isMigrating}>
+                        {isMigrating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Migrate Data to Firebase
+                    </Button>
+                </CardFooter>
+            </Card>
+
+
              <Card>
                 <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                     <HardDrive className="h-8 w-8 text-muted-foreground" />
