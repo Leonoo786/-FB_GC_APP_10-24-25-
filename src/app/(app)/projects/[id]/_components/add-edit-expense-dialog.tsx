@@ -32,6 +32,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense, Vendor } from '@/lib/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
@@ -434,7 +435,7 @@ export function AddEditExpenseDialog({
                       <SelectItem value="Groundbreaking">Groundbreaking</SelectItem>
                       <SelectItem value="to be paid">To be paid</SelectItem>
                       <SelectItem value="Bank ACH">Bank ACH</SelectItem>
-                      <SelectItem value="Karim's Card">Karim's Card</SelectItem>
+                      <SelectItem value="Karim's Card">Karim&apos;s Card</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
