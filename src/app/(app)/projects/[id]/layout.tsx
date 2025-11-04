@@ -1,5 +1,4 @@
 
-
 'use client'; 
 
 import { notFound, useRouter } from "next/navigation";
@@ -9,7 +8,7 @@ import Link from "next/link";
 import { ProjectTabs } from "./_components/project-tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import React, { useContext, useState, useEffect, use } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AppStateContext } from "@/context/app-state-context";
@@ -17,15 +16,13 @@ import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 
-// This is the Client Component that encapsulates all the client-side logic.
 export default function ProjectDetailLayout({
-    params: paramsProp,
+    params,
     children,
 }: {
-    params: Promise<{ id: string }>;
+    params: { id: string };
     children: React.ReactNode;
 }) {
-    const params = use(paramsProp);
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);
@@ -35,23 +32,21 @@ export default function ProjectDetailLayout({
         setHasMounted(true);
     }, []);
 
-    if (!appState) {
+    if (!appState || !hasMounted) {
         // This can be a loading spinner
         return <div>Loading...</div>;
     }
 
-    const { projects, setProjects, budgetItems, expenses } = appState;
+    const { projects, setProjects, budgetItems, expenses, milestones } = appState;
     const project = projects.find(p => p.id === params.id);
 
     if (!project) {
-        if (hasMounted) {
-            notFound();
-        }
-        return <div>Loading project...</div>;
+        notFound();
     }
 
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
     const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
+    const projectMilestones = milestones.filter(m => m.projectId === project.id);
 
     const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
     const spentToDate = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
@@ -66,6 +61,8 @@ export default function ProjectDetailLayout({
     const daysPassed = differenceInDays(today, startDate);
     const daysRemaining = differenceInDays(endDate, today);
     const timeProgress = totalDays > 0 ? Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100) : 0;
+    
+    const completedMilestones = projectMilestones.filter(m => m.status === 'Completed').length;
     
     const handleEdit = () => {
         toast({
@@ -84,10 +81,6 @@ export default function ProjectDetailLayout({
         router.push('/projects');
     };
     
-    if (!hasMounted) {
-        return <div>Loading...</div>
-    }
-
     const budgetChartData = [
         { name: "Spent", value: spentToDate, fill: "hsl(var(--primary))" },
         { name: "Remaining", value: Math.max(0, totalBudget - spentToDate), fill: "hsl(var(--muted))" },
@@ -130,6 +123,10 @@ export default function ProjectDetailLayout({
                             label="Profit/Loss"
                             metric={`$${profitAndLoss.toLocaleString()}`}
                             metricLabel="Bid - Expenses"
+                        />
+                        <MilestoneProgress 
+                            value={completedMilestones}
+                            total={projectMilestones.length}
                         />
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useContext } from 'react';
@@ -15,7 +14,7 @@ import {
 import { PlusCircle, MoreVertical, Flag } from 'lucide-react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Milestone } from '@/lib/types';
-import { AddEditMilestoneDialog } from '../_components/add-edit-milestone-dialog';
+import { AddEditMilestoneDialog } from '../../_components/add-edit-milestone-dialog';
 import { Badge } from '@/components/ui/badge';
 import { format, isPast } from 'date-fns';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -85,6 +84,7 @@ export default function ProjectMilestonesPage({
         onOpenChange={setIsDialogOpen}
         milestone={selectedMilestone}
         onSave={handleSaveMilestone}
+        projectId={params.id}
       />
       <Card>
         <CardHeader>
@@ -159,7 +159,7 @@ export default function ProjectMilestonesPage({
                     </DropdownMenu>
                   </CardContent>
                 </Card>
-              ))}
+              ))}\
             </div>
           )}
         </CardContent>
