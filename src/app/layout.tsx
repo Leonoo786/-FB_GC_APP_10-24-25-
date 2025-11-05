@@ -8,7 +8,6 @@ import { AppStateProvider } from '@/context/app-state-context';
 export const metadata: Metadata = {
   title: 'Fancy Brothers Constructions APP',
   description: 'Construction Project Management Application',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
