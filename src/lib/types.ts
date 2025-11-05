@@ -13,7 +13,8 @@ export type Project = {
   percentComplete: number;
   startDate: string;
   endDate: string;
-  finalBidAmount?: number;
+  revisedContract: number;
+  finalBidAmount: number;
   imageUrl: string;
   imageHint: string;
 };
@@ -146,12 +147,6 @@ export type AppUser = {
     name: string;
     email: string;
     avatarUrl: string;
-    phone: string;
-    jobTitle: string;
-    department: string;
-    bio: string;
-    companyName: string;
-    companyLogoUrl: string;
 };
 
 export type CompanyProfile = {

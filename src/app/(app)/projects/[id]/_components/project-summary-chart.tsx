@@ -21,11 +21,11 @@ type ProjectSummaryChartProps = {
 
 export function ProjectSummaryChart({ data, label, metric, metricLabel }: ProjectSummaryChartProps) {
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <div className="h-16 w-16">
+    <div class="flex items-center gap-2 text-sm">
+      <div class="h-16 w-16">
         <ChartContainer
           config={{}}
-          className="min-h-0 w-full h-full p-0 [&>div]:h-full"
+          class="min-h-0 w-full h-full p-0 [&>div]:h-full"
         >
           <PieChart>
             <Pie
@@ -46,9 +46,9 @@ export function ProjectSummaryChart({ data, label, metric, metricLabel }: Projec
         </ChartContainer>
       </div>
       <div>
-        <p className="text-muted-foreground">{label}</p>
-        <p className="font-bold text-lg">{metric}</p>
-        <p className="text-xs text-muted-foreground">{metricLabel}</p>
+        <p class="text-muted-foreground">{label}</p>
+        <p class="font-bold text-lg">{metric}</p>
+        <p class="text-xs text-muted-foreground">{metricLabel}</p>
       </div>
     </div>
   );

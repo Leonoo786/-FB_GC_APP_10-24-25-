@@ -62,7 +62,7 @@ export function AddDrawingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload New Drawing</DialogTitle>
           <DialogDescription>
@@ -70,7 +70,7 @@ export function AddDrawingDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4">
             <FormField
               control={form.control}
               name="drawingFile"
@@ -78,18 +78,18 @@ export function AddDrawingDialog({
                 <FormItem>
                   <FormLabel>Drawing File</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-24 w-24 items-center justify-center rounded-md border border-dashed bg-secondary">
-                            <Upload className="h-8 w-8 text-muted-foreground" />
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-24 w-24 items-center justify-center rounded-md border border-dashed bg-secondary">
+                            <Upload class="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <div className='flex-1'>
+                        <div class='flex-1'>
                              <Input 
                                 type="file" 
                                 accept="application/pdf,image/*" 
                                 onChange={(e) => field.onChange(e.target.files)}
-                                className='w-full'
+                                class='w-full'
                              />
-                             <p className='text-xs text-muted-foreground mt-1'>Select a PDF or image file. The system will attempt to name it.</p>
+                             <p class='text-xs text-muted-foreground mt-1'>Select a PDF or image file. The system will attempt to name it.</p>
                         </div>
                     </div>
                   </FormControl>
@@ -139,7 +139,7 @@ export function AddDrawingDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
+            <DialogFooter class="pt-4">
               <Button
                 type="button"
                 variant="ghost"

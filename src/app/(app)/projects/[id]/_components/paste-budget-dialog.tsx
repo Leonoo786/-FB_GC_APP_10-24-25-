@@ -48,10 +48,10 @@ export function PasteBudgetDialog({
     if (!appState) return;
     
     try {
-      const rows = pasteData.split('\n').filter(row => row.trim() !== '');
+      const rows = pasteData.split('\\n').filter(row => row.trim() !== '');
       
       const newBudgetItems: BudgetItem[] = rows.map(row => {
-        const columns = row.split('\t'); // Assuming tab-separated from spreadsheet
+        const columns = row.split('\\t'); // Assuming tab-separated from spreadsheet
         
         if (columns.length < 2) {
           return null;
@@ -109,19 +109,19 @@ export function PasteBudgetDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent class="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Paste from Spreadsheet</DialogTitle>
           <DialogDescription>
             Copy data from your spreadsheet (e.g., Excel, Google Sheets) and paste it below. The first column should be the category and the second column should be the budget amount.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
+        <div class="space-y-2">
             <Label htmlFor="paste-area">Pasted Data</Label>
             <Textarea 
                 id="paste-area"
                 rows={10}
-                placeholder="Framing	50000.00&#10;Electrical	25000.00"
+                placeholder="Framing\\t50000.00\\nElectrical\\t25000.00"
                 value={pasteData}
                 onChange={(e) => setPasteData(e.target.value)}
             />

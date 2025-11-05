@@ -48,11 +48,13 @@ export function AddEditMilestoneDialog({
   onOpenChange,
   milestone,
   onSave,
+  projectId
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   milestone: Milestone | null;
   onSave: (milestone: Milestone) => void;
+  projectId: string;
 }) {
   const { toast } = useToast();
   const isEditing = !!milestone;
@@ -83,7 +85,7 @@ export function AddEditMilestoneDialog({
   const onSubmit = (data: FormValues) => {
     const milestoneToSave = {
       id: milestone?.id || '',
-      projectId: milestone?.projectId || '', // This should be handled in parent
+      projectId: milestone?.projectId || projectId,
       name: data.name,
       description: data.description,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
@@ -99,7 +101,7 @@ export function AddEditMilestoneDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit' : 'Add'} Milestone</DialogTitle>
           <DialogDescription>
@@ -109,7 +111,7 @@ export function AddEditMilestoneDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -143,14 +145,14 @@ export function AddEditMilestoneDialog({
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem class="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={'outline'}
-                            className={cn(
+                            class={cn(
                               'w-full pl-3 text-left font-normal',
                               !field.value && 'text-muted-foreground'
                             )}
@@ -160,11 +162,11 @@ export function AddEditMilestoneDialog({
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent class="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -199,7 +201,7 @@ export function AddEditMilestoneDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
+            <DialogFooter class="pt-4">
               <Button
                 type="button"
                 variant="ghost"

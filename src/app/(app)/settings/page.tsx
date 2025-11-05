@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { LogOut, MoreHorizontal, User, Laptop, Smartphone, TriangleAlert, Download, Upload } from "lucide-react";
+import { LogOut, MoreHorizontal, User, Laptop, Smartphone, TriangleAlert, Download } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -56,18 +56,17 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
-  const isInitialLoad = useRef(true);
 
   // Profile State
   const [photoUrl, setPhotoUrl] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [department, setDepartment] = useState("");
+  const [phone, setPhone] = useState("(555) 123-4567");
+  const [jobTitle, setJobTitle] = useState("Admin");
+  const [department, setDepartment] = useState("Construction");
   const [bio, setBio] = useState("");
 
-  // Company State
+  // Company State - Initialize from context but allow local edits
   const [companyName, setCompanyName] = useState("");
   const [companyLogoUrl, setCompanyLogoUrl] = useState("");
   const [industry, setIndustry] = useState("Construction");
@@ -80,19 +79,12 @@ export default function SettingsPage() {
   const [companyWebsite, setCompanyWebsite] = useState("https://www.fancybuilders.com");
 
   useEffect(() => {
-    if (appState && isInitialLoad.current) {
+    if (appState) {
         setName(appState.userName);
         setPhotoUrl(appState.userAvatarUrl);
         setEmail(appState.userEmail);
-        setPhone(appState.userPhone);
-        setJobTitle(appState.userJobTitle);
-        setDepartment(appState.userDepartment);
-        setBio(appState.userBio);
-
         setCompanyName(appState.companyName);
         setCompanyLogoUrl(appState.companyLogoUrl);
-
-        isInitialLoad.current = false;
     }
   }, [appState]);
 
@@ -101,13 +93,11 @@ export default function SettingsPage() {
   }
 
   const {
+      userName,
       setUserName,
       setUserAvatarUrl,
+      userEmail,
       setUserEmail,
-      setUserPhone,
-      setUserJobTitle,
-      setUserDepartment,
-      setUserBio,
       setCompanyName: setGlobalCompanyName,
       setCompanyLogoUrl: setGlobalCompanyLogoUrl,
   } = appState;
@@ -139,11 +129,6 @@ export default function SettingsPage() {
     setUserName(name);
     setUserAvatarUrl(photoUrl);
     setUserEmail(email);
-    setUserPhone(phone);
-    setUserJobTitle(jobTitle);
-    setUserDepartment(department);
-    setUserBio(bio);
-
     toast({
       title: "Changes Saved",
       description: "Your profile information has been updated.",
@@ -173,10 +158,10 @@ export default function SettingsPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div class="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Welcome back, {name.split(' ')[0]}</p>
+        <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+        <p class="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
       </div>
 
       <Tabs defaultValue="profile">
@@ -188,51 +173,51 @@ export default function SettingsPage() {
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
-        <TabsContent value="profile" className="mt-6">
+        <TabsContent value="profile" class="mt-6">
           <Card>
             <CardHeader></CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="flex flex-col items-center gap-4 md:w-1/4">
-                  <Avatar className="h-32 w-32">
+              <div class="flex flex-col md:flex-row gap-8">
+                <div class="flex flex-col items-center gap-4 md:w-1/4">
+                  <Avatar class="h-32 w-32">
                     <AvatarImage src={photoUrl} />
                     <AvatarFallback>
-                        <User className="h-16 w-16" />
+                        <User class="h-16 w-16" />
                     </AvatarFallback>
                   </Avatar>
-                  <Input id="photo-upload" type="file" className="hidden" onChange={handlePhotoChange} accept="image/*" />
+                  <Input id="photo-upload" type="file" class="hidden" onChange={handlePhotoChange} accept="image/*" />
                   <Button variant="outline" asChild>
-                    <Label htmlFor="photo-upload" className="cursor-pointer">Change Photo</Label>
+                    <Label htmlFor="photo-upload" class="cursor-pointer">Change Photo</Label>
                   </Button>
                 </div>
-                <div className="flex-1 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                <div class="flex-1 space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
                       <Input id="firstName" value={firstName} onChange={(e) => handleNameChange('first', e.target.value)} />
                     </div>
-                    <div className="space-y-2">
+                    <div class="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input id="lastName" value={lastName} onChange={(e) => handleNameChange('last', e.target.value)} />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div class="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                   </div>
-                  <div className="space-y-2">
+                  <div class="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   </div>
-                   <div className="space-y-2">
+                   <div class="space-y-2">
                     <Label htmlFor="jobTitle">Job Title</Label>
                     <Input id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
                   </div>
-                  <div className="space-y-2">
+                  <div class="space-y-2">
                     <Label htmlFor="department">Department</Label>
                     <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                   </div>
-                  <div className="space-y-2">
+                  <div class="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
                     <Textarea
                       id="bio"
@@ -245,25 +230,25 @@ export default function SettingsPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="border-t px-6 py-4 justify-end">
+            <CardFooter class="border-t px-6 py-4 justify-end">
                 <Button onClick={handleSaveChanges}>Save Changes</Button>
             </CardFooter>
           </Card>
         </TabsContent>
-        <TabsContent value="account" className="mt-6">
+        <TabsContent value="account" class="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>Account Preferences</CardTitle>
                 <CardDescription>Manage your account settings</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
+              <CardContent class="space-y-6">
+                <div class="flex items-center justify-between">
                   <div>
                     <Label>Language</Label>
-                    <p className="text-sm text-muted-foreground">Select your preferred language</p>
+                    <p class="text-sm text-muted-foreground">Select your preferred language</p>
                   </div>
                   <Select defaultValue="en">
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger class="w-[180px]">
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,13 +257,13 @@ export default function SettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center justify-between">
+                <div class="flex items-center justify-between">
                   <div>
                     <Label>Time Zone</Label>
-                    <p className="text-sm text-muted-foreground">Set your local time zone</p>
+                    <p class="text-sm text-muted-foreground">Set your local time zone</p>
                   </div>
                   <Select defaultValue="est">
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger class="w-[180px]">
                       <SelectValue placeholder="Select time zone" />
                     </SelectTrigger>
                     <SelectContent>
@@ -289,13 +274,13 @@ export default function SettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center justify-between">
+                <div class="flex items-center justify-between">
                   <div>
                     <Label>Date Format</Label>
-                    <p className="text-sm text-muted-foreground">Choose how dates are displayed</p>
+                    <p class="text-sm text-muted-foreground">Choose how dates are displayed</p>
                   </div>
                    <Select defaultValue="mmddyyyy">
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger class="w-[180px]">
                       <SelectValue placeholder="Select date format" />
                     </SelectTrigger>
                     <SelectContent>
@@ -305,13 +290,13 @@ export default function SettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                 <div className="flex items-center justify-between">
+                 <div class="flex items-center justify-between">
                   <div>
                     <Label>Theme</Label>
-                    <p className="text-sm text-muted-foreground">Choose your interface theme</p>
+                    <p class="text-sm text-muted-foreground">Choose your interface theme</p>
                   </div>
                    <Select value={theme} onValueChange={setTheme}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger class="w-[180px]">
                       <SelectValue placeholder="Select theme" />
                     </SelectTrigger>
                     <SelectContent>
@@ -322,23 +307,23 @@ export default function SettingsPage() {
                   </Select>
                 </div>
               </CardContent>
-              <CardFooter className="border-t px-6 py-4 justify-end">
+              <CardFooter class="border-t px-6 py-4 justify-end">
                 <Button>Save Preferences</Button>
               </CardFooter>
             </Card>
         </TabsContent>
-         <TabsContent value="notifications" className="mt-6">
+         <TabsContent value="notifications" class="mt-6">
              <Card>
                 <CardHeader>
                     <CardTitle>Notification Preferences</CardTitle>
                     <CardDescription>Manage how you receive notifications</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent class="space-y-8">
                     <div>
-                        <h3 className="mb-4 text-lg font-medium">Email Notifications</h3>
-                        <div className="space-y-4">
+                        <h3 class="mb-4 text-lg font-medium">Email Notifications</h3>
+                        <div class="space-y-4">
                             {notificationItems.map((item) => (
-                                <div key={`email-${item.id}`} className="flex items-center justify-between rounded-lg border p-4">
+                                <div key={`email-${item.id}`} class="flex items-center justify-between rounded-lg border p-4">
                                     <Label htmlFor={`email-${item.id}`}>{item.label}</Label>
                                     <Switch id={`email-${item.id}`} defaultChecked />
                                 </div>
@@ -349,10 +334,10 @@ export default function SettingsPage() {
                     <Separator />
 
                     <div>
-                        <h3 className="mb-4 text-lg font-medium">In-App Notifications</h3>
-                        <div className="space-y-4">
+                        <h3 class="mb-4 text-lg font-medium">In-App Notifications</h3>
+                        <div class="space-y-4">
                              {notificationItems.map((item) => (
-                                <div key={`in-app-${item.id}`} className="flex items-center justify-between rounded-lg border p-4">
+                                <div key={`in-app-${item.id}`} class="flex items-center justify-between rounded-lg border p-4">
                                     <Label htmlFor={`in-app-${item.id}`}>{item.label}</Label>
                                     <Switch id={`in-app-${item.id}`} defaultChecked />
                                 </div>
@@ -363,11 +348,11 @@ export default function SettingsPage() {
                     <Separator />
 
                     <div>
-                         <h3 className="mb-4 text-lg font-medium">Frequency</h3>
-                         <div className="flex items-center justify-between rounded-lg border p-4">
+                         <h3 class="mb-4 text-lg font-medium">Frequency</h3>
+                         <div class="flex items-center justify-between rounded-lg border p-4">
                             <Label>Email digest frequency</Label>
                              <Select defaultValue="daily">
-                                <SelectTrigger className="w-[180px]">
+                                <SelectTrigger class="w-[180px]">
                                     <SelectValue placeholder="Select frequency" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -380,43 +365,43 @@ export default function SettingsPage() {
                     </div>
 
                 </CardContent>
-                 <CardFooter className="border-t px-6 py-4 justify-end">
+                 <CardFooter class="border-t px-6 py-4 justify-end">
                     <Button>Save Notification Settings</Button>
                 </CardFooter>
              </Card>
         </TabsContent>
-         <TabsContent value="company" className="mt-6">
+         <TabsContent value="company" class="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>Company Information</CardTitle>
                 <CardDescription>Manage your company details and preferences</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
+              <CardContent class="space-y-6">
+                <div class="space-y-2">
                   <Label>Company Logo</Label>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20 rounded-md">
+                  <div class="flex items-center gap-4">
+                    <Avatar class="h-20 w-20 rounded-md">
                         <AvatarImage src={companyLogoUrl} />
                         <AvatarFallback>
-                            <User className="h-10 w-10" />
+                            <User class="h-10 w-10" />
                         </AvatarFallback>
                     </Avatar>
-                    <Input id="logo-upload" type="file" className="hidden" accept="image/*" onChange={handleLogoChange} />
+                    <Input id="logo-upload" type="file" class="hidden" accept="image/*" onChange={handleLogoChange} />
                     <Button variant="outline" asChild>
-                        <Label htmlFor="logo-upload" className="cursor-pointer">Change Logo</Label>
+                        <Label htmlFor="logo-upload" class="cursor-pointer">Change Logo</Label>
                     </Button>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div class="space-y-2">
                   <Label htmlFor="companyName">Company Name</Label>
                   <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
                         <Label htmlFor="industry">Industry</Label>
                         <Input id="industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
                     </div>
-                    <div className="space-y-2">
+                    <div class="space-y-2">
                         <Label htmlFor="companySize">Company Size</Label>
                         <Select value={companySize} onValueChange={setCompanySize}>
                             <SelectTrigger id="companySize">
@@ -432,74 +417,74 @@ export default function SettingsPage() {
                         </Select>
                     </div>
                 </div>
-                <div className="space-y-2">
+                <div class="space-y-2">
                     <Label htmlFor="address">Address</Label>
                     <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-2 col-span-2">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="space-y-2 col-span-2">
                         <Label htmlFor="city">City</Label>
                         <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
                     </div>
-                    <div className="space-y-2">
+                    <div class="space-y-2">
                         <Label htmlFor="state">State</Label>
                         <Input id="state" value={state} onChange={(e) => setState(e.target.value)} />
                     </div>
-                    <div className="space-y-2">
+                    <div class="space-y-2">
                         <Label htmlFor="zipCode">Zip Code</Label>
                         <Input id="zipCode" value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
                     </div>
                 </div>
-                <div className="space-y-2">
+                <div class="space-y-2">
                     <Label htmlFor="companyPhone">Phone</Label>
                     <Input id="companyPhone" value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} />
                 </div>
-                <div className="space-y-2">
+                <div class="space-y-2">
                     <Label htmlFor="companyWebsite">Website</Label>
                     <Input id="companyWebsite" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} />
                 </div>
               </CardContent>
-              <CardFooter className="border-t px-6 py-4 justify-end">
+              <CardFooter class="border-t px-6 py-4 justify-end">
                 <Button onClick={handleCompanySaveChanges}>Save Company Information</Button>
               </CardFooter>
             </Card>
         </TabsContent>
-        <TabsContent value="security" className="mt-6">
+        <TabsContent value="security" class="mt-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Security Settings</CardTitle>
                     <CardDescription>Manage your password and account security</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent class="space-y-8">
                     <div>
-                        <h3 className="font-medium text-lg mb-4">Change Password</h3>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
+                        <h3 class="font-medium text-lg mb-4">Change Password</h3>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
                                 <Label htmlFor="currentPassword">Current Password</Label>
                                 <Input id="currentPassword" type="password" />
                             </div>
-                            <div className="space-y-2">
+                            <div class="space-y-2">
                                 <Label htmlFor="newPassword">New Password</Label>
                                 <Input id="newPassword" type="password" />
                             </div>
-                            <div className="space-y-2">
+                            <div class="space-y-2">
                                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                                 <Input id="confirmPassword" type="password" />
                             </div>
                         </div>
                     </div>
-                     <CardFooter className="px-0 pb-0 justify-start">
+                     <CardFooter class="px-0 pb-0 justify-start">
                         <Button>Update Password</Button>
                     </CardFooter>
                 </CardContent>
 
                 <Separator />
 
-                <CardContent className="space-y-8 pt-6">
-                   <div className="flex items-center justify-between rounded-lg border p-4">
+                <CardContent class="space-y-8 pt-6">
+                   <div class="flex items-center justify-between rounded-lg border p-4">
                         <div>
-                            <h3 className="font-medium">Two-Factor Authentication</h3>
-                            <p className="text-sm text-muted-foreground">
+                            <h3 class="font-medium">Two-Factor Authentication</h3>
+                            <p class="text-sm text-muted-foreground">
                                 Add an extra layer of security to your account.
                             </p>
                         </div>
@@ -509,47 +494,47 @@ export default function SettingsPage() {
                 
                  <Separator />
 
-                <CardContent className="space-y-4 pt-6">
-                    <h3 className="font-medium text-lg">Session Management</h3>
-                    <p className="text-sm text-muted-foreground">You're currently signed in on these devices:</p>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="flex items-center gap-4">
-                                <Laptop className="h-6 w-6 text-muted-foreground" />
+                <CardContent class="space-y-4 pt-6">
+                    <h3 class="font-medium text-lg">Session Management</h3>
+                    <p class="text-sm text-muted-foreground">You're currently signed in on these devices:</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between rounded-lg border p-4">
+                            <div class="flex items-center gap-4">
+                                <Laptop class="h-6 w-6 text-muted-foreground" />
                                 <div>
-                                    <p className="font-medium">Windows PC - Chrome</p>
-                                    <p className="text-sm text-muted-foreground">New York, USA • Current session</p>
+                                    <p class="font-medium">Windows PC - Chrome</p>
+                                    <p class="text-sm text-muted-foreground">New York, USA • Current session</p>
                                 </div>
                             </div>
                             <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-5 w-5" />
-                                <span className="sr-only">Session options</span>
+                                <MoreHorizontal class="h-5 w-5" />
+                                <span class="sr-only">Session options</span>
                             </Button>
                         </div>
-                         <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="flex items-center gap-4">
-                                <Smartphone className="h-6 w-6 text-muted-foreground" />
+                         <div class="flex items-center justify-between rounded-lg border p-4">
+                            <div class="flex items-center gap-4">
+                                <Smartphone class="h-6 w-6 text-muted-foreground" />
                                 <div>
-                                    <p className="font-medium">iPhone 13 - Safari</p>
-                                    <p className="text-sm text-muted-foreground">New York, USA • Last active: 2 hours ago</p>
+                                    <p class="font-medium">iPhone 13 - Safari</p>
+                                    <p class="text-sm text-muted-foreground">New York, USA • Last active: 2 hours ago</p>
                                 </div>
                             </div>
                             <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-5 w-5" />
-                                <span className="sr-only">Session options</span>
+                                <MoreHorizontal class="h-5 w-5" />
+                                <span class="sr-only">Session options</span>
                             </Button>
                         </div>
                     </div>
                 </CardContent>
-                 <CardFooter className="border-t px-6 py-4">
+                 <CardFooter class="border-t px-6 py-4">
                     <Button variant="outline">
-                        <LogOut className="mr-2" />
+                        <LogOut class="mr-2" />
                         Sign out of all devices
                     </Button>
                 </CardFooter>
             </Card>
         </TabsContent>
-        <TabsContent value="advanced" className="mt-6">
+        <TabsContent value="advanced" class="mt-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Advanced Settings</CardTitle>
@@ -557,14 +542,14 @@ export default function SettingsPage() {
                         System administration and data management options
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent class="space-y-8">
                     <div>
-                        <h3 className="font-medium text-lg mb-4">Data Management</h3>
+                        <h3 class="font-medium text-lg mb-4">Data Management</h3>
                         <Alert variant="destructive">
-                            <TriangleAlert className="h-4 w-4" />
+                            <TriangleAlert class="h-4 w-4" />
                             <AlertTitle>Reset Project Data</AlertTitle>
                             <AlertDescription>
-                                <div className="flex justify-between items-center">
+                                <div class="flex justify-between items-center">
                                     <p>
                                         This action will permanently delete all project data including budgets, tasks, documents, and photos. User accounts will be preserved.
                                     </p>
@@ -591,12 +576,12 @@ export default function SettingsPage() {
                     </div>
 
                     <div>
-                        <h3 className="font-medium text-lg mb-2">Data Export</h3>
+                        <h3 class="font-medium text-lg mb-2">Data Export</h3>
                         <Card>
-                            <CardContent className="flex flex-col items-center justify-center p-6 space-y-4">
-                               <p className="text-sm text-muted-foreground">Export all your project data for backup or transfer purposes.</p>
+                            <CardContent class="flex flex-col items-center justify-center p-6 space-y-4">
+                               <p class="text-sm text-muted-foreground">Export all your project data for backup or transfer purposes.</p>
                                <Button variant="outline">
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <Download class="mr-2 h-4 w-4" />
                                     Export All Data
                                  </Button>
                             </CardContent>

@@ -78,7 +78,7 @@ export function AddChangeOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent class="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add Change Order</DialogTitle>
           <DialogDescription>
@@ -86,8 +86,8 @@ export function AddChangeOrderDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="coNumber"
@@ -105,14 +105,14 @@ export function AddChangeOrderDialog({
                 control={form.control}
                 name="dateInitiated"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem class="flex flex-col">
                     <FormLabel>Date Initiated</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={'outline'}
-                            className={cn(
+                            class={cn(
                               'w-full pl-3 text-left font-normal',
                               !field.value && 'text-muted-foreground'
                             )}
@@ -122,11 +122,11 @@ export function AddChangeOrderDialog({
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent class="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -155,7 +155,7 @@ export function AddChangeOrderDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="status"
@@ -248,7 +248,7 @@ export function AddChangeOrderDialog({
                 )}
               />
 
-            <DialogFooter className="pt-4">
+            <DialogFooter class="pt-4">
               <Button
                 type="button"
                 variant="ghost"

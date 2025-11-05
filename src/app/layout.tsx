@@ -1,14 +1,12 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { AppStateProvider } from '@/context/app-state-context';
 
 export const metadata: Metadata = {
-  title: 'Fancy Brothers Constructions APP',
+  title: 'ConstructAI',
   description: 'Construction Project Management Application',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -30,18 +28,14 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body class="font-body antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-            <FirebaseClientProvider>
-                <AppStateProvider>
-                    {children}
-                </AppStateProvider>
-            </FirebaseClientProvider>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

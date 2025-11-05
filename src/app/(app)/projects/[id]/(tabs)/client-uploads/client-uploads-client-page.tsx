@@ -32,11 +32,7 @@ const mockUploads = [
   },
 ];
 
-export default function ProjectClientUploadsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export function ClientUploadsClientPage({ projectId }: { projectId: string }) {
   return (
     <Card>
       <CardHeader>

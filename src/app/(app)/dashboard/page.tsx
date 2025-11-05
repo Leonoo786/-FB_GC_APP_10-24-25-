@@ -115,66 +115,66 @@ export default function DashboardPage() {
         teamMembers={teamMembers}
     />
     <TooltipProvider>
-      <div className="flex flex-col gap-6">
+      <div class="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
+          <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p class="text-muted-foreground">Welcome back, {userName.split(' ')[0]}</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <Tooltip>
               <TooltipTrigger asChild>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer">
-                  <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+                <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2 cursor-pointer">
+                  <CardTitle class="text-sm font-medium">Active Projects</CardTitle>
+                  <Activity class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
               </TooltipTrigger>
               <TooltipContent>
-                 <p className="font-bold mb-2">Active Projects</p>
-                  <ul className="list-disc pl-4">
+                 <p class="font-bold mb-2">Active Projects</p>
+                  <ul class="list-disc pl-4">
                     {activeProjects.map(p => (
-                      <li key={p.id} className="text-sm">
-                        <span className="font-semibold">{p.name}:</span> {p.description}
+                      <li key={p.id} class="text-sm">
+                        <span class="font-semibold">{p.name}:</span> {p.description}
                       </li>
                     ))}
                   </ul>
               </TooltipContent>
             </Tooltip>
             <CardContent>
-              <div className="text-2xl font-bold">{activeProjectsCount}</div>
-              <p className="text-xs text-muted-foreground">
+              <div class="text-2xl font-bold">{activeProjectsCount}</div>
+              <p class="text-xs text-muted-foreground">
                 {projects.length - activeProjectsCount} inactive
               </p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tasks Due Soon</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle class="text-sm font-medium">Tasks Due Soon</CardTitle>
+              <CheckCircle class="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tasksDueSoonCount}</div>
-              <p className="text-xs text-muted-foreground">In the next 7 days</p>
+              <div class="text-2xl font-bold">{tasksDueSoonCount}</div>
+              <p class="text-xs text-muted-foreground">In the next 7 days</p>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle class="text-sm font-medium">
                 Budget Utilization
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <DollarSign class="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{budgetUtilization.toFixed(0)}%</div>
-              <p className="text-xs text-muted-foreground">
+              <div class="text-2xl font-bold">{budgetUtilization.toFixed(0)}%</div>
+              <p class="text-xs text-muted-foreground">
                 Across all active projects
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                   <CardTitle>Project Timeline</CardTitle>
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                   <ProjectTimeline projects={projects} />
               </CardContent>
             </Card>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                       <CardHeader>
                           <CardTitle>Budget vs. Actual</CardTitle>
@@ -198,54 +198,54 @@ export default function DashboardPage() {
                           <CardTitle>Budget Overview</CardTitle>
                           <CardDescription>For active projects</CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                          <div className="space-y-2">
+                      <CardContent class="space-y-4">
+                          <div class="flex justify-between">
                               <div>
-                                  <p className="text-sm text-muted-foreground">Total Budget</p>
-                                  <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
+                                  <p class="text-sm text-muted-foreground">Total Budget</p>
+                                  <p class="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
                               </div>
                               <div>
-                                  <p className="text-sm text-muted-foreground">Spent to Date</p>
-                                  <p className="text-2xl font-bold">${totalSpent.toLocaleString()}</p>
+                                  <p class="text-sm text-muted-foreground text-right">Spent to Date</p>
+                                  <p class="text-2xl font-bold text-right">${totalSpent.toLocaleString()}</p>
                               </div>
                           </div>
                           <div>
-                              <p className="text-sm text-muted-foreground mb-1">Overall Budget Utilization</p>
+                              <p class="text-sm text-muted-foreground mb-1">Overall Budget Utilization</p>
                               <Progress value={budgetUtilization} />
                           </div>
-                          <div className="border-t pt-4">
-                              <p className="text-sm font-medium mb-2">Top Spending Categories</p>
+                          <div class="border-t pt-4">
+                              <p class="text-sm font-medium mb-2">Top Spending Categories</p>
                                {categorySpending.length > 0 ? (
-                                <div className="space-y-2">
+                                <div class="space-y-2">
                                   {categorySpending.map(({ category, spent }) => (
-                                    <div key={category} className="flex justify-between items-center text-sm">
-                                      <div className="flex items-center gap-2">
-                                        <ArrowUp className="h-4 w-4 text-green-500" />
+                                    <div key={category} class="flex justify-between items-center text-sm">
+                                      <div class="flex items-center gap-2">
+                                        <ArrowUp class="h-4 w-4 text-green-500" />
                                         <span>{category}</span>
                                       </div>
-                                      <span className="font-medium">${spent.toLocaleString()}</span>
+                                      <span class="font-medium">${spent.toLocaleString()}</span>
                                     </div>
                                   ))}
                                 </div>
                               ) : (
-                                <div className="text-center text-muted-foreground py-4">
-                                  <CircleHelp className="mx-auto h-8 w-8 mb-2" />
-                                  <p className="text-sm">No spending recorded for active projects</p>
-                                  <p className="text-xs">Start adding expenses to see this report.</p>
+                                <div class="text-center text-muted-foreground py-4">
+                                  <CircleHelp class="mx-auto h-8 w-8 mb-2" />
+                                  <p class="text-sm">No spending recorded for active projects</p>
+                                  <p class="text-xs">Start adding expenses to see this report.</p>
                                 </div>
                               )}
                           </div>
-                          <div className="flex justify-between gap-2">
-                              <Button asChild variant="outline" className="w-full">
+                          <div class="flex justify-between gap-2">
+                              <Button asChild variant="outline" class="w-full">
                                 <Link href="/profit-loss">View Full Report</Link>
                               </Button>
-                              <Button variant="ghost" className="w-full">Export Report</Button>
+                              <Button variant="ghost" class="w-full">Export Report</Button>
                           </div>
                       </CardContent>
                   </Card>
               </div>
           </div>
-          <div className="lg:col-span-1 space-y-6">
+          <div class="lg:col-span-1 space-y-6">
               <TasksDueToday 
                 tasks={tasks} 
                 projects={projects} 
@@ -253,37 +253,37 @@ export default function DashboardPage() {
                 onViewTask={(task) => handleOpenTaskDialog(task)}
               />
               <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
+                  <CardHeader class="flex flex-row items-center justify-between">
                       <CardTitle>Team Members</CardTitle>
                       <Button variant="ghost" size="sm" asChild><Link href="/estimating/team">View All</Link></Button>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent class="space-y-4">
                       {teamMembers.slice(0, 4).map(member => (
-                          <div key={member.id} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                  <Avatar className="h-9 w-9">
+                          <div key={member.id} class="flex items-center justify-between">
+                              <div class="flex items-center gap-3">
+                                  <Avatar class="h-9 w-9">
                                       <AvatarImage src={member.avatarUrl} alt={member.name} />
                                       <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                                   </Avatar>
                                   <div>
-                                      <p className="font-medium">{member.name}</p>
-                                      <p className="text-xs text-muted-foreground">{member.role}</p>
+                                      <p class="font-medium">{member.name}</p>
+                                      <p class="text-xs text-muted-foreground">{member.role}</p>
                                   </div>
                               </div>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <MoreVertical className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" class="h-8 w-8">
+                                  <MoreVertical class="h-4 w-4" />
                               </Button>
                           </div>
                       ))}
                   </CardContent>
               </Card>
               <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
+                  <CardHeader class="flex flex-row items-center justify-between">
                       <CardTitle>Recent Activity</CardTitle>
                       <Button variant="ghost" size="sm">View All</Button>
                   </CardHeader>
                   <CardContent>
-                      <div className="text-center text-muted-foreground py-8">
+                      <div class="text-center text-muted-foreground py-8">
                           <p>No recent activity</p>
                       </div>
                   </CardContent>

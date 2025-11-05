@@ -83,7 +83,7 @@ export default function AIAPage() {
     return <div>Loading...</div>;
   }
 
-  const { projects, companyName, changeOrders, budgetItems } = appState;
+  const { projects, companyName, changeOrders } = appState;
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
   const projectChangeOrders: ChangeOrder[] = selectedProject
@@ -94,7 +94,7 @@ export default function AIAPage() {
   const totalDeductions = projectChangeOrders.reduce((sum, co) => co.totalRequest < 0 ? sum + co.totalRequest : sum, 0);
   const netChangeByChangeOrders = totalAdditions + totalDeductions;
 
-  const originalContractSum = selectedProject ? budgetItems.filter(bi => bi.projectId === selectedProject.id).reduce((sum, item) => sum + item.originalBudget, 0) : 0;
+  const originalContractSum = selectedProject?.revisedContract ?? 0;
   const contractSumToDate = originalContractSum + netChangeByChangeOrders;
   const totalCompletedAndStored = formValues.totalCompletedAndStored || 0;
   
@@ -123,27 +123,27 @@ export default function AIAPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
+    <div class="space-y-6">
+      <div class="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 class="text-3xl font-bold tracking-tight">
             AIA G702 Application for Payment
           </h1>
-          <p className="text-muted-foreground">
+          <p class="text-muted-foreground">
             Create and manage your payment applications.
           </p>
         </div>
-         <div className="flex gap-2">
-            <Button variant="outline"><Printer className="mr-2" /> Print</Button>
-            <Button><Download className="mr-2" /> Export as PDF</Button>
+         <div class="flex gap-2">
+            <Button variant="outline"><Printer class="mr-2" /> Print</Button>
+            <Button><Download class="mr-2" /> Export as PDF</Button>
         </div>
       </div>
       <Card>
         <CardHeader>
             <CardTitle>Project Information</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+        <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
                 <Label>Select Project</Label>
                  <Select onValueChange={setSelectedProjectId} value={selectedProjectId || undefined}>
                     <SelectTrigger>
@@ -158,7 +158,7 @@ export default function AIAPage() {
                     </SelectContent>
                 </Select>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <Label>To (Owner)</Label>
                     <Input readOnly value={selectedProject?.ownerName || 'N/A'}/>
@@ -186,8 +186,8 @@ export default function AIAPage() {
          <CardHeader>
             <CardTitle>Application Details</CardTitle>
         </CardHeader>
-         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="space-y-2">
+         <CardContent class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div class="space-y-2">
                 <Label htmlFor="application-no">Application No.</Label>
                 <Controller
                     name="applicationNo"
@@ -197,7 +197,7 @@ export default function AIAPage() {
                     )}
                 />
               </div>
-              <div className="space-y-2">
+              <div class="space-y-2">
                 <Label htmlFor="period-to">Period To</Label>
                 <Controller
                     name="periodTo"
@@ -205,23 +205,23 @@ export default function AIAPage() {
                     render={({ field }) => (
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className={cn("w-full justify-start text-left font-normal")}>
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                <Button variant="outline" class={cn("w-full justify-start text-left font-normal")}>
+                                    <CalendarIcon class="mr-2 h-4 w-4" />
                                     {field.value && isValid(new Date(field.value)) ? format(new Date(field.value), 'PP') : <span>Pick a date</span>}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
+                            <PopoverContent class="w-auto p-0">
                                 <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
                             </PopoverContent>
                         </Popover>
                     )}
                 />
               </div>
-               <div className="space-y-2">
+               <div class="space-y-2">
                 <Label htmlFor="contract-date">Contract Date</Label>
                  <Input id="contract-date" readOnly value={selectedProject ? format(new Date(selectedProject.startDate), 'PP') : 'N/A'}/>
               </div>
-               <div className="space-y-2">
+               <div class="space-y-2">
                 <Label htmlFor="project-no">Project No.</Label>
                 <Input id="project-no" readOnly value={selectedProject?.projectNumber || 'N/A'} />
               </div>
@@ -239,14 +239,14 @@ export default function AIAPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[60%]">Description</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead class="w-[60%]">Description</TableHead>
+                <TableHead class="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {aiaTableRows.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell className={cn("font-medium", !row.description && "pl-8")}>
+                  <TableCell class={cn("font-medium", !row.description && "pl-8")}>
                     {row.description || row.subDescription}
                     {row.isRetainageInput && (
                         <Controller
@@ -255,7 +255,7 @@ export default function AIAPage() {
                             render={({ field }) => (
                                 <Input 
                                     type="number" 
-                                    className="w-16 h-6 inline-block ml-2 px-1 text-center"
+                                    class="w-16 h-6 inline-block ml-2 px-1 text-center"
                                     {...field}
                                     value={field.value || 0}
                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
@@ -263,9 +263,9 @@ export default function AIAPage() {
                             )}
                         />
                     )}
-                     <span className={cn('ml-1', !row.isRetainageInput && 'hidden')}>%</span>
+                     <span class={cn('ml-1', !row.isRetainageInput && 'hidden')}>%</span>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell class="text-right">
                     {row.isInput ? (
                         <Controller
                             name={row.fieldName as keyof FormValues}
@@ -273,7 +273,7 @@ export default function AIAPage() {
                             render={({ field }) => (
                                 <Input 
                                     type="number" 
-                                    className="w-48 h-8 ml-auto text-right"
+                                    class="w-48 h-8 ml-auto text-right"
                                     {...field}
                                     value={field.value || 0}
                                     onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
@@ -303,8 +303,8 @@ export default function AIAPage() {
                     <TableRow>
                         <TableHead>CO #</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead className="text-right">ADDITIONS</TableHead>
-                        <TableHead className="text-right">DEDUCTIONS</TableHead>
+                        <TableHead class="text-right">ADDITIONS</TableHead>
+                        <TableHead class="text-right">DEDUCTIONS</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -312,21 +312,21 @@ export default function AIAPage() {
                         <TableRow key={co.id}>
                             <TableCell>{co.coNumber}</TableCell>
                             <TableCell>{co.description}</TableCell>
-                            <TableCell className="text-right">{co.totalRequest > 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
-                             <TableCell className="text-right">{co.totalRequest < 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
+                            <TableCell class="text-right">{co.totalRequest > 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
+                             <TableCell class="text-right">{co.totalRequest < 0 ? co.totalRequest.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : '$0.00'}</TableCell>
                         </TableRow>
                     ))}
-                    {projectChangeOrders.length === 0 && <TableRow><TableCell colSpan={4} className="text-center h-24">No approved change orders for this project.</TableCell></TableRow>}
+                    {projectChangeOrders.length === 0 && <TableRow><TableCell colSpan={4} class="text-center h-24">No approved change orders for this project.</TableCell></TableRow>}
                 </TableBody>
                 <TableFooter>
                      <TableRow>
-                        <TableCell colSpan={2} className="font-bold text-right">TOTALS</TableCell>
-                        <TableCell className="text-right font-bold">{(totalAdditions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
-                        <TableCell className="text-right font-bold">{(totalDeductions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                        <TableCell colSpan={2} class="font-bold text-right">TOTALS</TableCell>
+                        <TableCell class="text-right font-bold">{(totalAdditions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                        <TableCell class="text-right font-bold">{(totalDeductions).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                     </TableRow>
                      <TableRow>
-                        <TableCell colSpan={3} className="font-bold text-right">NET CHANGE BY CHANGE ORDERS</TableCell>
-                        <TableCell className="text-right font-bold">{(netChangeByChangeOrders).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
+                        <TableCell colSpan={3} class="font-bold text-right">NET CHANGE BY CHANGE ORDERS</TableCell>
+                        <TableCell class="text-right font-bold">{(netChangeByChangeOrders).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</TableCell>
                     </TableRow>
                 </TableFooter>
              </Table>
@@ -336,12 +336,12 @@ export default function AIAPage() {
           <CardHeader>
             <CardTitle>Architect&apos;s Certificate for Payment</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm">
+          <CardContent class="space-y-4">
+            <p class="text-sm">
                 In accordance with the Contract Documents, based on on-site observations and the data comprising this application, the Architect certifies to the Owner that to the best of the Architect&apos;s knowledge, information and belief the Work has progressed as indicated, the quality of the Work is in accordance with the Contract Documents, and the Contractor is entitled to payment of the AMOUNT CERTIFIED.
             </p>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
                     <Label>Amount Certified</Label>
                     <Controller
                         name="amountCertified"
@@ -357,7 +357,7 @@ export default function AIAPage() {
                         )}
                     />
                 </div>
-                <div className="space-y-2">
+                <div class="space-y-2">
                     <Label>Architect Signature</Label>
                     <Input disabled placeholder='Signature required after printing' />
                 </div>
@@ -367,3 +367,5 @@ export default function AIAPage() {
     </div>
   );
 }
+
+    

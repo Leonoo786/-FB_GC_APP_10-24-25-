@@ -57,11 +57,7 @@ const mockDrawings = [
   },
 ];
 
-export default function ProjectDrawingsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export function DrawingsClientPage({ projectId }: { projectId: string }) {
   const [isAddDrawingOpen, setIsAddDrawingOpen] = useState(false);
 
   return (

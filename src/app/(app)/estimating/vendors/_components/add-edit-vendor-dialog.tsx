@@ -87,7 +87,7 @@ export function AddEditVendorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{vendor ? 'Edit' : 'New'} Vendor</DialogTitle>
           <DialogDescription>
@@ -95,7 +95,7 @@ export function AddEditVendorDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -161,7 +161,7 @@ export function AddEditVendorDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
+            <DialogFooter class="pt-4">
               <Button
                 type="button"
                 variant="ghost"

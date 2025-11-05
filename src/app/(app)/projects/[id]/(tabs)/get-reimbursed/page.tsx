@@ -33,10 +33,12 @@ import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Checkbox } from '@/components/ui/checkbox';
-import { useParams } from 'next/navigation';
 
-export default function ProjectGetReimbursedPage() {
-  const params = useParams<{ id: string }>();
+export default function ProjectGetReimbursedPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
@@ -135,19 +137,19 @@ export default function ProjectGetReimbursedPage() {
       />
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <CardTitle className="text-2xl">Get Reimbursed</CardTitle>
+              <CardTitle class="text-2xl">Get Reimbursed</CardTitle>
               <CardDescription>
                 Track and manage reimbursable expenses for this project.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
               {selectedRowKeys.length > 0 ? (
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 class="mr-2 h-4 w-4" />
                         Delete ({selectedRowKeys.length})
                       </Button>
                     </AlertDialogTrigger>
@@ -160,7 +162,7 @@ export default function ProjectGetReimbursedPage() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            <AlertDialogAction onClick={handleDeleteSelected} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                 Delete
                             </AlertDialogAction>
                         </AlertDialogFooter>
@@ -169,9 +171,9 @@ export default function ProjectGetReimbursedPage() {
               ) : null}
               <Button
                 onClick={handleNewExpense}
-                className="w-full sm:w-auto"
+                class="w-full sm:w-auto"
               >
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
+                <PlusCircle class="mr-2 h-4 w-4" /> Add Expense
               </Button>
             </div>
           </div>
@@ -180,7 +182,7 @@ export default function ProjectGetReimbursedPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                 <TableHead className="w-[40px]">
+                 <TableHead class="w-[40px]">
                     <Checkbox
                         checked={selectedRowKeys.length > 0 && sortedExpenses.length > 0 && selectedRowKeys.length === sortedExpenses.length}
                         onCheckedChange={(checked) => {
@@ -196,26 +198,26 @@ export default function ProjectGetReimbursedPage() {
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort('date')}>
                     Date
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    <ArrowUpDown class="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort('vendorName')}>
                     Vendor
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    <ArrowUpDown class="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Payment Method</TableHead>
                 <TableHead>Reference</TableHead>
                 <TableHead>Invoice #</TableHead>
-                <TableHead className="text-right">
+                <TableHead class="text-right">
                   <Button variant="ghost" onClick={() => requestSort('amount')}>
                     Amount
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    <ArrowUpDown class="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
-                <TableHead className="w-[50px]"></TableHead>
+                <TableHead class="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -242,7 +244,7 @@ export default function ProjectGetReimbursedPage() {
                   <TableCell>{expense.paymentMethod}</TableCell>
                   <TableCell>{expense.paymentReference}</TableCell>
                   <TableCell>{expense.invoiceNumber}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell class="text-right">
                     {expense.amount.toLocaleString('en-US', {
                       style: 'currency',
                       currency: 'USD',
@@ -252,8 +254,8 @@ export default function ProjectGetReimbursedPage() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
+                          <MoreHorizontal class="h-4 w-4" />
+                          <span class="sr-only">Toggle menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -261,7 +263,7 @@ export default function ProjectGetReimbursedPage() {
                         <DropdownMenuItem onClick={() => handleEditExpense(expense)}>Edit</DropdownMenuItem>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">Delete</DropdownMenuItem>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
@@ -272,7 +274,7 @@ export default function ProjectGetReimbursedPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDeleteExpense(expense.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={() => handleDeleteExpense(expense.id)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                         Delete
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -285,7 +287,7 @@ export default function ProjectGetReimbursedPage() {
               ))}
                {sortedExpenses.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center h-24">
+                  <TableCell colSpan={9} class="text-center h-24">
                     No reimbursable expenses recorded for this project yet.
                   </TableCell>
                 </TableRow>

@@ -3,7 +3,7 @@
 'use client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Project } from '@/lib/types';
-import { differenceInDays, format, parseISO, isWithinInterval } from 'date-fns';
+import { differenceInDays, format, parseISO } from 'date-fns';
 
 type ProjectTimelineProps = {
     projects: Project[];
@@ -40,13 +40,13 @@ export function ProjectTimeline({ projects }: ProjectTimelineProps) {
     const activeProjects = projects.filter(p => p.status === 'In Progress');
 
     return (
-        <div className="relative">
+        <div class="relative">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-1/4">Project</TableHead>
+                        <TableHead class="w-1/4">Project</TableHead>
                         {months.map(month => (
-                             <TableHead key={month.toISOString()} className="text-center">{format(month, 'MMM yyyy')}</TableHead>
+                             <TableHead key={month.toISOString()} class="text-center">{format(month, 'MMM yyyy')}</TableHead>
                         ))}
                     </TableRow>
                 </TableHeader>
@@ -54,13 +54,13 @@ export function ProjectTimeline({ projects }: ProjectTimelineProps) {
                     {activeProjects.slice(0, 5).map(project => (
                         <TableRow key={project.id}>
                             <TableCell>
-                                <div className="font-medium">{project.name}</div>
-                                <div className="text-xs text-muted-foreground">{project.status}</div>
+                                <div class="font-medium">{project.name}</div>
+                                <div class="text-xs text-muted-foreground">{project.status}</div>
                             </TableCell>
-                            <TableCell colSpan={6} className="relative p-0 h-12">
-                                <div className="h-full py-2 px-2">
+                            <TableCell colSpan={6} class="relative p-0 h-12">
+                                <div class="h-full py-2 px-2">
                                      <div 
-                                        className="absolute h-4 bg-primary rounded-sm top-1/2 -translate-y-1/2" 
+                                        class="absolute h-4 bg-primary rounded-sm top-1/2 -translate-y-1/2" 
                                         style={getTimelineStyle(project)}
                                         title={`${project.name}: ${format(parseISO(project.startDate), 'MMM d')} - ${format(parseISO(project.endDate), 'MMM d')}`}
                                     />
@@ -71,7 +71,7 @@ export function ProjectTimeline({ projects }: ProjectTimelineProps) {
                  </TableBody>
             </Table>
              {activeProjects.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
+                <div class="text-center text-muted-foreground py-8">
                     No active projects to display on timeline.
                 </div>
              )}

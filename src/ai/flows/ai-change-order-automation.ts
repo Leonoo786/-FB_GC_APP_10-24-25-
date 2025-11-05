@@ -47,7 +47,7 @@ Consider these factors when suggesting a change order:
 Description: {{{projectDescription}}}
 Current Change Orders: {{{currentChangeOrders}}}
 RFI Answer: {{{rfiAnswer}}}
-Issue Description: {{{issueDescription}}}`,
+Issue Description: {{{issueDescription}}}`, 
 });
 
 const suggestChangeOrderFlow = ai.defineFlow(

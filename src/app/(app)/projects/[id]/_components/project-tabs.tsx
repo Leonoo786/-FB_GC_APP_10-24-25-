@@ -7,12 +7,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const tabs = [
-    { name: "Budget", href: "budget" },
+    { name: "Reports", href: "reports" },
+    { name: "Budget", href: "" },
     { name: "Expenses", href: "expenses" },
     { name: "Change Orders", href: "change-orders" },
     { name: "Get Reimbursed", href: "get-reimbursed" },
     { name: "Milestones", href: "milestones" },
-    { name: "Reports", href: "reports" },
     { name: "Drawings", href: "drawings" },
     { name: "Schedule", href: "schedule" },
     { name: "RFIs", href: "rfis" },
@@ -24,17 +24,17 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
     const baseHref = `/projects/${projectId}`;
     
     return (
-        <div className="border-b">
-            <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+        <div class="border-b">
+            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
-                    const href = `${baseHref}/${tab.href}`;
+                    const href = tab.href ? `${baseHref}/${tab.href}` : baseHref;
                     const isActive = pathname === href;
 
                     return (
                         <Link
                             key={tab.name}
                             href={href}
-                            className={cn(
+                            class={cn(
                                 "whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm",
                                 isActive
                                     ? "border-primary text-primary"

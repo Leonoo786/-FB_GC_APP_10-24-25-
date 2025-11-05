@@ -75,8 +75,6 @@ export function AddEditExpenseDialog({
   const { toast } = useToast();
   const appState = useContext(AppStateContext);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false);
-  const [vendorPopoverOpen, setVendorPopoverOpen] = useState(false);
   const form = useForm<AddExpenseFormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -163,7 +161,7 @@ export function AddEditExpenseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent class="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit' : 'Add'} Expense</DialogTitle>
           <DialogDescription>
@@ -171,17 +169,17 @@ export function AddEditExpenseDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
             <FormField
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem class="flex flex-col">
                   <FormLabel>Date</FormLabel>
                    <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <div className="relative">
+                        <div class="relative">
                            <Input
                              value={manualDate}
                              onChange={(e) => setManualDate(e.target.value)}
@@ -193,13 +191,13 @@ export function AddEditExpenseDialog({
                                   setManualDate(field.value ? format(field.value, "PPP") : "");
                                 }
                              }}
-                             className="w-full pl-3 text-left font-normal"
+                             class="w-full pl-3 text-left font-normal"
                            />
-                           <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                           <CalendarIcon class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
                         </div>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent class="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -225,15 +223,15 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem class="flex flex-col">
                   <FormLabel>Category</FormLabel>
-                  <Popover open={categoryPopoverOpen} onOpenChange={setCategoryPopoverOpen}>
+                  <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
                           variant="outline"
                           role="combobox"
-                          className={cn(
+                          class={cn(
                             "w-full justify-between",
                             !field.value && "text-muted-foreground"
                           )}
@@ -243,26 +241,24 @@ export function AddEditExpenseDialog({
                                 (cat) => cat === field.value
                               )
                             : "Select a budget category"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <PopoverContent class="w-[--radix-popover-trigger-width] p-0">
                       <Command>
                         <CommandInput placeholder="Search category..." />
                         <CommandList>
                         <CommandEmpty>
                              <Button
                                 variant="ghost"
-                                className="w-full justify-start"
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
+                                class="w-full justify-start"
+                                onClick={() => {
                                     const newCategoryName = form.getValues('category');
                                     if(newCategoryName && !uniqueBudgetCategories.includes(newCategoryName)) {
                                         setBudgetCategories(prev => [...prev, {id: crypto.randomUUID(), name: newCategoryName}]);
                                         field.onChange(newCategoryName);
                                     }
-                                    setCategoryPopoverOpen(false);
                                 }}
                                 >
                                 Create "{form.getValues('category')}"
@@ -275,11 +271,10 @@ export function AddEditExpenseDialog({
                               key={category}
                               onSelect={() => {
                                 form.setValue("category", category)
-                                setCategoryPopoverOpen(false)
                               }}
                             >
                               <Check
-                                className={cn(
+                                class={cn(
                                   "mr-2 h-4 w-4",
                                   category === field.value
                                     ? "opacity-100"
@@ -302,15 +297,15 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="vendor"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem class="flex flex-col">
                   <FormLabel>Vendor (Optional)</FormLabel>
-                   <Popover open={vendorPopoverOpen} onOpenChange={setVendorPopoverOpen}>
+                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
                           variant="outline"
                           role="combobox"
-                          className={cn(
+                          class={cn(
                             "w-full justify-between",
                             !field.value && "text-muted-foreground"
                           )}
@@ -320,20 +315,19 @@ export function AddEditExpenseDialog({
                                 (vendor) => vendor.name === field.value
                               )?.name
                             : "Select a vendor"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <PopoverContent class="w-[--radix-popover-trigger-width] p-0">
                       <Command>
-                        <CommandInput placeholder="Search vendor..." onValueChange={(value) => field.onChange(value)} />
+                        <CommandInput placeholder="Search vendor..." />
                         <CommandList>
                         <CommandEmpty>
                              <Button
                                 variant="ghost"
-                                className="w-full justify-start"
-                                onMouseDown={(e) => {
-                                  e.preventDefault();
+                                class="w-full justify-start"
+                                onClick={() => {
                                     const newVendorName = form.getValues('vendor');
                                     if(newVendorName && !vendors.some(v => v.name === newVendorName)) {
                                         const newVendor: Vendor = {
@@ -347,7 +341,6 @@ export function AddEditExpenseDialog({
                                         setVendors(prev => [...prev, newVendor]);
                                         field.onChange(newVendorName);
                                     }
-                                    setVendorPopoverOpen(false);
                                 }}
                                 >
                                 Create "{form.getValues('vendor')}"
@@ -362,11 +355,10 @@ export function AddEditExpenseDialog({
                               key={vendor.id}
                               onSelect={() => {
                                 form.setValue("vendor", vendor.name)
-                                setVendorPopoverOpen(false)
                               }}
                             >
                               <Check
-                                className={cn(
+                                class={cn(
                                   "mr-2 h-4 w-4",
                                   vendor.name === field.value
                                     ? "opacity-100"
@@ -472,7 +464,7 @@ export function AddEditExpenseDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter className="pt-4">
+            <DialogFooter class="pt-4">
               <Button
                 type="button"
                 variant="ghost"

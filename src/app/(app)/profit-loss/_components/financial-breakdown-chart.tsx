@@ -22,12 +22,17 @@ const chartConfig = {
     label: "Spent so far",
     color: "hsl(var(--chart-3))",
   },
+  remaining: {
+    label: "Remaining",
+    color: "hsl(var(--chart-4))",
+  },
 } as const;
 
 type FinancialBreakdownChartProps = {
     data: {
         budget: number;
         expenses: number;
+        remaining: number;
     }
 }
 
@@ -35,10 +40,11 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
   const chartData = useMemo(() => [
       { name: "Budget", value: data.budget, fill: "var(--color-budget)" },
       { name: "Spent so far", value: data.expenses, fill: "var(--color-expenses)" },
+      { name: "Remaining", value: data.remaining, fill: "var(--color-remaining)" },
   ], [data]);
 
   return (
-    <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+    <ChartContainer config={chartConfig} class="min-h-[300px] w-full">
       <ResponsiveContainer>
         <BarChart data={chartData} accessibilityLayer>
             <CartesianGrid vertical={false} />
@@ -52,8 +58,8 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
             tickFormatter={(value) => `$${Number(value) / 1000}k`}
             />
             <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
+            cursor={false}
+            content={<ChartTooltipContent indicator="dot" />}
             />
             <Bar dataKey="value" radius={4} />
         </BarChart>

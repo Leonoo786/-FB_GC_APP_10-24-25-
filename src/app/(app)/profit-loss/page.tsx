@@ -47,6 +47,8 @@ export default function ProfitLossPage() {
         : projects.filter((p) => p.id === selectedProjectId);
 
     const projectIds = relevantProjects.map((p) => p.id);
+    
+    const bidAmount = relevantProjects.reduce((acc, p) => acc + p.finalBidAmount, 0);
 
     const relevantBudgetItems = budgetItems.filter((item) =>
       projectIds.includes(item.projectId)
@@ -62,19 +64,20 @@ export default function ProfitLossPage() {
     );
     const expenses = relevantExpenses.reduce((acc, exp) => acc + exp.amount, 0);
 
+    const profitLoss = bidAmount - expenses;
     const remainingBudget = budget - expenses;
 
-    return { budget, expenses, remainingBudget };
+    return { bidAmount, budget, expenses, profitLoss, remainingBudget };
   }, [selectedProjectId, projects, allExpenses, budgetItems]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
+    <div class="space-y-6">
+      <div class="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Financial Reports
+          <h1 class="text-3xl font-bold tracking-tight">
+            Profit & Loss Reports
           </h1>
-          <p className="text-muted-foreground">
+          <p class="text-muted-foreground">
             View financial performance across projects or for specific projects
           </p>
         </div>
@@ -82,7 +85,7 @@ export default function ProfitLossPage() {
           defaultValue="all"
           onValueChange={(value) => setSelectedProjectId(value)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger class="w-[180px]">
             <SelectValue placeholder="Select a project" />
           </SelectTrigger>
           <SelectContent>
@@ -106,73 +109,91 @@ export default function ProfitLossPage() {
             Project Comparison
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="summary" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <TabsContent value="summary" class="mt-6">
+          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-                <BarChart className="h-4 w-4 text-muted-foreground" />
+              <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle class="text-sm font-medium">Total Budget</CardTitle>
+                <BarChart class="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div class="text-2xl font-bold">
                   {financialData.budget.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Sum of all budget line items</p>
+                <p class="text-xs text-muted-foreground">Sum of all budget line items</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+              <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle class="text-sm font-medium">
                   Spent so far
                 </CardTitle>
-                <TrendingDown className="h-4 w-4 text-muted-foreground" />
+                <TrendingDown class="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div class="text-2xl font-bold">
                   {financialData.expenses.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground">
                   Actual expenditure
                 </p>
               </CardContent>
             </Card>
              <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+              <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle class="text-sm font-medium">
                   Remaining
                 </CardTitle>
-                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <Wallet class="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div class="text-2xl font-bold">
                   {financialData.remainingBudget.toLocaleString('en-US', {
                     style: 'currency',
                     currency: 'USD',
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Budget - Spent</p>
+                <p class="text-xs text-muted-foreground">Budget - Spent</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle class="text-sm font-medium">
+                  Profit/Loss
+                </CardTitle>
+                <TrendingUp class="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div class="text-2xl font-bold">
+                  {financialData.profitLoss.toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  })}
+                </div>
+                <p class="text-xs text-muted-foreground">Bid - Expenses</p>
               </CardContent>
             </Card>
           </div>
-          <div className="mt-6">
+          <div class="mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>Financial Breakdown</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Visual comparison of budget vs. expenses
+                <p class="text-sm text-muted-foreground">
+                  Visual comparison of budget, expenses, and profit
                 </p>
               </CardHeader>
-              <CardContent className="pl-2">
+              <CardContent class="pl-2">
                 <FinancialBreakdownChart
                   data={{
                     budget: financialData.budget,
                     expenses: financialData.expenses,
+                    remaining: financialData.profitLoss,
                   }}
                 />
               </CardContent>

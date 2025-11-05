@@ -55,7 +55,7 @@ export function AddRfiDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent class="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Submit New RFI</DialogTitle>
           <DialogDescription>
@@ -63,7 +63,7 @@ export function AddRfiDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4">
             <FormField
               control={form.control}
               name="subject"

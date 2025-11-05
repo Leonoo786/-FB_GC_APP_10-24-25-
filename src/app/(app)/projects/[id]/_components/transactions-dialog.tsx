@@ -31,21 +31,21 @@ export function TransactionsDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent class="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Transactions for {category}</DialogTitle>
           <DialogDescription>
             A list of all recorded expenses for this budget category.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div class="max-h-[60vh] overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Vendor</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead class="text-right">Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -56,7 +56,7 @@ export function TransactionsDialog({
                   </TableCell>
                   <TableCell>{expense.description}</TableCell>
                   <TableCell>{expense.vendorName}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell class="text-right">
                     {expense.amount.toLocaleString('en-US', {
                       style: 'currency',
                       currency: 'USD',
@@ -66,7 +66,7 @@ export function TransactionsDialog({
               ))}
               {expenses.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={4} className='text-center text-muted-foreground py-8'>
+                    <TableCell colSpan={4} class='text-center text-muted-foreground py-8'>
                         No expenses recorded for this category yet.
                     </TableCell>
                 </TableRow>

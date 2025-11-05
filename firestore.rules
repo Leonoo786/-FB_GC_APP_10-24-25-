@@ -9,21 +9,25 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper function to check if the user is the owner of the document
-    // This assumes the document lives under a path that includes the user's ID.
-    // e.g., /users/{userId}/...
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // Grant everyone read access to their own user profile
+    // Users can read and write their own profile
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
     
-    // Grant read, write, and list access to all subcollections for the owner
-    match /users/{userId}/{document=**} {
-      allow read, write, list: if isOwner(userId);
+    // Any signed-in user can read the company profile
+    match /company/profile {
+        allow read, write: if isSignedIn();
+    }
+
+    // Rules for all other collections
+    // This allows any signed-in user to read, write, and list documents.
+    match /{collection}/{docId} {
+      allow read, write, delete: if isSignedIn();
+    }
+    
+    // This is the crucial addition: It allows collection-wide reads (list operations).
+    match /{path=**}/documents {
+      allow list: if isSignedIn();
     }
   }
 }

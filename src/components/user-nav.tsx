@@ -32,9 +32,9 @@ export function UserNav() {
 
   if (!appState || !hasMounted) {
     return (
-        <div className="flex items-center gap-2">
+        <div class="flex items-center gap-2">
             <ThemeToggle />
-            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+            <div class="h-8 w-8 rounded-full bg-muted animate-pulse" />
         </div>
     );
   }
@@ -44,22 +44,22 @@ export function UserNav() {
 
 
   return (
-    <div className="flex items-center gap-2">
+    <div class="flex items-center gap-2">
       <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-9 w-9">
+          <Button variant="ghost" class="relative h-8 w-8 rounded-full">
+            <Avatar class="h-9 w-9">
               <AvatarImage src={userAvatarUrl} alt={userName} />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{userName}</p>
-              <p className="text-xs leading-none text-muted-foreground">
+        <DropdownMenuContent class="w-56" align="end" forceMount>
+          <DropdownMenuLabel class="font-normal">
+            <div class="flex flex-col space-y-1">
+              <p class="text-sm font-medium leading-none">{userName}</p>
+              <p class="text-xs leading-none text-muted-foreground">
                 {userEmail}
               </p>
             </div>

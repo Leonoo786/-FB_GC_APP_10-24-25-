@@ -25,7 +25,7 @@ export function TasksDueToday({ tasks, projects, onAddTask, onViewTask }: TasksD
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader class="flex flex-row items-center justify-between">
                 <CardTitle>Tasks Due in Next 7 Days</CardTitle>
                 <Button variant="ghost" size="sm" asChild>
                     <Link href="/tasks">View All</Link>
@@ -33,12 +33,12 @@ export function TasksDueToday({ tasks, projects, onAddTask, onViewTask }: TasksD
             </CardHeader>
             <CardContent>
                 {tasksDueSoon.length > 0 ? (
-                    <ul className="space-y-4">
+                    <ul class="space-y-4">
                         {tasksDueSoon.map(task => (
-                             <li key={task.id} className="flex items-center justify-between">
+                             <li key={task.id} class="flex items-center justify-between">
                                 <div>
-                                    <p className="font-medium">{task.title}</p>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p class="font-medium">{task.title}</p>
+                                    <p class="text-sm text-muted-foreground">
                                         {projects.find(p => p.id === task.projectId)?.name || 'Unknown Project'}
                                     </p>
                                 </div>
@@ -47,10 +47,10 @@ export function TasksDueToday({ tasks, projects, onAddTask, onViewTask }: TasksD
                         ))}
                     </ul>
                 ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                        <CheckCircle className="mx-auto h-8 w-8 mb-2" />
+                    <div class="text-center text-muted-foreground py-8">
+                        <CheckCircle class="mx-auto h-8 w-8 mb-2" />
                         <p>No tasks due in the next 7 days</p>
-                        <Button variant="outline" size="sm" className="mt-4" onClick={onAddTask}>
+                        <Button variant="outline" size="sm" class="mt-4" onClick={onAddTask}>
                             Add New Task
                         </Button>
                     </div>
