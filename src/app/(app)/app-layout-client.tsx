@@ -38,8 +38,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         }
     }, [auth, user, isUserLoading]);
 
-    if (!hasMounted || !appState) {
-        return null;
+    if (!hasMounted || !appState || appState.isLoading) {
+        return <div className="flex h-screen w-screen items-center justify-center">Loading application data...</div>;
     }
     
     const { companyName, companyLogoUrl } = appState;

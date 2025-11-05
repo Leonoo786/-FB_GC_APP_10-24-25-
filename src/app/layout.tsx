@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
-import { FirebaseClientProvider } from '@/firebase';
-import { AppStateProvider } from '@/context/app-state-context';
 
 export const metadata: Metadata = {
   title: 'Fancy Brothers Constructions APP',
@@ -36,11 +34,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
-            <AppStateProvider>
-              {children}
-            </AppStateProvider>
-          </FirebaseClientProvider>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

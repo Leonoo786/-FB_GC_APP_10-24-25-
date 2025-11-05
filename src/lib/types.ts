@@ -146,15 +146,12 @@ export type AppUser = {
     name: string;
     email: string;
     avatarUrl: string;
-    phone?: string;
-    jobTitle?: string;
-    department?: string;
-    bio?: string;
-    companyName?: string;
-    companyLogoUrl?: string;
-    userName?: string;
-    userAvatarUrl?: string;
-    userEmail?: string;
+    phone: string;
+    jobTitle: string;
+    department: string;
+    bio: string;
+    companyName: string;
+    companyLogoUrl: string;
 };
 
 export type CompanyProfile = {

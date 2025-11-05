@@ -24,16 +24,15 @@ export default function ProjectsPage() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const appState = useContext(AppStateContext);
     const { toast } = useToast();
-    const [hasMounted, setHasMounted] = useState(false);
 
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
+    if (!appState || appState.isLoading) {
+        return <div>Loading projects...</div>;
+    }
+    
+    const { projects, budgetItems, expenses, deleteProject } = appState;
 
     const projectData = useMemo(() => {
-        if (!appState || !appState.projects) return [];
-        const { projects, budgetItems, expenses } = appState;
-        
+        if (!projects) return [];
         return projects.map(project => {
             const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
             const projectExpenses = expenses.filter(expense => expense.projectId === project.id);
@@ -60,13 +59,8 @@ export default function ProjectsPage() {
             };
         });
 
-    }, [appState]);
+    }, [projects, budgetItems, expenses]);
 
-    if (!appState || !hasMounted) {
-        return <div>Loading...</div>; // Or some other loading state/skeleton
-    }
-    
-    const { deleteProject } = appState;
 
     const statusVariant = {
         'In Progress': 'default',

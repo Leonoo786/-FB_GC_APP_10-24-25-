@@ -1,24 +1,24 @@
 
 import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder, Milestone, AppUser, CompanyProfile } from './types';
 
-// This file now serves as a fallback for initial local development
-// but will be superseded by data from Firebase once the user logs in.
+// This file is intentionally left empty. Data is now fetched exclusively from Firebase.
+// Default values for a new user are handled within the AppStateProvider.
 
 export const companyProfile: CompanyProfile = {
-  id: 'comp-1',
-  name: 'Fancy Brothers Constructions APP',
+  id: '',
+  name: 'ConstructAI',
   logoUrl: '/your-logo.svg',
 };
 
 export const appUser: AppUser = {
-  id: 'user-4',
-  name: 'John Doe',
-  email: 'john.doe@constructai.com',
-  avatarUrl: 'https://i.pravatar.cc/150?u=john',
-  phone: '(555) 123-4567',
-  jobTitle: 'Admin',
-  department: 'Construction',
-  bio: 'Experienced construction professional managing projects for Fancy Brothers Constructions.'
+  id: '',
+  name: 'New User',
+  email: '',
+  avatarUrl: '',
+  phone: '',
+  jobTitle: '',
+  department: '',
+  bio: ''
 };
 
 export const teamMembers: TeamMember[] = [];
