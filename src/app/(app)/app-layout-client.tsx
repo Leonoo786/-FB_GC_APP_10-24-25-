@@ -15,8 +15,8 @@ import { UserNav } from '@/components/user-nav';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AppStateProvider, useAppState } from '@/context/app-state-context';
-import { FirebaseClientProvider, useAuth, useUser } from '@/firebase';
+import { useAppState } from '@/context/app-state-context';
+import { useAuth, useUser } from '@/firebase';
 import { useEffect, useState } from 'react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
@@ -89,10 +89,6 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function AppLayoutClient({ children }: { children: React.ReactNode }) {
     return (
-        <FirebaseClientProvider>
-            <AppStateProvider>
-                <AppLayoutContent>{children}</AppLayoutContent>
-            </AppStateProvider>
-        </FirebaseClientProvider>
+        <AppLayoutContent>{children}</AppLayoutContent>
     );
 }

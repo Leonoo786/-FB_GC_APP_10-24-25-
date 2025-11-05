@@ -4,55 +4,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is signed in and is the owner of the data
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    // Helper function to check if a user is signed in
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Grant access to the user's own profile document
+    // Helper function to check if the user is the owner of the document
+    // This assumes the document lives under a path that includes the user's ID.
+    // e.g., /users/{userId}/...
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Grant everyone read access to their own user profile
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
     
-    // Grant access to all of the user's subcollections
-    match /users/{userId}/projects/{projectId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/budgetCategories/{budgetCategoryId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/vendors/{vendorId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/teamMembers/{teamMemberId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/budgetItems/{budgetItemId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/expenses/{expenseId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/changeOrders/{changeOrderId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/tasks/{taskId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/rfis/{rfiId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/issues/{issueId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/drawings/{drawingId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/clientUploads/{clientUploadId} {
-      allow read, write, delete, list: if isOwner(userId);
-    }
-    match /users/{userId}/milestones/{milestoneId} {
-      allow read, write, delete, list: if isOwner(userId);
+    // Grant read, write, and list access to all subcollections for the owner
+    match /users/{userId}/{document=**} {
+      allow read, write, list: if isOwner(userId);
     }
   }
 }

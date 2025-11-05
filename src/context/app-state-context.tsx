@@ -1,13 +1,15 @@
 
-
 'use client';
 
-import React, { createContext, ReactNode, useContext } from 'react';
-import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
+import React, { createContext, ReactNode, useContext, useState, useEffect } from 'react';
+import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone, AppUser } from '@/lib/types';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc, setDoc, addDoc, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
+import { collection, doc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { setDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import * as data from '@/lib/data';
+
 
 type AppStateContextType = {
   companyName: string;
@@ -35,34 +37,34 @@ type AppStateContextType = {
   deleteProject: (projectId: string) => Promise<void>;
   
   budgetCategories: BudgetCategory[];
-  setBudgetCategories: (items: BudgetCategory[]) => Promise<void>;
+  setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
   
   vendors: Vendor[];
-  setVendors: (items: Vendor[]) => Promise<void>;
+  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
   
   budgetItems: BudgetItem[];
-  setBudgetItems: (items: BudgetItem[]) => Promise<void>;
+  setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
   
   teamMembers: TeamMember[];
-  setTeamMembers: (items: TeamMember[]) => Promise<void>;
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   
   tasks: Task[];
-  setTasks: (items: Task[]) => Promise<void>;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   
   expenses: Expense[];
-  setExpenses: (items: Expense[]) => Promise<void>;
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   
   changeOrders: ChangeOrder[];
-  setChangeOrders: (items: ChangeOrder[]) => Promise<void>;
+  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   
   rfis: RFI[];
-  setRfis: (items: RFI[]) => Promise<void>;
+  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   
   issues: Issue[];
-  setIssues: (items: Issue[]) => Promise<void>;
+  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
   
   milestones: Milestone[];
-  setMilestones: (items: Milestone[]) => Promise<void>;
+  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -75,84 +77,44 @@ export function useAppState() {
     return context;
 }
 
-
 export function AppStateProvider({ children }: { children: ReactNode }) {
     const { user } = useUser();
     const firestore = useFirestore();
-    const { toast } = useToast();
 
-    // Firebase Collections
-    const projectsCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/projects`) : null, [firestore, user]);
-    const { data: projects } = useCollection<Project>(projectsCollectionRef);
-    
-    const budgetCategoriesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/budgetCategories`) : null, [firestore, user]);
-    const { data: budgetCategories } = useCollection<BudgetCategory>(budgetCategoriesCollectionRef);
-    
-    const vendorsCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/vendors`) : null, [firestore, user]);
-    const { data: vendors } = useCollection<Vendor>(vendorsCollectionRef);
+    // Remove all useLocalStorage hooks
+    const [companyName, setCompanyName] = useState(data.companyProfile.name);
+    const [companyLogoUrl, setCompanyLogoUrl] = useState(data.companyProfile.logoUrl);
+    const [userName, setUserName] = useState(data.appUser.name);
+    const [userAvatarUrl, setUserAvatarUrl] = useState(data.appUser.avatarUrl);
+    const [userEmail, setUserEmail] = useState(data.appUser.email);
+    const [userPhone, setUserPhone] = useState('');
+    const [userJobTitle, setUserJobTitle] = useState('');
+    const [userDepartment, setUserDepartment] = useState('');
+    const [userBio, setUserBio] = useState('');
 
-    const budgetItemsCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/budgetItems`) : null, [firestore, user]);
-    const { data: budgetItems } = useCollection<BudgetItem>(budgetItemsCollectionRef);
-
-    const teamMembersCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/teamMembers`) : null, [firestore, user]);
-    const { data: teamMembers } = useCollection<TeamMember>(teamMembersCollectionRef);
-
-    const tasksCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/tasks`) : null, [firestore, user]);
-    const { data: tasks } = useCollection<Task>(tasksCollectionRef);
-
-    const expensesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/expenses`) : null, [firestore, user]);
-    const { data: expenses } = useCollection<Expense>(expensesCollectionRef);
-
-    const changeOrdersCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/changeOrders`) : null, [firestore, user]);
-    const { data: changeOrders } = useCollection<ChangeOrder>(changeOrdersCollectionRef);
-
-    const rfisCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/rfis`) : null, [firestore, user]);
-    const { data: rfis } = useCollection<RFI>(rfisCollectionRef);
-
-    const issuesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/issues`) : null, [firestore, user]);
-    const { data: issues } = useCollection<Issue>(issuesCollectionRef);
-
-    const milestonesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/milestones`) : null, [firestore, user]);
-    const { data: milestones } = useCollection<Milestone>(milestonesCollectionRef);
-
-    // Profile info is now also from Firestore
-    const userDocRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}`) : null, [firestore, user]);
-    
-    const [companyName, setCompanyName] = React.useState('Fancy Brothers Constructions APP');
-    const [companyLogoUrl, setCompanyLogoUrl] = React.useState('/your-logo.svg');
-    const [userName, setUserName] = React.useState('John Doe');
-    const [userAvatarUrl, setUserAvatarUrl] = React.useState('https://i.pravatar.cc/150?u=john');
-    const [userEmail, setUserEmail] = React.useState('john.doe@constructai.com');
-    const [userPhone, setUserPhone] = React.useState('');
-    const [userJobTitle, setUserJobTitle] = React.useState('');
-    const [userDepartment, setUserDepartment] = React.useState('');
-    const [userBio, setUserBio] = React.useState('');
-    
-    const createSetter = <T extends {id: string}>(collectionRef: any) => async (items: T[]) => {
-      if (!collectionRef) return;
-      const batch = writeBatch(firestore);
-      items.forEach(item => {
-        const docRef = doc(collectionRef, item.id);
-        batch.set(docRef, item, { merge: true });
-      });
-      await batch.commit();
-    };
+    const [projects, setProjects] = useState<Project[]>(data.projects);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(data.budgetCategories);
+    const [vendors, setVendors] = useState<Vendor[]>(data.vendors);
+    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(data.budgetItems);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(data.teamMembers);
+    const [tasks, setTasks] = useState<Task[]>(data.tasks);
+    const [expenses, setExpenses] = useState<Expense[]>(data.expenses);
+    const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(data.changeOrders);
+    const [rfis, setRfis] = useState<RFI[]>(data.rfis);
+    const [issues, setIssues] = useState<Issue[]>(data.issues);
+    const [milestones, setMilestones] = useState<Milestone[]>(data.milestones);
 
     const addProject = async (project: Omit<Project, 'id'>) => {
-        if (!projectsCollectionRef) return;
-        await addDoc(projectsCollectionRef, project);
+      const newProject = { ...project, id: crypto.randomUUID() };
+      setProjects(current => [...current, newProject]);
     };
 
     const updateProject = async (project: Project) => {
-        if (!projectsCollectionRef) return;
-        const projectRef = doc(projectsCollectionRef, project.id);
-        await updateDoc(projectRef, project);
+      setProjects(current => current.map(p => p.id === project.id ? project : p));
     };
 
     const deleteProject = async (projectId: string) => {
-        if (!projectsCollectionRef) return;
-        const projectRef = doc(projectsCollectionRef, projectId);
-        await deleteDoc(projectRef);
+      setProjects(current => current.filter(p => p.id !== projectId));
     };
 
 
@@ -176,40 +138,40 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     userBio,
     setUserBio,
 
-    projects: projects ?? [],
+    projects,
     addProject,
     updateProject,
     deleteProject,
     
-    budgetCategories: budgetCategories ?? [],
-    setBudgetCategories: createSetter(budgetCategoriesCollectionRef),
+    budgetCategories,
+    setBudgetCategories,
     
-    vendors: vendors ?? [],
-    setVendors: createSetter(vendorsCollectionRef),
+    vendors,
+    setVendors,
     
-    budgetItems: budgetItems ?? [],
-    setBudgetItems: createSetter(budgetItemsCollectionRef),
+    budgetItems,
+    setBudgetItems,
     
-    teamMembers: teamMembers ?? [],
-    setTeamMembers: createSetter(teamMembersCollectionRef),
+    teamMembers,
+    setTeamMembers,
     
-    tasks: tasks ?? [],
-    setTasks: createSetter(tasksCollectionRef),
+    tasks,
+    setTasks,
     
-    expenses: expenses ?? [],
-    setExpenses: createSetter(expensesCollectionRef),
+    expenses,
+    setExpenses,
     
-    changeOrders: changeOrders ?? [],
-    setChangeOrders: createSetter(changeOrdersCollectionRef),
+    changeOrders,
+    setChangeOrders,
 
-    rfis: rfis ?? [],
-    setRfis: createSetter(rfisCollectionRef),
+    rfis,
+    setRfis,
     
-    issues: issues ?? [],
-    setIssues: createSetter(issuesCollectionRef),
+    issues,
+    setIssues,
     
-    milestones: milestones ?? [],
-    setMilestones: createSetter(milestonesCollectionRef),
+    milestones,
+    setMilestones,
   };
 
   return (
