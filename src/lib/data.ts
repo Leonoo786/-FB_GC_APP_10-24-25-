@@ -6,8 +6,8 @@ import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, Bud
 
 export const companyProfile: CompanyProfile = {
   id: '',
-  name: 'ConstructAI',
-  logoUrl: '/your-logo.svg',
+  name: 'Fancy Brothers Constructions APP',
+  logoUrl: '',
 };
 
 export const appUser: AppUser = {

@@ -54,6 +54,7 @@ const formSchema = z.object({
   progress: z.coerce.number().min(0).max(100),
   startDate: z.date({ required_error: 'Please select a start date.' }),
   endDate: z.date({ required_error: 'Please select an end date.' }),
+  finalBidAmount: z.coerce.number().min(0, "Final bid amount must be a positive number.").optional(),
 }).refine(data => data.endDate >= data.startDate, {
     message: "End date cannot be before start date.",
     path: ["endDate"],
@@ -94,6 +95,7 @@ export function AddEditProjectDialog({
                 progress: project.percentComplete,
                 startDate: new Date(project.startDate),
                 endDate: new Date(project.endDate),
+                finalBidAmount: project.finalBidAmount,
             });
             setImagePreview(project.imageUrl);
         } else {
@@ -107,6 +109,7 @@ export function AddEditProjectDialog({
                 description: '',
                 status: 'Planning',
                 progress: 0,
+                finalBidAmount: 0,
             });
             setImagePreview(null);
         }
@@ -150,6 +153,7 @@ export function AddEditProjectDialog({
       percentComplete: data.progress,
       startDate: format(data.startDate, 'yyyy-MM-dd'),
       endDate: format(data.endDate, 'yyyy-MM-dd'),
+      finalBidAmount: data.finalBidAmount || 0,
       imageUrl: imageUrl,
       imageHint: 'custom project',
     };
@@ -287,6 +291,20 @@ export function AddEditProjectDialog({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Project details and scope..." rows={4} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="finalBidAmount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Final Bid to Customer</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

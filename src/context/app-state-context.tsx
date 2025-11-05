@@ -37,34 +37,34 @@ type AppStateContextType = {
   deleteProject: (projectId: string) => Promise<void>;
   
   budgetCategories: BudgetCategory[];
-  setBudgetCategories: (items: BudgetCategory[]) => void;
+  setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
   
   vendors: Vendor[];
-  setVendors: (items: Vendor[]) => void;
+  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
   
   budgetItems: BudgetItem[];
-  setBudgetItems: (items: BudgetItem[]) => void;
+  setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
   
   teamMembers: TeamMember[];
-  setTeamMembers: (items: TeamMember[]) => void;
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   
   tasks: Task[];
-  setTasks: (items: Task[]) => void;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   
   expenses: Expense[];
-  setExpenses: (items: Expense[]) => void;
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   
   changeOrders: ChangeOrder[];
-  setChangeOrders: (items: ChangeOrder[]) => void;
+  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   
   rfis: RFI[];
-  setRfis: (items: RFI[]) => void;
+  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   
   issues: Issue[];
-  setIssues: (items: Issue[]) => void;
+  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
   
   milestones: Milestone[];
-  setMilestones: (items: Milestone[]) => void;
+  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
   
   isLoading: boolean;
 };
@@ -139,11 +139,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     };
 
     const value: AppStateContextType = useMemo(() => ({
-        companyName: userData?.companyName || '',
+        companyName: userData?.companyName || 'Fancy Brothers Constructions APP',
         setCompanyName: (name: string) => userDocRef && setDocumentNonBlocking(userDocRef, { companyName: name }, { merge: true }),
         companyLogoUrl: userData?.companyLogoUrl || '',
         setCompanyLogoUrl: (url: string) => userDocRef && setDocumentNonBlocking(userDocRef, { companyLogoUrl: url }, { merge: true }),
-        userName: userData?.name || '',
+        userName: userData?.name || 'New User',
         setUserName: (name: string) => userDocRef && setDocumentNonBlocking(userDocRef, { name: name }, { merge: true }),
         userAvatarUrl: userData?.avatarUrl || '',
         setUserAvatarUrl: (url: string) => userDocRef && setDocumentNonBlocking(userDocRef, { avatarUrl: url }, { merge: true }),

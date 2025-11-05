@@ -44,9 +44,12 @@ export function ProjectDetailLayout({
     const spentToDate = useMemo(() => projectExpenses.reduce((acc, item) => acc + item.amount, 0), [projectExpenses]);
 
     if (!project) {
+        // This can happen briefly while data is loading.
+        // A better UI would be a skeleton loader.
         return <div>Project not found. It may be loading or does not exist.</div>;
     }
     
+    const profitAndLoss = (project.finalBidAmount || 0) - spentToDate;
     const budgetProgress = totalBudget > 0 ? Math.min(Math.max((spentToDate / totalBudget) * 100, 0), 100) : 0;
     
     const startDate = parseISO(project.startDate);
@@ -75,6 +78,11 @@ export function ProjectDetailLayout({
     const budgetChartData = [
         { name: "Spent", value: spentToDate, fill: "hsl(var(--primary))" },
         { name: "Remaining", value: Math.max(0, totalBudget - spentToDate), fill: "hsl(var(--muted))" },
+    ];
+    
+    const profitChartData = [
+        { name: "Cost", value: spentToDate, fill: "hsl(var(--chart-3))" },
+        { name: "Profit", value: Math.max(0, profitAndLoss), fill: "hsl(var(--chart-2))" },
     ];
 
 
@@ -109,6 +117,12 @@ export function ProjectDetailLayout({
                                 label="Budget"
                                 metric={`$${spentToDate.toLocaleString()}`}
                                 metricLabel={`${budgetProgress.toFixed(1)}% of $${totalBudget.toLocaleString()}`}
+                            />
+                             <ProjectSummaryChart 
+                                data={profitChartData}
+                                label="Profit/Loss"
+                                metric={`$${profitAndLoss.toLocaleString()}`}
+                                metricLabel="Bid - Expenses"
                             />
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -154,7 +168,12 @@ export function ProjectDetailLayout({
                 </div>
 
                 <Card>
-                    <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        <div className="lg:col-span-1">
+                            <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
+                            <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">The agreed-upon price</p>
+                        </div>
                         <div className="lg:col-span-1">
                             <p className="text-sm text-muted-foreground">Total Budget (cost)</p>
                             <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
@@ -165,6 +184,12 @@ export function ProjectDetailLayout({
                             <p className="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
                             <p className="text-xs text-muted-foreground">{budgetProgress.toFixed(1)}% of Budget</p>
                         </div>
+                         <div className="lg:col-span-1">
+                            <p className="text-sm text-muted-foreground">Profit/Loss</p>
+                            <p className="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">Bid - Spent</p>
+                        </div>
+
                         <div className="space-y-4 lg:col-span-1">
                             <div>
                                 <p className="text-sm text-muted-foreground">

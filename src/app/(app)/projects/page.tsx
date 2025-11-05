@@ -2,16 +2,16 @@
 
 'use client';
 
-import { useState, useContext, useEffect, useMemo } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Edit, MoreVertical, PlusCircle, Trash, Calendar, Target, TrendingUp, Wallet } from "lucide-react";
+import { Edit, MoreVertical, PlusCircle, Trash, Calendar, Target, TrendingUp, Wallet, PiggyBank } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AddEditProjectDialog } from './_components/add-project-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { AppStateContext } from '@/context/app-state-context';
@@ -40,6 +40,7 @@ export default function ProjectsPage() {
             const totalBudget = projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0);
             const spentSoFar = projectExpenses.reduce((acc, item) => acc + item.amount, 0);
             const remainingBudget = totalBudget - spentSoFar;
+            const profitLoss = (project.finalBidAmount || 0) - spentSoFar;
             const budgetUsedPercent = totalBudget > 0 ? Math.min((spentSoFar / totalBudget) * 100, 100) : 0;
             
             const now = new Date();
@@ -53,6 +54,7 @@ export default function ProjectsPage() {
                 totalBudget,
                 spentSoFar,
                 remainingBudget,
+                profitLoss,
                 budgetUsedPercent,
                 daysIn: daysIn > 0 ? daysIn : 0,
                 daysLeft: daysLeft > 0 ? daysLeft : 0,
@@ -137,7 +139,6 @@ export default function ProjectsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                 <DropdownMenuItem onClick={() => handleEdit(project)}>
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     Edit
@@ -184,6 +185,13 @@ export default function ProjectsPage() {
                                 </div>
                                 <div className="w-full space-y-2 text-sm text-muted-foreground">
                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <TrendingUp className="size-4" />
+                                            <span>Final Bid:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${(project.finalBidAmount || 0).toLocaleString()}</span>
+                                    </div>
+                                     <div className="flex items-center justify-between gap-2">
                                          <div className="flex items-center gap-1.5">
                                             <Target className="size-4" />
                                             <span>Total Budget (cost):</span>
@@ -192,7 +200,7 @@ export default function ProjectsPage() {
                                     </div>
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-1.5">
-                                            <TrendingUp className="size-4" />
+                                            <Wallet className="size-4" />
                                             <span>Spent to Date:</span>
                                         </div>
                                         <span className="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
@@ -203,6 +211,13 @@ export default function ProjectsPage() {
                                             <span>Remaining Budget:</span>
                                         </div>
                                         <span className="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
+                                    </div>
+                                     <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <PiggyBank className="size-4" />
+                                            <span>Profit / Loss:</span>
+                                        </div>
+                                        <span className="font-medium text-foreground">${project.profitLoss.toLocaleString()}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-2 pt-1 border-t mt-2">
                                          <div className="flex items-center gap-1.5">
