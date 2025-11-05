@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -145,7 +144,7 @@ export function AddEditProjectDialog({
       });
     }
 
-    const projectData: Omit<Project, 'id'> = {
+    const projectData = {
       projectNumber: isEditing && project ? project.projectNumber : `2024-${String(appState.projects.length + 1).padStart(3, '0')}`,
       name: data.name,
       ownerName: data.client,
@@ -164,9 +163,9 @@ export function AddEditProjectDialog({
     };
     
     if (isEditing && project) {
-        appState.updateProject({ ...project, ...projectData });
+        await appState.updateProject({ ...project, ...projectData });
     } else {
-        appState.addProject(projectData);
+        await appState.addProject(projectData);
     }
     
     toast({

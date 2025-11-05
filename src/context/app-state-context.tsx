@@ -6,8 +6,7 @@ import React, { createContext, ReactNode, useContext } from 'react';
 import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Expense, ChangeOrder, RFI, Issue, Milestone } from '@/lib/types';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
-import { setDoc, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, addDoc, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 type AppStateContextType = {
@@ -31,39 +30,39 @@ type AppStateContextType = {
   setUserBio: (bio: string) => void;
   
   projects: Project[];
-  addProject: (project: Omit<Project, 'id'>) => void;
-  updateProject: (project: Project) => void;
-  deleteProject: (projectId: string) => void;
+  addProject: (project: Omit<Project, 'id'>) => Promise<void>;
+  updateProject: (project: Project) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
   
   budgetCategories: BudgetCategory[];
-  setBudgetCategories: (items: BudgetCategory[]) => void;
+  setBudgetCategories: (items: BudgetCategory[]) => Promise<void>;
   
   vendors: Vendor[];
-  setVendors: (items: Vendor[]) => void;
+  setVendors: (items: Vendor[]) => Promise<void>;
   
   budgetItems: BudgetItem[];
-  setBudgetItems: (items: BudgetItem[]) => void;
+  setBudgetItems: (items: BudgetItem[]) => Promise<void>;
   
   teamMembers: TeamMember[];
-  setTeamMembers: (items: TeamMember[]) => void;
+  setTeamMembers: (items: TeamMember[]) => Promise<void>;
   
   tasks: Task[];
-  setTasks: (items: Task[]) => void;
+  setTasks: (items: Task[]) => Promise<void>;
   
   expenses: Expense[];
-  setExpenses: (items: Expense[]) => void;
+  setExpenses: (items: Expense[]) => Promise<void>;
   
   changeOrders: ChangeOrder[];
-  setChangeOrders: (items: ChangeOrder[]) => void;
+  setChangeOrders: (items: ChangeOrder[]) => Promise<void>;
   
   rfis: RFI[];
-  setRfis: (items: RFI[]) => void;
+  setRfis: (items: RFI[]) => Promise<void>;
   
   issues: Issue[];
-  setIssues: (items: Issue[]) => void;
+  setIssues: (items: Issue[]) => Promise<void>;
   
   milestones: Milestone[];
-  setMilestones: (items: Milestone[]) => void;
+  setMilestones: (items: Milestone[]) => Promise<void>;
 };
 
 export const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -84,7 +83,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
     // Firebase Collections
     const projectsCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/projects`) : null, [firestore, user]);
-    const { data: projects, isLoading: projectsLoading } = useCollection<Project>(projectsCollectionRef);
+    const { data: projects } = useCollection<Project>(projectsCollectionRef);
     
     const budgetCategoriesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/budgetCategories`) : null, [firestore, user]);
     const { data: budgetCategories } = useCollection<BudgetCategory>(budgetCategoriesCollectionRef);
@@ -116,7 +115,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const milestonesCollectionRef = useMemoFirebase(() => user ? collection(firestore, `users/${user.uid}/milestones`) : null, [firestore, user]);
     const { data: milestones } = useCollection<Milestone>(milestonesCollectionRef);
 
-    // For simplicity, profile/company info remains local. Could be moved to a 'users' collection doc.
+    // Profile info is now also from Firestore
+    const userDocRef = useMemoFirebase(() => user ? doc(firestore, `users/${user.uid}`) : null, [firestore, user]);
+    
     const [companyName, setCompanyName] = React.useState('Fancy Brothers Constructions APP');
     const [companyLogoUrl, setCompanyLogoUrl] = React.useState('/your-logo.svg');
     const [userName, setUserName] = React.useState('John Doe');
@@ -126,14 +127,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const [userJobTitle, setUserJobTitle] = React.useState('');
     const [userDepartment, setUserDepartment] = React.useState('');
     const [userBio, setUserBio] = React.useState('');
-
-
-    const createSetter = <T extends {id: string}>(collectionRef: any) => (items: T[]) => {
+    
+    const createSetter = <T extends {id: string}>(collectionRef: any) => async (items: T[]) => {
       if (!collectionRef) return;
+      const batch = writeBatch(firestore);
       items.forEach(item => {
         const docRef = doc(collectionRef, item.id);
-        setDoc(docRef, item, { merge: true });
+        batch.set(docRef, item, { merge: true });
       });
+      await batch.commit();
     };
 
     const addProject = async (project: Omit<Project, 'id'>) => {
@@ -216,4 +218,3 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     </AppStateContext.Provider>
   );
 }
-

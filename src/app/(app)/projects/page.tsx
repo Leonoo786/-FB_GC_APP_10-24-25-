@@ -87,8 +87,8 @@ export default function ProjectsPage() {
         setDialogOpen(true);
     };
     
-    const handleDelete = (projectId: string, projectName: string) => {
-        deleteProject(projectId);
+    const handleDelete = async (projectId: string, projectName: string) => {
+        await deleteProject(projectId);
         toast({
             title: "Project Deleted",
             description: `Project "${projectName}" has been removed.`,
