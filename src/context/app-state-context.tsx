@@ -81,7 +81,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    // Remove all useLocalStorage hooks
+    // User Profile Data
+    const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
+    const { data: userData } = useDoc<AppUser>(userDocRef);
+
     const [companyName, setCompanyName] = useState(data.companyProfile.name);
     const [companyLogoUrl, setCompanyLogoUrl] = useState(data.companyProfile.logoUrl);
     const [userName, setUserName] = useState(data.appUser.name);
@@ -92,43 +95,108 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const [userDepartment, setUserDepartment] = useState('');
     const [userBio, setUserBio] = useState('');
 
+    useEffect(() => {
+        if (userData) {
+            setCompanyName(userData.companyName || data.companyProfile.name);
+            setCompanyLogoUrl(userData.companyLogoUrl || data.companyProfile.logoUrl);
+            setUserName(userData.userName || data.appUser.name);
+            setUserAvatarUrl(userData.userAvatarUrl || data.appUser.avatarUrl);
+            setUserEmail(userData.userEmail || data.appUser.email);
+        }
+    }, [userData]);
+
+    const handleUserUpdate = (field: keyof AppUser | 'companyName' | 'companyLogoUrl', value: string) => {
+      if (userDocRef) {
+        updateDocumentNonBlocking(userDocRef, { [field]: value });
+      }
+    };
+
+    // Collections Data
+    const projectsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/projects`) : null), [user, firestore]);
+    const { data: projectsData } = useCollection<Project>(projectsCol);
     const [projects, setProjects] = useState<Project[]>(data.projects);
+    useEffect(() => { if (projectsData) setProjects(projectsData) }, [projectsData]);
+
+    const budgetCategoriesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetCategories`) : null), [user, firestore]);
+    const { data: budgetCategoriesData } = useCollection<BudgetCategory>(budgetCategoriesCol);
     const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(data.budgetCategories);
+    useEffect(() => { if (budgetCategoriesData) setBudgetCategories(budgetCategoriesData) }, [budgetCategoriesData]);
+
+    const vendorsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/vendors`) : null), [user, firestore]);
+    const { data: vendorsData } = useCollection<Vendor>(vendorsCol);
     const [vendors, setVendors] = useState<Vendor[]>(data.vendors);
+    useEffect(() => { if (vendorsData) setVendors(vendorsData) }, [vendorsData]);
+    
+    const budgetItemsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetItems`) : null), [user, firestore]);
+    const { data: budgetItemsData } = useCollection<BudgetItem>(budgetItemsCol);
     const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(data.budgetItems);
+    useEffect(() => { if (budgetItemsData) setBudgetItems(budgetItemsData) }, [budgetItemsData]);
+
+    const teamMembersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/teamMembers`) : null), [user, firestore]);
+    const { data: teamMembersData } = useCollection<TeamMember>(teamMembersCol);
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>(data.teamMembers);
+    useEffect(() => { if (teamMembersData) setTeamMembers(teamMembersData) }, [teamMembersData]);
+    
+    const tasksCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/tasks`) : null), [user, firestore]);
+    const { data: tasksData } = useCollection<Task>(tasksCol);
     const [tasks, setTasks] = useState<Task[]>(data.tasks);
+    useEffect(() => { if (tasksData) setTasks(tasksData) }, [tasksData]);
+
+    const expensesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/expenses`) : null), [user, firestore]);
+    const { data: expensesData } = useCollection<Expense>(expensesCol);
     const [expenses, setExpenses] = useState<Expense[]>(data.expenses);
+    useEffect(() => { if (expensesData) setExpenses(expensesData) }, [expensesData]);
+
+    const changeOrdersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/changeOrders`) : null), [user, firestore]);
+    const { data: changeOrdersData } = useCollection<ChangeOrder>(changeOrdersCol);
     const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(data.changeOrders);
+    useEffect(() => { if (changeOrdersData) setChangeOrders(changeOrdersData) }, [changeOrdersData]);
+
+    const rfisCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/rfis`) : null), [user, firestore]);
+    const { data: rfisData } = useCollection<RFI>(rfisCol);
     const [rfis, setRfis] = useState<RFI[]>(data.rfis);
+    useEffect(() => { if (rfisData) setRfis(rfisData) }, [rfisData]);
+
+    const issuesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/issues`) : null), [user, firestore]);
+    const { data: issuesData } = useCollection<Issue>(issuesCol);
     const [issues, setIssues] = useState<Issue[]>(data.issues);
+    useEffect(() => { if (issuesData) setIssues(issuesData) }, [issuesData]);
+
+    const milestonesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/milestones`) : null), [user, firestore]);
+    const { data: milestonesData } = useCollection<Milestone>(milestonesCol);
     const [milestones, setMilestones] = useState<Milestone[]>(data.milestones);
+    useEffect(() => { if (milestonesData) setMilestones(milestonesData) }, [milestonesData]);
+
 
     const addProject = async (project: Omit<Project, 'id'>) => {
-      const newProject = { ...project, id: crypto.randomUUID() };
-      setProjects(current => [...current, newProject]);
+        if (!projectsCol) return;
+        addDocumentNonBlocking(projectsCol, project);
     };
 
     const updateProject = async (project: Project) => {
-      setProjects(current => current.map(p => p.id === project.id ? project : p));
+        if (!user || !firestore) return;
+        const projectDocRef = doc(firestore, `users/${user.uid}/projects`, project.id);
+        updateDocumentNonBlocking(projectDocRef, project);
     };
 
     const deleteProject = async (projectId: string) => {
-      setProjects(current => current.filter(p => p.id !== projectId));
+        if (!user || !firestore) return;
+        const projectDocRef = doc(firestore, `users/${user.uid}/projects`, projectId);
+        deleteDocumentNonBlocking(projectDocRef);
     };
 
 
   const value = {
     companyName,
-    setCompanyName,
+    setCompanyName: (name: string) => { setCompanyName(name); handleUserUpdate('companyName', name); },
     companyLogoUrl,
-    setCompanyLogoUrl,
+    setCompanyLogoUrl: (url: string) => { setCompanyLogoUrl(url); handleUserUpdate('companyLogoUrl', url); },
     userName,
-    setUserName,
+    setUserName: (name: string) => { setUserName(name); handleUserUpdate('userName', name); },
     userAvatarUrl,
-    setUserAvatarUrl,
+    setUserAvatarUrl: (url: string) => { setUserAvatarUrl(url); handleUserUpdate('userAvatarUrl', url); },
     userEmail,
-    setUserEmail,
+    setUserEmail: (email: string) => { setUserEmail(email); handleUserUpdate('userEmail', email); },
     userPhone,
     setUserPhone,
     userJobTitle,
@@ -144,34 +212,34 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     deleteProject,
     
     budgetCategories,
-    setBudgetCategories,
+    setBudgetCategories, // Assuming local for now
     
     vendors,
-    setVendors,
+    setVendors, // Assuming local for now
     
     budgetItems,
-    setBudgetItems,
+    setBudgetItems, // Assuming local for now
     
     teamMembers,
-    setTeamMembers,
+    setTeamMembers, // Assuming local for now
     
     tasks,
-    setTasks,
+    setTasks, // Assuming local for now
     
     expenses,
-    setExpenses,
+    setExpenses, // Assuming local for now
     
     changeOrders,
-    setChangeOrders,
+    setChangeOrders, // Assuming local for now
 
     rfis,
-    setRfis,
+    setRfis, // Assuming local for now
     
     issues,
-    setIssues,
+    setIssues, // Assuming local for now
     
     milestones,
-    setMilestones,
+    setMilestones, // Assuming local for now
   };
 
   return (

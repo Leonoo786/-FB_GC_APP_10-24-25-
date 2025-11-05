@@ -1,4 +1,5 @@
 
+
 'use client'; 
 
 import { notFound, useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 import { AddEditProjectDialog } from "../_components/add-project-dialog";
+import { useUser } from "@/firebase";
 
 export function ProjectDetailLayout({
     projectId,
@@ -27,6 +29,7 @@ export function ProjectDetailLayout({
     const { toast } = useToast();
     const router = useRouter();
     const appState = useContext(AppStateContext);
+    const { user } = useUser();
     const [hasMounted, setHasMounted] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -39,11 +42,13 @@ export function ProjectDetailLayout({
         return <div>Loading...</div>;
     }
 
-    const { projects, setProjects, budgetItems, expenses } = appState;
+    const { projects, deleteProject, budgetItems, expenses } = appState;
     const project = projects.find(p => p.id === projectId);
 
     if (!project) {
-        notFound();
+        // This is a temporary state while data loads, return loading or skeleton
+        // a full notFound() could flash unnecessarily
+        return <div>Loading project details...</div>;
     }
 
     const projectBudgetItems = budgetItems.filter(item => item.projectId === project.id);
@@ -67,8 +72,8 @@ export function ProjectDetailLayout({
         setIsEditDialogOpen(true);
     };
 
-    const handleDelete = () => {
-        setProjects(currentProjects => currentProjects.filter(p => p.id !== project.id));
+    const handleDelete = async () => {
+        await deleteProject(project.id);
         toast({
             title: "Project Deleted",
             description: `The "${project.name}" project has been deleted.`,

@@ -1,5 +1,6 @@
 
 
+
 export type Project = {
   id: string;
   projectNumber: string;
@@ -147,6 +148,11 @@ export type AppUser = {
     name: string;
     email: string;
     avatarUrl: string;
+    companyName?: string;
+    companyLogoUrl?: string;
+    userName?: string;
+    userAvatarUrl?: string;
+    userEmail?: string;
 };
 
 export type CompanyProfile = {
