@@ -23,14 +23,9 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
-    const [hasMounted, setHasMounted] = useState(false);
     const appState = useAppState();
     const auth = useAuth();
     const { user, isUserLoading } = useUser();
-
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
 
     useEffect(() => {
         if (auth && !user && !isUserLoading) {
@@ -38,7 +33,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         }
     }, [auth, user, isUserLoading]);
 
-    if (!hasMounted || !appState || appState.isLoading) {
+    if (appState.isLoading) {
         return <div className="flex h-screen w-screen items-center justify-center">Loading application data...</div>;
     }
     
