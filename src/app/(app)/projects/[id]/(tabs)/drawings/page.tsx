@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -57,11 +56,7 @@ const mockDrawings = [
   },
 ];
 
-export default function ProjectDrawingsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function ProjectDrawingsPage() {
   const [isAddDrawingOpen, setIsAddDrawingOpen] = useState(false);
 
   return (

@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import { useEffect, useContext } from 'react';
@@ -109,7 +111,3 @@ export function AddEditBudgetCategoryDialog({
             </DialogFooter>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
-  );
-}

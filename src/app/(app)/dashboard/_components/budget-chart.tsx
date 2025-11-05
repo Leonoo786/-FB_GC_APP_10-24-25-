@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useContext } from "react"
@@ -71,8 +72,4 @@ export function BudgetChart() {
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="budget" fill="var(--color-budget)" radius={4} />
-        <Bar dataKey="actual" fill="var(--color-actual)" radius={4} />
-      </BarChart>
-    </ChartContainer>
-  )
-}
+        <Bar dataKey="actual" fill="var(--color-actual

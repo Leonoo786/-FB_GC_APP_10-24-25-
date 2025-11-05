@@ -63,3 +63,7 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
             />
             <Bar dataKey="value" radius={4} />
         </BarChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  )
+}

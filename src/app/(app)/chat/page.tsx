@@ -53,4 +53,6 @@ export default function ChatPage() {
                             <Paperclip className="w-5 h-5" />
                         </Button>
                         <Button size="icon">
-                            
+                            <Send className="w-5 h-5" />
+                        </Button>
+                    

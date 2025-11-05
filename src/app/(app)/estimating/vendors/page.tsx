@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import { useState, useContext, useRef, useMemo } from 'react';
@@ -268,9 +270,4 @@ export default function VendorsPage() {
                                 ))}
                             </TableBody>
                         </Table>
-                    </CardContent>
-                </Card>
-            </div>
-        </>
-    );
-}
+                    </CardContent

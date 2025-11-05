@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useContext, useMemo, useState } from 'react';
@@ -292,4 +290,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </TooltipProvider>
-    </
+    </>
+  );
+}

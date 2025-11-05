@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -32,11 +31,7 @@ const mockUploads = [
   },
 ];
 
-export default function ProjectClientUploadsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function ProjectClientUploadsPage() {
   return (
     <Card>
       <CardHeader>

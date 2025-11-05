@@ -143,4 +143,6 @@ const aiJobEstimatorFlow = ai.defineFlow(
     name: 'aiJobEstimatorFlow',
     inputSchema: AIJobEstimatorInputSchema,
     outputSchema: AIJobEstimatorOutputSchema,
-  
+  },
+  async input => {
+    const {output} = await prompt

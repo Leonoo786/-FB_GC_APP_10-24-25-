@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useContext } from 'react';
@@ -201,5 +202,3 @@ export default function ProfitLossPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}

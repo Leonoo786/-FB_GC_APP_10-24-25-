@@ -1,5 +1,3 @@
-
-
 'use client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Project } from '@/lib/types';
@@ -71,4 +69,10 @@ export function ProjectTimeline({ projects }: ProjectTimelineProps) {
                  </TableBody>
             </Table>
              {activeProjects.length === 0 && (
-                <div className="text-center text-muted-foreground py-
+                <div className="text-center text-muted-foreground py-8">
+                    No active projects to display on timeline.
+                </div>
+             )}
+        </div>
+    );
+}

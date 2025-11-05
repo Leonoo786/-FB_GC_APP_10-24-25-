@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import { useState, useContext } from 'react';
@@ -123,4 +125,3 @@ export default function BudgetCategoriesPage() {
             </div>
         </>
     );
-}

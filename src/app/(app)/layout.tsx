@@ -1,3 +1,5 @@
+
+
 'use client'
 
 import Link from 'next/link';
@@ -76,8 +78,4 @@ function AppLayoutClient({ children }: { children: React.ReactNode }) {
     );
 }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <AppLayoutClient>{children}</AppLayoutClient>
-    );
-}
+export default function AppLayout({ children }: { children: React.ReactNode })

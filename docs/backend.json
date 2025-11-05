@@ -236,6 +236,3 @@
       "description": "Stores public user profile information."
     },
     "/company/profile": {
-        "schema": { "$ref": "#/entities/CompanyProfile"},
-        "description": "Stores the company's profile information."
-    

@@ -58,4 +58,6 @@ const suggestChangeOrderFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return
+    return output!;
+  }
+);

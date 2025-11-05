@@ -1,4 +1,3 @@
-
 'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -8,14 +7,14 @@ import React, { useState, useContext, useRef, useMemo } from "react";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from "lucide-react";
-import { AddEditBudgetItemDialog } from "../../_components/add-edit-budget-item-dialog";
+import { AddEditBudgetItemDialog } from "../_components/add-edit-budget-item-dialog";
 import { AppStateContext } from "@/context/app-state-context";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import type { BudgetItem } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { PasteBudgetDialog } from "../../_components/paste-budget-dialog";
-import { TransactionsDialog } from "../../_components/transactions-dialog";
+import { PasteBudgetDialog } from "../_components/paste-budget-dialog";
+import { TransactionsDialog } from "../_components/transactions-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParams } from "next/navigation";
@@ -94,7 +93,7 @@ export default function ProjectBudgetPage() {
     };
 
     const handleDeleteItem = (itemId: string) => {
-        setBudgetItems(budgetItems.filter(item => item.id !== itemId));
+        setBudgetItems(current => current.filter(item => item.id !== itemId));
         toast({
             title: "Budget Item Deleted",
             description: "The item has been removed from the budget.",
@@ -103,7 +102,7 @@ export default function ProjectBudgetPage() {
     };
 
     const handleDeleteSelected = () => {
-        setBudgetItems(budgetItems.filter(item => !selectedRowKeys.includes(item.id)));
+        setBudgetItems(current => current.filter(item => !selectedRowKeys.includes(item.id)));
         toast({
             title: `${selectedRowKeys.length} Budget Item(s) Deleted`,
             description: "The selected items have been removed from the budget.",
@@ -114,9 +113,9 @@ export default function ProjectBudgetPage() {
 
     const handleSaveItem = (itemToSave: BudgetItem) => {
         if (itemToSave.id) {
-            setBudgetItems(budgetItems.map(item => item.id === itemToSave.id ? itemToSave : item));
+            setBudgetItems(current => current.map(item => item.id === itemToSave.id ? itemToSave : item));
         } else {
-            setBudgetItems([...budgetItems, {...itemToSave, id: crypto.randomUUID()}]);
+            setBudgetItems(current => [{...itemToSave, id: crypto.randomUUID()}, ...current]);
         }
     };
     
@@ -183,10 +182,10 @@ export default function ProjectBudgetPage() {
 
 
                     if (importedItems.length > 0) {
-                        setBudgetItems([...budgetItems, ...importedItems]);
+                        appState.setBudgetItems(current => [...current, ...importedItems]);
                         toast({
                             title: "Import Successful",
-                            description: `${importedItems.length} budget items have been imported.`
+                            description: `${importedItems.length} budget items have been imported.`,
                         });
                     } else {
                         toast({

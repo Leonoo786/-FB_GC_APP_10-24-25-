@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -27,6 +28,3 @@ service cloud.firestore {
     // This is the crucial addition: It allows collection-wide reads (list operations).
     match /{path=**}/documents {
       allow list: if isSignedIn();
-    }
-  }
-}
