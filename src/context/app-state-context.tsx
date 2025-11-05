@@ -6,10 +6,8 @@ import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Exp
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc, addDoc, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import * as data from '@/lib/data';
-
 
 type AppStateContextType = {
   companyName: string;
@@ -81,165 +79,137 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    // User Profile Data
     const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userData } = useDoc<AppUser>(userDocRef);
 
-    const [companyName, setCompanyName] = useState(data.companyProfile.name);
-    const [companyLogoUrl, setCompanyLogoUrl] = useState(data.companyProfile.logoUrl);
-    const [userName, setUserName] = useState(data.appUser.name);
-    const [userAvatarUrl, setUserAvatarUrl] = useState(data.appUser.avatarUrl);
-    const [userEmail, setUserEmail] = useState(data.appUser.email);
-    const [userPhone, setUserPhone] = useState('');
-    const [userJobTitle, setUserJobTitle] = useState('');
-    const [userDepartment, setUserDepartment] = useState('');
-    const [userBio, setUserBio] = useState('');
-
-    useEffect(() => {
-        if (userData) {
-            setCompanyName(userData.companyName || data.companyProfile.name);
-            setCompanyLogoUrl(userData.companyLogoUrl || data.companyProfile.logoUrl);
-            setUserName(userData.userName || data.appUser.name);
-            setUserAvatarUrl(userData.userAvatarUrl || data.appUser.avatarUrl);
-            setUserEmail(userData.userEmail || data.appUser.email);
-        }
-    }, [userData]);
-
-    const handleUserUpdate = (field: keyof AppUser | 'companyName' | 'companyLogoUrl', value: string) => {
-      if (userDocRef) {
-        updateDocumentNonBlocking(userDocRef, { [field]: value });
-      }
-    };
-
-    // Collections Data
     const projectsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/projects`) : null), [user, firestore]);
-    const { data: projectsData } = useCollection<Project>(projectsCol);
-    const [projects, setProjects] = useState<Project[]>(data.projects);
-    useEffect(() => { if (projectsData) setProjects(projectsData) }, [projectsData]);
+    const { data: projects, isLoading: projectsLoading } = useCollection<Project>(projectsCol);
 
     const budgetCategoriesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetCategories`) : null), [user, firestore]);
-    const { data: budgetCategoriesData } = useCollection<BudgetCategory>(budgetCategoriesCol);
-    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>(data.budgetCategories);
-    useEffect(() => { if (budgetCategoriesData) setBudgetCategories(budgetCategoriesData) }, [budgetCategoriesData]);
+    const { data: budgetCategoriesData, isLoading: budgetCategoriesLoading } = useCollection<BudgetCategory>(budgetCategoriesCol);
+    const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
+     useEffect(() => { if (budgetCategoriesData) setBudgetCategories(budgetCategoriesData) }, [budgetCategoriesData]);
 
     const vendorsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/vendors`) : null), [user, firestore]);
-    const { data: vendorsData } = useCollection<Vendor>(vendorsCol);
-    const [vendors, setVendors] = useState<Vendor[]>(data.vendors);
+    const { data: vendorsData, isLoading: vendorsLoading } = useCollection<Vendor>(vendorsCol);
+    const [vendors, setVendors] = useState<Vendor[]>([]);
     useEffect(() => { if (vendorsData) setVendors(vendorsData) }, [vendorsData]);
     
     const budgetItemsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetItems`) : null), [user, firestore]);
-    const { data: budgetItemsData } = useCollection<BudgetItem>(budgetItemsCol);
-    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(data.budgetItems);
+    const { data: budgetItemsData, isLoading: budgetItemsLoading } = useCollection<BudgetItem>(budgetItemsCol);
+    const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
     useEffect(() => { if (budgetItemsData) setBudgetItems(budgetItemsData) }, [budgetItemsData]);
+    
 
     const teamMembersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/teamMembers`) : null), [user, firestore]);
-    const { data: teamMembersData } = useCollection<TeamMember>(teamMembersCol);
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>(data.teamMembers);
+    const { data: teamMembersData, isLoading: teamMembersLoading } = useCollection<TeamMember>(teamMembersCol);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     useEffect(() => { if (teamMembersData) setTeamMembers(teamMembersData) }, [teamMembersData]);
     
     const tasksCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/tasks`) : null), [user, firestore]);
-    const { data: tasksData } = useCollection<Task>(tasksCol);
-    const [tasks, setTasks] = useState<Task[]>(data.tasks);
+    const { data: tasksData, isLoading: tasksLoading } = useCollection<Task>(tasksCol);
+    const [tasks, setTasks] = useState<Task[]>([]);
     useEffect(() => { if (tasksData) setTasks(tasksData) }, [tasksData]);
 
     const expensesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/expenses`) : null), [user, firestore]);
-    const { data: expensesData } = useCollection<Expense>(expensesCol);
-    const [expenses, setExpenses] = useState<Expense[]>(data.expenses);
+    const { data: expensesData, isLoading: expensesLoading } = useCollection<Expense>(expensesCol);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
     useEffect(() => { if (expensesData) setExpenses(expensesData) }, [expensesData]);
+    
 
     const changeOrdersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/changeOrders`) : null), [user, firestore]);
-    const { data: changeOrdersData } = useCollection<ChangeOrder>(changeOrdersCol);
-    const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(data.changeOrders);
+    const { data: changeOrdersData, isLoading: changeOrdersLoading } = useCollection<ChangeOrder>(changeOrdersCol);
+    const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>([]);
     useEffect(() => { if (changeOrdersData) setChangeOrders(changeOrdersData) }, [changeOrdersData]);
 
     const rfisCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/rfis`) : null), [user, firestore]);
-    const { data: rfisData } = useCollection<RFI>(rfisCol);
-    const [rfis, setRfis] = useState<RFI[]>(data.rfis);
+    const { data: rfisData, isLoading: rfisLoading } = useCollection<RFI>(rfisCol);
+    const [rfis, setRfis] = useState<RFI[]>([]);
     useEffect(() => { if (rfisData) setRfis(rfisData) }, [rfisData]);
 
     const issuesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/issues`) : null), [user, firestore]);
-    const { data: issuesData } = useCollection<Issue>(issuesCol);
-    const [issues, setIssues] = useState<Issue[]>(data.issues);
+    const { data: issuesData, isLoading: issuesLoading } = useCollection<Issue>(issuesCol);
+    const [issues, setIssues] = useState<Issue[]>([]);
     useEffect(() => { if (issuesData) setIssues(issuesData) }, [issuesData]);
 
     const milestonesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/milestones`) : null), [user, firestore]);
-    const { data: milestonesData } = useCollection<Milestone>(milestonesCol);
-    const [milestones, setMilestones] = useState<Milestone[]>(data.milestones);
+    const { data: milestonesData, isLoading: milestonesLoading } = useCollection<Milestone>(milestonesCol);
+    const [milestones, setMilestones] = useState<Milestone[]>([]);
     useEffect(() => { if (milestonesData) setMilestones(milestonesData) }, [milestonesData]);
 
 
     const addProject = async (project: Omit<Project, 'id'>) => {
         if (!projectsCol) return;
-        addDocumentNonBlocking(projectsCol, project);
+        await addDoc(projectsCol, project);
     };
 
     const updateProject = async (project: Project) => {
         if (!user || !firestore) return;
         const projectDocRef = doc(firestore, `users/${user.uid}/projects`, project.id);
-        updateDocumentNonBlocking(projectDocRef, project);
+        await updateDoc(projectDocRef, {...project});
     };
 
     const deleteProject = async (projectId: string) => {
         if (!user || !firestore) return;
         const projectDocRef = doc(firestore, `users/${user.uid}/projects`, projectId);
-        deleteDocumentNonBlocking(projectDocRef);
+        await deleteDoc(projectDocRef);
     };
 
 
-  const value = {
-    companyName,
-    setCompanyName: (name: string) => { setCompanyName(name); handleUserUpdate('companyName', name); },
-    companyLogoUrl,
-    setCompanyLogoUrl: (url: string) => { setCompanyLogoUrl(url); handleUserUpdate('companyLogoUrl', url); },
-    userName,
-    setUserName: (name: string) => { setUserName(name); handleUserUpdate('userName', name); },
-    userAvatarUrl,
-    setUserAvatarUrl: (url: string) => { setUserAvatarUrl(url); handleUserUpdate('userAvatarUrl', url); },
-    userEmail,
-    setUserEmail: (email: string) => { setUserEmail(email); handleUserUpdate('userEmail', email); },
-    userPhone,
-    setUserPhone,
-    userJobTitle,
-    setUserJobTitle,
-    userDepartment,
-    setUserDepartment,
-    userBio,
-    setUserBio,
+  const value: AppStateContextType = {
+    companyName: userData?.companyName || '',
+    setCompanyName: (name: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { companyName: name }),
+    companyLogoUrl: userData?.companyLogoUrl || '',
+    setCompanyLogoUrl: (url: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { companyLogoUrl: url }),
+    userName: userData?.userName || '',
+    setUserName: (name: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { userName: name }),
+    userAvatarUrl: userData?.userAvatarUrl || '',
+    setUserAvatarUrl: (url: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { userAvatarUrl: url }),
+    userEmail: userData?.userEmail || '',
+    setUserEmail: (email: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { userEmail: email }),
+    userPhone: '', // Add these if you extend the user model
+    setUserPhone: () => {},
+    userJobTitle: '',
+    setUserJobTitle: () => {},
+    userDepartment: '',
+    setUserDepartment: () => {},
+    userBio: '',
+    setUserBio: () => {},
 
-    projects,
+    projects: projects || [],
     addProject,
     updateProject,
     deleteProject,
     
-    budgetCategories,
-    setBudgetCategories, // Assuming local for now
+    budgetCategories: budgetCategories || [],
+    setBudgetCategories,
     
-    vendors,
-    setVendors, // Assuming local for now
+    vendors: vendors || [],
+    setVendors,
     
-    budgetItems,
-    setBudgetItems, // Assuming local for now
+    budgetItems: budgetItems || [],
+    setBudgetItems,
     
-    teamMembers,
-    setTeamMembers, // Assuming local for now
+    teamMembers: teamMembers || [],
+    setTeamMembers,
     
-    tasks,
-    setTasks, // Assuming local for now
+    tasks: tasks || [],
+    setTasks,
     
-    expenses,
-    setExpenses, // Assuming local for now
+    expenses: expenses || [],
+    setExpenses,
     
-    changeOrders,
-    setChangeOrders, // Assuming local for now
+    changeOrders: changeOrders || [],
+    setChangeOrders,
 
-    rfis,
-    setRfis, // Assuming local for now
+    rfis: rfis || [],
+    setRfis,
     
-    issues,
-    setIssues, // Assuming local for now
+    issues: issues || [],
+    setIssues,
     
-    milestones,
-    setMilestones, // Assuming local for now
+    milestones: milestones || [],
+    setMilestones,
   };
 
   return (
