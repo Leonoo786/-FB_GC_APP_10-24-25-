@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
 import { AppStateProvider } from '@/context/app-state-context';
-import AppLayoutClient from '@/app/(app)/app-layout-client';
 
 export const metadata: Metadata = {
   title: 'Fancy Brothers Constructions APP',
