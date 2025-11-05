@@ -52,8 +52,8 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
             tickFormatter={(value) => `$${Number(value) / 1000}k`}
             />
             <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent indicator="dot" />}\
+                cursor={false}
+                content={<ChartTooltipContent indicator="dot" />}
             />
             <Bar dataKey="value" radius={4} />
         </BarChart>
