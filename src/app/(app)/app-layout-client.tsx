@@ -18,7 +18,7 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppState } from '@/context/app-state-context';
 import { useAuth, useUser } from '@/firebase';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
 

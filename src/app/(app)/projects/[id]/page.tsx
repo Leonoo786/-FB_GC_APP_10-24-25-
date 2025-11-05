@@ -2,5 +2,5 @@ import { redirect } from 'next/navigation';
 
 // This remains a server component
 export default function Page({ params }: { params: { id: string } }) {
-  redirect(`/projects/${params.id}/budget`);
+  redirect(`/projects/${params.id}/reports`);
 }
