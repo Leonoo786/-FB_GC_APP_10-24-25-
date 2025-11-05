@@ -16,6 +16,10 @@ export const appUser: AppUser = {
   name: 'John Doe',
   email: 'john.doe@constructai.com',
   avatarUrl: 'https://i.pravatar.cc/150?u=john',
+  phone: '(555) 123-4567',
+  jobTitle: 'Admin',
+  department: 'Construction',
+  bio: 'Experienced construction professional managing projects for Fancy Brothers Constructions.'
 };
 
 export const teamMembers: TeamMember[] = [];

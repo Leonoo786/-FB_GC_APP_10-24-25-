@@ -1,6 +1,5 @@
 
 
-
 export type Project = {
   id: string;
   projectNumber: string;
@@ -148,6 +147,10 @@ export type AppUser = {
     name: string;
     email: string;
     avatarUrl: string;
+    phone?: string;
+    jobTitle?: string;
+    department?: string;
+    bio?: string;
     companyName?: string;
     companyLogoUrl?: string;
     userName?: string;
