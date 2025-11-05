@@ -6,7 +6,7 @@ import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Exp
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, writeBatch, CollectionReference, DocumentReference } from 'firebase/firestore';
 import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 type AppStateContextType = {
@@ -37,34 +37,34 @@ type AppStateContextType = {
   deleteProject: (projectId: string) => Promise<void>;
   
   budgetCategories: BudgetCategory[];
-  setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
+  setBudgetCategories: (items: BudgetCategory[]) => void;
   
   vendors: Vendor[];
-  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
+  setVendors: (items: Vendor[]) => void;
   
   budgetItems: BudgetItem[];
-  setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
+  setBudgetItems: (items: BudgetItem[]) => void;
   
   teamMembers: TeamMember[];
-  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
+  setTeamMembers: (items: TeamMember[]) => void;
   
   tasks: Task[];
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  setTasks: (items: Task[]) => void;
   
   expenses: Expense[];
-  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
+  setExpenses: (items: Expense[]) => void;
   
   changeOrders: ChangeOrder[];
-  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
+  setChangeOrders: (items: ChangeOrder[]) => void;
   
   rfis: RFI[];
-  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
+  setRfis: (items: RFI[]) => void;
   
   issues: Issue[];
-  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
+  setIssues: (items: Issue[]) => void;
   
   milestones: Milestone[];
-  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
+  setMilestones: (items: Milestone[]) => void;
   
   isLoading: boolean;
 };
@@ -137,6 +137,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const projectDocRef = doc(firestore, `users/${user.uid}/projects`, projectId);
         await deleteDocumentNonBlocking(projectDocRef);
     };
+    
+    const createSetter = <T extends {id: string}>(collectionRef: CollectionReference<DocumentData> | null) => (items: T[]) => {
+        if (!collectionRef || !firestore) return;
+        const batch = writeBatch(firestore);
+        items.forEach(item => {
+            const docRef = doc(collectionRef, item.id);
+            batch.set(docRef, item, { merge: true });
+        });
+        batch.commit().catch(e => console.error("Error in batch write:", e));
+    };
 
     const value: AppStateContextType = useMemo(() => ({
         companyName: userData?.companyName || 'Fancy Brothers Constructions APP',
@@ -164,39 +174,39 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         deleteProject,
         
         budgetCategories: budgetCategoriesData || [],
-        setBudgetCategories: (items) => { if(budgetCategoriesCol) items.forEach(item => setDocumentNonBlocking(doc(budgetCategoriesCol, item.id), item, { merge: true }))},
+        setBudgetCategories: createSetter(budgetCategoriesCol),
         
         vendors: vendorsData || [],
-        setVendors: (items) => { if(vendorsCol) items.forEach(item => setDocumentNonBlocking(doc(vendorsCol, item.id), item, { merge: true }))},
+        setVendors: createSetter(vendorsCol),
         
         budgetItems: budgetItemsData || [],
-        setBudgetItems: (items) => { if(budgetItemsCol) items.forEach(item => setDocumentNonBlocking(doc(budgetItemsCol, item.id), item, { merge: true }))},
+        setBudgetItems: createSetter(budgetItemsCol),
         
         teamMembers: teamMembersData || [],
-        setTeamMembers: (items) => { if(teamMembersCol) items.forEach(item => setDocumentNonBlocking(doc(teamMembersCol, item.id), item, { merge: true }))},
+        setTeamMembers: createSetter(teamMembersCol),
         
         tasks: tasksData || [],
-        setTasks: (items) => { if(tasksCol) items.forEach(item => setDocumentNonBlocking(doc(tasksCol, item.id), item, { merge: true }))},
+        setTasks: createSetter(tasksCol),
         
         expenses: expensesData || [],
-        setExpenses: (items) => { if(expensesCol) items.forEach(item => setDocumentNonBlocking(doc(expensesCol, item.id), item, { merge: true }))},
+        setExpenses: createSetter(expensesCol),
         
         changeOrders: changeOrdersData || [],
-        setChangeOrders: (items) => { if(changeOrdersCol) items.forEach(item => setDocumentNonBlocking(doc(changeOrdersCol, item.id), item, { merge: true }))},
+        setChangeOrders: createSetter(changeOrdersCol),
 
         rfis: rfisData || [],
-        setRfis: (items) => { if(rfisCol) items.forEach(item => setDocumentNonBlocking(doc(rfisCol, item.id), item, { merge: true }))},
+        setRfis: createSetter(rfisCol),
         
         issues: issuesData || [],
-        setIssues: (items) => { if(issuesCol) items.forEach(item => setDocumentNonBlocking(doc(issuesCol, item.id), item, { merge: true }))},
+        setIssues: createSetter(issuesCol),
         
         milestones: milestonesData || [],
-        setMilestones: (items) => { if(milestonesCol) items.forEach(item => setDocumentNonBlocking(doc(milestonesCol, item.id), item, { merge: true }))},
+        setMilestones: createSetter(milestonesCol),
         isLoading,
       }), [
         userData, projects, budgetCategoriesData, vendorsData, budgetItemsData, 
         teamMembersData, tasksData, expensesData, changeOrdersData, rfisData, 
-        issuesData, milestonesData, isLoading, userDocRef, projectsCol, budgetCategoriesCol, vendorsCol, budgetItemsCol, teamMembersCol, tasksCol, expensesCol, changeOrdersCol, rfisCol, issuesCol, milestonesCol
+        issuesData, milestonesData, isLoading, userDocRef, projectsCol, budgetCategoriesCol, vendorsCol, budgetItemsCol, teamMembersCol, tasksCol, expensesCol, changeOrdersCol, rfisCol, issuesCol, milestonesCol, firestore
       ]);
 
   return (

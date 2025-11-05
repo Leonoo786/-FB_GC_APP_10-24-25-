@@ -18,7 +18,9 @@ export const appUser: AppUser = {
   phone: '',
   jobTitle: '',
   department: '',
-  bio: ''
+  bio: '',
+  companyName: 'Fancy Brothers Constructions APP',
+  companyLogoUrl: ''
 };
 
 export const teamMembers: TeamMember[] = [];

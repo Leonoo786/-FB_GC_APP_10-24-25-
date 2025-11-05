@@ -94,7 +94,7 @@ export default function ProjectBudgetPage() {
     };
 
     const handleDeleteItem = (itemId: string) => {
-        setBudgetItems(current => current.filter(item => item.id !== itemId));
+        setBudgetItems(budgetItems.filter(item => item.id !== itemId));
         toast({
             title: "Budget Item Deleted",
             description: "The item has been removed from the budget.",
@@ -103,7 +103,7 @@ export default function ProjectBudgetPage() {
     };
 
     const handleDeleteSelected = () => {
-        setBudgetItems(current => current.filter(item => !selectedRowKeys.includes(item.id)));
+        setBudgetItems(budgetItems.filter(item => !selectedRowKeys.includes(item.id)));
         toast({
             title: `${selectedRowKeys.length} Budget Item(s) Deleted`,
             description: "The selected items have been removed from the budget.",
@@ -114,9 +114,9 @@ export default function ProjectBudgetPage() {
 
     const handleSaveItem = (itemToSave: BudgetItem) => {
         if (itemToSave.id) {
-            setBudgetItems(current => current.map(item => item.id === itemToSave.id ? itemToSave : item));
+            setBudgetItems(budgetItems.map(item => item.id === itemToSave.id ? itemToSave : item));
         } else {
-            setBudgetItems(current => [{...itemToSave, id: crypto.randomUUID()}, ...current]);
+            setBudgetItems([...budgetItems, {...itemToSave, id: crypto.randomUUID()}]);
         }
     };
     
@@ -183,7 +183,7 @@ export default function ProjectBudgetPage() {
 
 
                     if (importedItems.length > 0) {
-                        appState.setBudgetItems(current => [...current, ...importedItems]);
+                        setBudgetItems([...budgetItems, ...importedItems]);
                         toast({
                             title: "Import Successful",
                             description: `${importedItems.length} budget items have been imported.`

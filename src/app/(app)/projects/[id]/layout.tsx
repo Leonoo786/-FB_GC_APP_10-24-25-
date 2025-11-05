@@ -1,4 +1,5 @@
 
+
 'use client'; 
 
 import { useRouter } from "next/navigation";
@@ -16,6 +17,8 @@ import { differenceInDays, format, parseISO } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProjectSummaryChart } from "./_components/project-summary-chart";
 import { AddEditProjectDialog } from "../_components/add-project-dialog";
+import { MilestoneProgress } from "./_components/milestone-progress";
+
 
 export default function ProjectDetailLayout({
     params,
@@ -33,18 +36,17 @@ export default function ProjectDetailLayout({
         return <div>Loading project details...</div>;
     }
 
-    const { projects, deleteProject, budgetItems, expenses } = appState;
+    const { projects, deleteProject, budgetItems, expenses, milestones } = appState;
     const project = projects.find(p => p.id === params.id);
 
     const projectBudgetItems = useMemo(() => budgetItems.filter(item => item.projectId === project?.id), [budgetItems, project?.id]);
     const projectExpenses = useMemo(() => expenses.filter(expense => expense.projectId === project?.id), [expenses, project?.id]);
+    const projectMilestones = useMemo(() => milestones.filter(m => m.projectId === project?.id), [milestones, project?.id]);
 
     const totalBudget = useMemo(() => projectBudgetItems.reduce((acc, item) => acc + item.originalBudget + item.approvedCOBudget, 0), [projectBudgetItems]);
     const spentToDate = useMemo(() => projectExpenses.reduce((acc, item) => acc + item.amount, 0), [projectExpenses]);
 
     if (!project) {
-        // This can happen briefly while data is loading.
-        // A better UI would be a skeleton loader.
         return <div>Project not found. It may be loading or does not exist.</div>;
     }
     
@@ -59,6 +61,8 @@ export default function ProjectDetailLayout({
     const daysPassed = differenceInDays(today, startDate);
     const daysRemaining = differenceInDays(endDate, today);
     const timeProgress = totalDays > 0 ? Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100) : 0;
+
+    const completedMilestones = projectMilestones.filter(m => m.status === 'Completed').length;
     
     const handleEdit = () => {
         setIsEditDialogOpen(true);
@@ -123,6 +127,7 @@ export default function ProjectDetailLayout({
                                 metric={`$${profitAndLoss.toLocaleString()}`}
                                 metricLabel="Bid - Expenses"
                             />
+                            <MilestoneProgress value={completedMilestones} total={projectMilestones.length} />
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon">
@@ -167,14 +172,9 @@ export default function ProjectDetailLayout({
                 </div>
 
                 <Card>
-                    <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                        <div className="lg:col-span-1">
-                            <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
-                            <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">The agreed-upon price</p>
-                        </div>
-                        <div className="lg:col-span-1">
-                            <p className="text-sm text-muted-foreground">Total Budget (cost)</p>
+                    <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                         <div className="lg:col-span-1">
+                            <p className="text-sm text-muted-foreground">Total Budget</p>
                             <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
                             <p className="text-xs text-muted-foreground">Internal cost estimate</p>
                         </div>

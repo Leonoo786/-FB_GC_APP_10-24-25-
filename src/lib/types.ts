@@ -13,7 +13,7 @@ export type Project = {
   percentComplete: number;
   startDate: string;
   endDate: string;
-  finalBidAmount: number;
+  finalBidAmount?: number;
   imageUrl: string;
   imageHint: string;
 };
