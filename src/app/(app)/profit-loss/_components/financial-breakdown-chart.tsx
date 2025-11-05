@@ -2,7 +2,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts"
 
 import {
   ChartContainer,
@@ -22,17 +22,12 @@ const chartConfig = {
     label: "Spent so far",
     color: "hsl(var(--chart-3))",
   },
-  remaining: {
-    label: "Remaining",
-    color: "hsl(var(--chart-4))",
-  },
 } as const;
 
 type FinancialBreakdownChartProps = {
     data: {
         budget: number;
         expenses: number;
-        remaining: number;
     }
 }
 
@@ -40,7 +35,6 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
   const chartData = useMemo(() => [
       { name: "Budget", value: data.budget, fill: "var(--color-budget)" },
       { name: "Spent so far", value: data.expenses, fill: "var(--color-expenses)" },
-      { name: "Remaining", value: data.remaining, fill: "var(--color-remaining)" },
   ], [data]);
 
   return (
@@ -59,7 +53,7 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
             />
             <ChartTooltip
             cursor={false}
-            content={<ChartTooltipContent indicator="dot" />}
+            content={<ChartTooltipContent indicator="dot" />}\
             />
             <Bar dataKey="value" radius={4} />
         </BarChart>

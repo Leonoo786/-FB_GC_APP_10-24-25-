@@ -83,7 +83,7 @@ export default function AIAPage() {
     return <div>Loading...</div>;
   }
 
-  const { projects, companyName, changeOrders } = appState;
+  const { projects, companyName, changeOrders, budgetItems } = appState;
   const selectedProject = projects.find(p => p.id === selectedProjectId);
 
   const projectChangeOrders: ChangeOrder[] = selectedProject
@@ -94,7 +94,7 @@ export default function AIAPage() {
   const totalDeductions = projectChangeOrders.reduce((sum, co) => co.totalRequest < 0 ? sum + co.totalRequest : sum, 0);
   const netChangeByChangeOrders = totalAdditions + totalDeductions;
 
-  const originalContractSum = selectedProject?.revisedContract ?? 0;
+  const originalContractSum = selectedProject ? budgetItems.filter(bi => bi.projectId === selectedProject.id).reduce((sum, item) => sum + item.originalBudget, 0) : 0;
   const contractSumToDate = originalContractSum + netChangeByChangeOrders;
   const totalCompletedAndStored = formValues.totalCompletedAndStored || 0;
   

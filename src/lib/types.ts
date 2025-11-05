@@ -1,5 +1,6 @@
 
 
+
 export type Project = {
   id: string;
   projectNumber: string;
@@ -13,8 +14,6 @@ export type Project = {
   percentComplete: number;
   startDate: string;
   endDate: string;
-  revisedContract: number;
-  finalBidAmount: number;
   imageUrl: string;
   imageHint: string;
 };
