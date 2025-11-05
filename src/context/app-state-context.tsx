@@ -6,8 +6,10 @@ import type { Project, BudgetCategory, Vendor, BudgetItem, TeamMember, Task, Exp
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc, deleteDoc } from 'firebase/firestore';
-import { setDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc, deleteDoc, setDoc, addDoc } from 'firebase/firestore';
+
+// Non-blocking writes for better UX
+import { setDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 type AppStateContextType = {
   companyName: string;
@@ -35,34 +37,34 @@ type AppStateContextType = {
   deleteProject: (projectId: string) => Promise<void>;
   
   budgetCategories: BudgetCategory[];
-  setBudgetCategories: (items: BudgetCategory[]) => void;
+  setBudgetCategories: React.Dispatch<React.SetStateAction<BudgetCategory[]>>;
   
   vendors: Vendor[];
-  setVendors: (items: Vendor[]) => void;
+  setVendors: React.Dispatch<React.SetStateAction<Vendor[]>>;
   
   budgetItems: BudgetItem[];
-  setBudgetItems: (items: BudgetItem[]) => void;
+  setBudgetItems: React.Dispatch<React.SetStateAction<BudgetItem[]>>;
   
   teamMembers: TeamMember[];
-  setTeamMembers: (items: TeamMember[]) => void;
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>;
   
   tasks: Task[];
-  setTasks: (items: Task[]) => void;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   
   expenses: Expense[];
-  setExpenses: (items: Expense[]) => void;
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   
   changeOrders: ChangeOrder[];
-  setChangeOrders: (items: ChangeOrder[]) => void;
+  setChangeOrders: React.Dispatch<React.SetStateAction<ChangeOrder[]>>;
   
   rfis: RFI[];
-  setRfis: (items: RFI[]) => void;
+  setRfis: React.Dispatch<React.SetStateAction<RFI[]>>;
   
   issues: Issue[];
-  setIssues: (items: Issue[]) => void;
+  setIssues: React.Dispatch<React.SetStateAction<Issue[]>>;
   
   milestones: Milestone[];
-  setMilestones: (items: Milestone[]) => void;
+  setMilestones: React.Dispatch<React.SetStateAction<Milestone[]>>;
   
   isLoading: boolean;
 };
@@ -81,53 +83,57 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const { user } = useUser();
     const firestore = useFirestore();
 
+    // User Profile Data
     const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userData, isLoading: userLoading } = useDoc<AppUser>(userDocRef);
 
+    // Collections Data
     const projectsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/projects`) : null), [user, firestore]);
     const { data: projects, isLoading: projectsLoading } = useCollection<Project>(projectsCol);
-
+    
     const budgetCategoriesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetCategories`) : null), [user, firestore]);
-    const { data: budgetCategories, isLoading: budgetCategoriesLoading } = useCollection<BudgetCategory>(budgetCategoriesCol);
+    const { data: budgetCategoriesData, isLoading: budgetCategoriesLoading } = useCollection<BudgetCategory>(budgetCategoriesCol);
 
     const vendorsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/vendors`) : null), [user, firestore]);
-    const { data: vendors, isLoading: vendorsLoading } = useCollection<Vendor>(vendorsCol);
-    
+    const { data: vendorsData, isLoading: vendorsLoading } = useCollection<Vendor>(vendorsCol);
+
     const budgetItemsCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/budgetItems`) : null), [user, firestore]);
-    const { data: budgetItems, isLoading: budgetItemsLoading } = useCollection<BudgetItem>(budgetItemsCol);
+    const { data: budgetItemsData, isLoading: budgetItemsLoading } = useCollection<BudgetItem>(budgetItemsCol);
 
     const teamMembersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/teamMembers`) : null), [user, firestore]);
-    const { data: teamMembers, isLoading: teamMembersLoading } = useCollection<TeamMember>(teamMembersCol);
-    
+    const { data: teamMembersData, isLoading: teamMembersLoading } = useCollection<TeamMember>(teamMembersCol);
+
     const tasksCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/tasks`) : null), [user, firestore]);
-    const { data: tasks, isLoading: tasksLoading } = useCollection<Task>(tasksCol);
+    const { data: tasksData, isLoading: tasksLoading } = useCollection<Task>(tasksCol);
 
     const expensesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/expenses`) : null), [user, firestore]);
-    const { data: expenses, isLoading: expensesLoading } = useCollection<Expense>(expensesCol);
+    const { data: expensesData, isLoading: expensesLoading } = useCollection<Expense>(expensesCol);
 
     const changeOrdersCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/changeOrders`) : null), [user, firestore]);
-    const { data: changeOrders, isLoading: changeOrdersLoading } = useCollection<ChangeOrder>(changeOrdersCol);
+    const { data: changeOrdersData, isLoading: changeOrdersLoading } = useCollection<ChangeOrder>(changeOrdersCol);
 
     const rfisCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/rfis`) : null), [user, firestore]);
-    const { data: rfis, isLoading: rfisLoading } = useCollection<RFI>(rfisCol);
+    const { data: rfisData, isLoading: rfisLoading } = useCollection<RFI>(rfisCol);
 
     const issuesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/issues`) : null), [user, firestore]);
-    const { data: issues, isLoading: issuesLoading } = useCollection<Issue>(issuesCol);
+    const { data: issuesData, isLoading: issuesLoading } = useCollection<Issue>(issuesCol);
 
     const milestonesCol = useMemoFirebase(() => (user ? collection(firestore, `users/${user.uid}/milestones`) : null), [user, firestore]);
-    const { data: milestones, isLoading: milestonesLoading } = useCollection<Milestone>(milestonesCol);
-    
-    const isLoading = userLoading || projectsLoading || budgetCategoriesLoading || vendorsLoading || budgetItemsLoading || teamMembersLoading || tasksLoading || expensesLoading || changeOrdersLoading || rfisLoading || issuesLoading || milestonesLoading;
+    const { data: milestonesData, isLoading: milestonesLoading } = useCollection<Milestone>(milestonesCol);
 
-    const addProject = async (project: Omit<Project, 'id'>) => {
+
+    const isLoading = userLoading || projectsLoading || budgetCategoriesLoading || vendorsLoading || budgetItemsLoading || teamMembersLoading || tasksLoading || expensesLoading || changeOrdersLoading || rfisLoading || issuesLoading || milestonesLoading;
+    
+    // Correctly define CRUD operations
+    const addProject = async (projectData: Omit<Project, 'id'>) => {
         if (!projectsCol) return;
-        addDocumentNonBlocking(projectsCol, project);
+        await addDoc(projectsCol, projectData);
     };
 
-    const updateProject = async (project: Project) => {
+    const updateProject = async (projectData: Project) => {
         if (!user || !firestore) return;
-        const projectDocRef = doc(firestore, `users/${user.uid}/projects`, project.id);
-        updateDocumentNonBlocking(projectDocRef, {...project});
+        const projectDocRef = doc(firestore, `users/${user.uid}/projects`, projectData.id);
+        await setDoc(projectDocRef, projectData, { merge: true });
     };
 
     const deleteProject = async (projectId: string) => {
@@ -138,57 +144,58 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const value: AppStateContextType = {
     companyName: userData?.companyName || '',
-    setCompanyName: (name: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { companyName: name }),
+    setCompanyName: (name: string) => userDocRef && setDocumentNonBlocking(userDocRef, { companyName: name }, { merge: true }),
     companyLogoUrl: userData?.companyLogoUrl || '',
-    setCompanyLogoUrl: (url: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { companyLogoUrl: url }),
+    setCompanyLogoUrl: (url: string) => userDocRef && setDocumentNonBlocking(userDocRef, { companyLogoUrl: url }, { merge: true }),
     userName: userData?.name || '',
-    setUserName: (name: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { name: name }),
+    setUserName: (name: string) => userDocRef && setDocumentNonBlocking(userDocRef, { name: name }, { merge: true }),
     userAvatarUrl: userData?.avatarUrl || '',
-    setUserAvatarUrl: (url: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { avatarUrl: url }),
+    setUserAvatarUrl: (url: string) => userDocRef && setDocumentNonBlocking(userDocRef, { avatarUrl: url }, { merge: true }),
     userEmail: userData?.email || '',
-    setUserEmail: (email: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { email: email }),
+    setUserEmail: (email: string) => userDocRef && setDocumentNonBlocking(userDocRef, { email: email }, { merge: true }),
     userPhone: userData?.phone || '',
-    setUserPhone: (phone: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { phone: phone }),
+    setUserPhone: (phone: string) => userDocRef && setDocumentNonBlocking(userDocRef, { phone: phone }, { merge: true }),
     userJobTitle: userData?.jobTitle || '',
-    setUserJobTitle: (title: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { jobTitle: title }),
+    setUserJobTitle: (title: string) => userDocRef && setDocumentNonBlocking(userDocRef, { jobTitle: title }, { merge: true }),
     userDepartment: userData?.department || '',
-    setUserDepartment: (dept: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { department: dept }),
+    setUserDepartment: (dept: string) => userDocRef && setDocumentNonBlocking(userDocRef, { department: dept }, { merge: true }),
     userBio: userData?.bio || '',
-    setUserBio: (bio: string) => userDocRef && updateDocumentNonBlocking(userDocRef, { bio: bio }),
+    setUserBio: (bio: string) => userDocRef && setDocumentNonBlocking(userDocRef, { bio: bio }, { merge: true }),
 
     projects: projects || [],
     addProject,
     updateProject,
     deleteProject,
     
-    budgetCategories: budgetCategories || [],
+    // The rest of these can be simplified if they don't need complex logic yet
+    budgetCategories: budgetCategoriesData || [],
     setBudgetCategories: (items) => items.forEach(item => budgetCategoriesCol && setDocumentNonBlocking(doc(budgetCategoriesCol, item.id), item, { merge: true })),
     
-    vendors: vendors || [],
+    vendors: vendorsData || [],
     setVendors: (items) => items.forEach(item => vendorsCol && setDocumentNonBlocking(doc(vendorsCol, item.id), item, { merge: true })),
     
-    budgetItems: budgetItems || [],
+    budgetItems: budgetItemsData || [],
     setBudgetItems: (items) => items.forEach(item => budgetItemsCol && setDocumentNonBlocking(doc(budgetItemsCol, item.id), item, { merge: true })),
     
-    teamMembers: teamMembers || [],
+    teamMembers: teamMembersData || [],
     setTeamMembers: (items) => items.forEach(item => teamMembersCol && setDocumentNonBlocking(doc(teamMembersCol, item.id), item, { merge: true })),
     
-    tasks: tasks || [],
+    tasks: tasksData || [],
     setTasks: (items) => items.forEach(item => tasksCol && setDocumentNonBlocking(doc(tasksCol, item.id), item, { merge: true })),
     
-    expenses: expenses || [],
+    expenses: expensesData || [],
     setExpenses: (items) => items.forEach(item => expensesCol && setDocumentNonBlocking(doc(expensesCol, item.id), item, { merge: true })),
     
-    changeOrders: changeOrders || [],
+    changeOrders: changeOrdersData || [],
     setChangeOrders: (items) => items.forEach(item => changeOrdersCol && setDocumentNonBlocking(doc(changeOrdersCol, item.id), item, { merge: true })),
 
-    rfis: rfis || [],
+    rfis: rfisData || [],
     setRfis: (items) => items.forEach(item => rfisCol && setDocumentNonBlocking(doc(rfisCol, item.id), item, { merge: true })),
     
-    issues: issues || [],
+    issues: issuesData || [],
     setIssues: (items) => items.forEach(item => issuesCol && setDocumentNonBlocking(doc(issuesCol, item.id), item, { merge: true })),
     
-    milestones: milestones || [],
+    milestones: milestonesData || [],
     setMilestones: (items) => items.forEach(item => milestonesCol && setDocumentNonBlocking(doc(milestonesCol, item.id), item, { merge: true })),
     isLoading
   };

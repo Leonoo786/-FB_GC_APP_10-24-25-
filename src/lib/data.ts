@@ -1,6 +1,5 @@
 
 import type { Project, TeamMember, Vendor, BudgetCategory, Task, RFI, Issue, BudgetItem, Expense, ChangeOrder, Milestone, AppUser, CompanyProfile } from './types';
-import { PlaceHolderImages } from './placeholder-images';
 
 // This file now serves as a fallback for initial local development
 // but will be superseded by data from Firebase once the user logs in.
