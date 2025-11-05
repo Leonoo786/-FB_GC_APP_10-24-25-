@@ -91,25 +91,25 @@ export default function ProjectDetailLayout({
 
 
     return (
-        <div class="flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
             <div>
-                 <Button variant="ghost" asChild class="mb-4">
+                 <Button variant="ghost" asChild className="mb-4">
                     <Link href="/projects">
-                        <ArrowLeft class="mr-2 h-4 w-4" />
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Projects
                     </Link>
                 </Button>
 
-                <div class="flex justify-between items-start">
+                <div className="flex justify-between items-start">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+                        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                             {project.name}
                         </h1>
-                        <p class="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                             {project.projectNumber}
                         </p>
                     </div>
-                     <div class="flex gap-4 items-center">
+                     <div className="flex gap-4 items-center">
                         <ProjectSummaryChart 
                             data={budgetChartData}
                             label="Budget"
@@ -130,13 +130,13 @@ export default function ProjectDetailLayout({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                  <DropdownMenuItem onClick={handleEdit}>
-                                    <Edit class="mr-2 h-4 w-4" />
+                                    <Edit className="mr-2 h-4 w-4" />
                                     Edit Project
                                 </DropdownMenuItem>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={e => e.preventDefault()} class="text-destructive">
-                                            <Trash class="mr-2 h-4 w-4" />
+                                        <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive">
+                                            <Trash className="mr-2 h-4 w-4" />
                                             Delete Project
                                         </DropdownMenuItem>
                                     </AlertDialogTrigger>
@@ -152,7 +152,7 @@ export default function ProjectDetailLayout({
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                                         <AlertDialogAction
                                             onClick={handleDelete}
-                                            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                         >
                                             Delete
                                         </AlertDialogAction>
@@ -166,45 +166,45 @@ export default function ProjectDetailLayout({
             </div>
 
             <Card>
-                <CardContent class="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-1">
-                        <p class="text-sm text-muted-foreground">Final Bid to Customer</p>
-                        <p class="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
-                        <p class="text-xs text-muted-foreground">The agreed-upon price</p>
+                <CardContent className="pt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div className="lg:col-span-1">
+                        <p className="text-sm text-muted-foreground">Final Bid to Customer</p>
+                        <p className="text-2xl font-bold">${(project.finalBidAmount || 0).toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">The agreed-upon price</p>
                     </div>
-                    <div class="lg:col-span-1">
-                        <p class="text-sm text-muted-foreground">Total Budget (cost)</p>
-                        <p class="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
-                        <p class="text-xs text-muted-foreground">Internal cost estimate</p>
+                    <div className="lg:col-span-1">
+                        <p className="text-sm text-muted-foreground">Total Budget (cost)</p>
+                        <p className="text-2xl font-bold">${totalBudget.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Internal cost estimate</p>
                     </div>
-                     <div class="lg:col-span-1">
-                        <p class="text-sm text-muted-foreground">Spent to Date</p>
-                        <p class="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
-                        <p class="text-xs text-muted-foreground">{budgetProgress.toFixed(1)}% of Budget</p>
+                     <div className="lg:col-span-1">
+                        <p className="text-sm text-muted-foreground">Spent to Date</p>
+                        <p className="text-2xl font-bold">${spentToDate.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{budgetProgress.toFixed(1)}% of Budget</p>
                     </div>
-                     <div class="lg:col-span-1">
-                        <p class="text-sm text-muted-foreground">Profit/Loss</p>
-                        <p class="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
-                        <p class="text-xs text-muted-foreground">Bid - Spent</p>
+                     <div className="lg:col-span-1">
+                        <p className="text-sm text-muted-foreground">Profit/Loss</p>
+                        <p className="text-2xl font-bold">${profitAndLoss.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Bid - Spent</p>
                     </div>
 
-                    <div class="space-y-4 lg:col-span-1">
+                    <div className="space-y-4 lg:col-span-1">
                         <div>
-                            <p class="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                                 {totalDays} Total Days ({format(endDate, 'MMM d, yyyy')})
                             </p>
-                            <Progress value={timeProgress} class="h-2 mt-1" />
-                            <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                            <Progress value={timeProgress} className="h-2 mt-1" />
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
                             <span>{daysPassed > 0 ? `${daysPassed} days passed` : 'Starting soon'}</span>
                             <span>{daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed'}</span>
                             </div>
                         </div>
                          <div>
-                            <p class="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                                 Budget Status
                             </p>
-                            <Progress value={budgetProgress} class="h-2 mt-1" />
-                            <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                            <Progress value={budgetProgress} className="h-2 mt-1" />
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
                             <span>${spentToDate.toLocaleString()} spent</span>
                             <span>${(totalBudget - spentToDate).toLocaleString()} left</span>
                             </div>
@@ -215,8 +215,6 @@ export default function ProjectDetailLayout({
 
             <div>
                 <ProjectTabs projectId={project.id} />
-                <div class="mt-6">{children}</div>
+                <div className="mt-6">{children}</div>
             </div>
-        </div>
-    );
-}
+        

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -68,15 +67,15 @@ export default function ProjectDrawingsPage() {
       />
       <Card>
         <CardHeader>
-          <div class="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle class="text-2xl">Drawings</CardTitle>
+              <CardTitle className="text-2xl">Drawings</CardTitle>
               <CardDescription>
                 Manage project drawings and versions.
               </CardDescription>
             </div>
             <Button onClick={() => setIsAddDrawingOpen(true)}>
-              <PlusCircle class="mr-2 h-4 w-4" /> Add Drawing
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Drawing
             </Button>
           </div>
         </CardHeader>
@@ -84,18 +83,18 @@ export default function ProjectDrawingsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-[120px]">Sheet No.</TableHead>
+                <TableHead className="w-[120px]">Sheet No.</TableHead>
                 <TableHead>Title</TableHead>
-                <TableHead class="w-[100px]">Version</TableHead>
+                <TableHead className="w-[100px]">Version</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead class="w-[50px]"></TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {mockDrawings.map((drawing) => (
                 <TableRow key={drawing.id}>
-                  <TableCell class="font-medium">{drawing.sheetNo}</TableCell>
+                  <TableCell className="font-medium">{drawing.sheetNo}</TableCell>
                   <TableCell>{drawing.title}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">Ver. {drawing.version}</Badge>
@@ -106,14 +105,14 @@ export default function ProjectDrawingsPage() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal class="h-4 w-4" />
-                          <span class="sr-only">Toggle menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem>
-                          <FileText class="mr-2" /> View/Markup
+                          <FileText className="mr-2" /> View/Markup
                         </DropdownMenuItem>
                         <DropdownMenuItem>Upload New Version</DropdownMenuItem>
                         <DropdownMenuItem>Delete</DropdownMenuItem>

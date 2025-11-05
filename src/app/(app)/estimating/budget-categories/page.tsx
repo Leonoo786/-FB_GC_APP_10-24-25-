@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useContext } from 'react';
@@ -52,16 +50,16 @@ export default function BudgetCategoriesPage() {
                 onOpenChange={setDialogOpen}
                 category={selectedCategory}
             />
-            <div class="space-y-6">
-                <div class="flex items-center justify-between">
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Budget Categories</h1>
-                        <p class="text-muted-foreground">
+                        <h1 className="text-3xl font-bold tracking-tight">Budget Categories</h1>
+                        <p className="text-muted-foreground">
                             Manage a master list of budget categories.
                         </p>
                     </div>
                     <Button onClick={handleNewCategory}>
-                        <PlusCircle class="mr-2" />
+                        <PlusCircle className="mr-2" />
                         New Category
                     </Button>
                 </div>
@@ -76,19 +74,19 @@ export default function BudgetCategoriesPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
-                                    <TableHead class="w-[50px]"></TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {budgetCategories.sort((a, b) => a.name.localeCompare(b.name)).map(category => (
                                     <TableRow key={category.id}>
-                                        <TableCell class="font-medium">{category.name}</TableCell>
+                                        <TableCell className="font-medium">{category.name}</TableCell>
                                         <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                        <MoreHorizontal class="h-4 w-4" />
-                                                        <span class="sr-only">Toggle menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Toggle menu</span>
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
@@ -96,7 +94,7 @@ export default function BudgetCategoriesPage() {
                                                     <DropdownMenuItem onClick={() => handleEditCategory(category)}>Edit</DropdownMenuItem>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">Delete</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
@@ -107,7 +105,7 @@ export default function BudgetCategoriesPage() {
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
                                                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteCategory(category.id)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                <AlertDialogAction onClick={() => handleDeleteCategory(category.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                                                     Delete
                                                                 </AlertDialogAction>
                                                             </AlertDialogFooter>

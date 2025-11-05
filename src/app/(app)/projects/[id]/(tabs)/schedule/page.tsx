@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useContext } from 'react';
@@ -69,15 +68,15 @@ export default function ProjectSchedulePage({
       />
       <Card>
         <CardHeader>
-          <div class="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle class="text-2xl">Project Schedule</CardTitle>
+              <CardTitle className="text-2xl">Project Schedule</CardTitle>
               <CardDescription>
                 View and manage the project timeline and tasks.
               </CardDescription>
             </div>
             <Button onClick={() => setIsAddItemOpen(true)}>
-              <PlusCircle class="mr-2 h-4 w-4" /> Add Schedule Item
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Schedule Item
             </Button>
           </div>
         </CardHeader>
@@ -89,26 +88,26 @@ export default function ProjectSchedulePage({
                 <TableHead>Assignee</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Priority</TableHead>
-                <TableHead class="text-right">Due Date</TableHead>
-                <TableHead class="w-[50px]"></TableHead>
+                <TableHead className="text-right">Due Date</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projectTasks.map((task) => (
                 <TableRow key={task.id}>
-                  <TableCell class="font-medium">{task.title}</TableCell>
+                  <TableCell className="font-medium">{task.title}</TableCell>
                   <TableCell>{teamMembers.find(m => m.id === task.assigneeId)?.name || 'Unassigned'}</TableCell>
                   <TableCell>
                      <Badge variant={statusVariant[task.status]}>{task.status}</Badge>
                   </TableCell>
                   <TableCell>{task.priority}</TableCell>
-                  <TableCell class="text-right">{format(new Date(task.dueDate), 'PP')}</TableCell>
+                  <TableCell className="text-right">{format(new Date(task.dueDate), 'PP')}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal class="h-4 w-4" />
-                          <span class="sr-only">Toggle menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -123,12 +122,12 @@ export default function ProjectSchedulePage({
             </TableBody>
           </Table>
            {projectTasks.length === 0 && (
-              <div class="text-center py-12 text-muted-foreground">
-                <CalendarIcon class="mx-auto h-12 w-12" />
-                <h3 class="mt-2 text-sm font-semibold">No schedule items yet</h3>
-                <p class="mt-1 text-sm">Get started by adding a new schedule item.</p>
-                 <Button class="mt-6" onClick={() => setIsAddItemOpen(true)}>
-                  <PlusCircle class="mr-2 h-4 w-4" /> Add Schedule Item
+              <div className="text-center py-12 text-muted-foreground">
+                <CalendarIcon className="mx-auto h-12 w-12" />
+                <h3 className="mt-2 text-sm font-semibold">No schedule items yet</h3>
+                <p className="mt-1 text-sm">Get started by adding a new schedule item.</p>
+                 <Button className="mt-6" onClick={() => setIsAddItemOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Schedule Item
                 </Button>
               </div>
             )}

@@ -128,7 +128,7 @@ export function AddEditTeamMemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent class="sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit' : 'New'} Team Member</DialogTitle>
           <DialogDescription>
@@ -136,7 +136,7 @@ export function AddEditTeamMemberDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
             <FormField
               control={form.control}
               name="avatar"
@@ -144,23 +144,23 @@ export function AddEditTeamMemberDialog({
                 <FormItem>
                   <FormLabel>Avatar</FormLabel>
                   <FormControl>
-                     <div class="flex items-center gap-4">
-                        <Avatar class="h-20 w-20">
+                     <div className="flex items-center gap-4">
+                        <Avatar className="h-20 w-20">
                             {avatarPreview ? (
                                 <AvatarImage src={avatarPreview} alt="Avatar preview" />
                             ) : null}
                             <AvatarFallback>
-                                <User class="h-10 w-10" />
+                                <User className="h-10 w-10" />
                             </AvatarFallback>
                         </Avatar>
-                        <div class='flex-1'>
+                        <div className='flex-1'>
                             <Input 
                             type="file" 
                             accept="image/*" 
                             onChange={handleAvatarChange}
-                            class='w-full'
+                            className='w-full'
                             />
-                            <p class='text-xs text-muted-foreground mt-1'>Upload a photo for the team member.</p>
+                            <p className='text-xs text-muted-foreground mt-1'>Upload a photo for the team member.</p>
                         </div>
                     </div>
                   </FormControl>
@@ -220,7 +220,7 @@ export function AddEditTeamMemberDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter class="pt-4">
+            <DialogFooter className="pt-4">
               <Button
                 type="button"
                 variant="ghost"

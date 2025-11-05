@@ -13,7 +13,4 @@ export async function estimateJob(
     const result = await aiJobEstimator(input);
     return result;
   } catch (error) {
-    console.error("Error in AI job estimator flow:", error);
-    throw new Error("Failed to generate job estimate.");
-  }
-}
+    console.error("Error in AI job estimator flow:",

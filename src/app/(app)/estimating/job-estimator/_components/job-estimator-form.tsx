@@ -86,7 +86,7 @@ export function JobEstimatorForm() {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
             name="jobDescription"
@@ -123,9 +123,9 @@ export function JobEstimatorForm() {
           />
           <Button type="submit" disabled={isLoading}>
             {isLoading ? (
-              <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <Wand2 class="mr-2 h-4 w-4" />
+              <Wand2 className="mr-2 h-4 w-4" />
             )}
             Generate Estimate
           </Button>
@@ -133,7 +133,7 @@ export function JobEstimatorForm() {
       </Form>
 
       {result && (
-        <Card class="mt-8">
+        <Card className="mt-8">
           <CardHeader>
             <CardTitle>Generated Budget</CardTitle>
           </CardHeader>
@@ -143,7 +143,7 @@ export function JobEstimatorForm() {
                 <TableRow>
                   <TableHead>Category</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead class="text-right">Estimated Cost</TableHead>
+                  <TableHead className="text-right">Estimated Cost</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,7 +151,7 @@ export function JobEstimatorForm() {
                   <TableRow key={index}>
                     <TableCell>{item.category}</TableCell>
                     <TableCell>{item.description}</TableCell>
-                    <TableCell class="text-right">
+                    <TableCell className="text-right">
                       {item.cost.toLocaleString("en-US", {
                         style: "currency",
                         currency: "USD",
@@ -159,9 +159,9 @@ export function JobEstimatorForm() {
                     </TableCell>
                   </TableRow>
                 ))}
-                <TableRow class="font-bold bg-secondary">
+                <TableRow className="font-bold bg-secondary">
                     <TableCell colSpan={2}>Total Estimated Cost</TableCell>
-                    <TableCell class="text-right">
+                    <TableCell className="text-right">
                         {totalCost.toLocaleString("en-US", {
                             style: "currency",
                             currency: "USD",
@@ -171,8 +171,4 @@ export function JobEstimatorForm() {
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
-      )}
-    </>
-  );
-}
+        </

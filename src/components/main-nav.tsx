@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -33,7 +32,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
 
 const mainNavLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },

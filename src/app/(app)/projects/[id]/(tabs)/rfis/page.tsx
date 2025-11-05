@@ -69,34 +69,34 @@ export default function ProjectRFIsPage({ params }: { params: { id: string } }) 
       <AddRfiDialog open={isAddRfiOpen} onOpenChange={setIsAddRfiOpen} />
       <Card>
         <CardHeader>
-          <div class="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle class="text-2xl">Requests for Information</CardTitle>
+              <CardTitle className="text-2xl">Requests for Information</CardTitle>
               <CardDescription>
                 Manage all RFIs for this project.
               </CardDescription>
             </div>
             <Button onClick={() => setIsAddRfiOpen(true)}>
-              <PlusCircle class="mr-2 h-4 w-4" /> Add RFI
+              <PlusCircle className="mr-2 h-4 w-4" /> Add RFI
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div class="hidden md:block">
+          <div className="hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead class="w-[120px]">RFI #</TableHead>
+                  <TableHead className="w-[120px]">RFI #</TableHead>
                   <TableHead>Subject</TableHead>
-                  <TableHead class="w-[120px]">Date</TableHead>
-                  <TableHead class="w-[120px]">Status</TableHead>
-                  <TableHead class="w-[100px]">Actions</TableHead>
+                  <TableHead className="w-[120px]">Date</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {projectRFIs.map((rfi) => (
                   <TableRow key={rfi.id}>
-                    <TableCell class="font-medium">{rfi.rfiNumber}</TableCell>
+                    <TableCell className="font-medium">{rfi.rfiNumber}</TableCell>
                     <TableCell>{rfi.subject}</TableCell>
                     <TableCell>{format(new Date(rfi.dateSubmitted), 'PP')}</TableCell>
                     <TableCell>
@@ -112,8 +112,8 @@ export default function ProjectRFIsPage({ params }: { params: { id: string } }) 
                             size="icon"
                             variant="ghost"
                           >
-                            <MoreHorizontal class="h-4 w-4" />
-                            <span class="sr-only">Toggle menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -130,40 +130,40 @@ export default function ProjectRFIsPage({ params }: { params: { id: string } }) 
             </Table>
           </div>
 
-          <div class="md:hidden">
-            <Accordion type="single" collapsible class="w-full">
+          <div className="md:hidden">
+            <Accordion type="single" collapsible className="w-full">
               {projectRFIs.map((rfi) => (
                 <AccordionItem value={rfi.id} key={rfi.id}>
                   <AccordionTrigger>
-                    <div class="flex flex-col items-start text-left">
-                      <span class="font-semibold">{rfi.rfiNumber}</span>
-                      <span class="text-sm text-muted-foreground">{rfi.subject}</span>
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-semibold">{rfi.rfiNumber}</span>
+                      <span className="text-sm text-muted-foreground">{rfi.subject}</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div class="space-y-3 px-1">
-                      <div class='flex justify-between items-center'>
-                        <span class="text-sm font-medium">Status</span>
+                    <div className="space-y-3 px-1">
+                      <div className='flex justify-between items-center'>
+                        <span className="text-sm font-medium">Status</span>
                          <Badge variant={statusVariant[rfi.status]}>
                           {rfi.status}
                         </Badge>
                       </div>
-                       <div class='flex justify-between items-center'>
-                        <span class="text-sm font-medium">Date Submitted</span>
-                        <span class="text-sm">{format(new Date(rfi.dateSubmitted), 'PP')}</span>
+                       <div className='flex justify-between items-center'>
+                        <span className="text-sm font-medium">Date Submitted</span>
+                        <span className="text-sm">{format(new Date(rfi.dateSubmitted), 'PP')}</span>
                       </div>
-                      <div class="border-t pt-3">
-                        <p class='font-semibold'>Question:</p>
-                        <p class="text-sm text-muted-foreground">{rfi.question}</p>
+                      <div className="border-t pt-3">
+                        <p className='font-semibold'>Question:</p>
+                        <p className="text-sm text-muted-foreground">{rfi.question}</p>
                       </div>
                       {rfi.answer && (
-                         <div class="border-t pt-3">
-                          <p class='font-semibold'>Answer:</p>
-                          <p class="text-sm text-muted-foreground">{rfi.answer}</p>
+                         <div className="border-t pt-3">
+                          <p className='font-semibold'>Answer:</p>
+                          <p className="text-sm text-muted-foreground">{rfi.answer}</p>
                         </div>
                       )}
-                      <Button class='w-full' variant='outline'>
-                        <MessageSquare class='mr-2' /> Respond
+                      <Button className='w-full' variant='outline'>
+                        <MessageSquare className='mr-2' /> Respond
                       </Button>
                     </div>
                   </AccordionContent>
@@ -173,19 +173,15 @@ export default function ProjectRFIsPage({ params }: { params: { id: string } }) 
           </div>
 
           {projectRFIs.length === 0 && (
-            <div class="text-center py-12 text-muted-foreground">
-              <FileQuestion class="mx-auto h-12 w-12" />
-              <h3 class="mt-2 text-sm font-semibold">No RFIs yet</h3>
-              <p class="mt-1 text-sm">
+            <div className="text-center py-12 text-muted-foreground">
+              <FileQuestion className="mx-auto h-12 w-12" />
+              <h3 className="mt-2 text-sm font-semibold">No RFIs yet</h3>
+              <p className="mt-1 text-sm">
                 Get started by creating a new Request for Information.
               </p>
-              <Button class="mt-6" onClick={() => setIsAddRfiOpen(true)}>
-                <PlusCircle class="mr-2 h-4 w-4" /> Add RFI
+              <Button className="mt-6" onClick={() => setIsAddRfiOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add RFI
               </Button>
             </div>
           )}
         </CardContent>
-      </Card>
-    </>
-  );
-}

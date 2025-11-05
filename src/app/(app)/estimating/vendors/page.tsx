@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useContext, useRef, useMemo } from 'react';
@@ -126,7 +124,7 @@ export default function VendorsPage() {
             <input
                 type="file"
                 ref={fileInputRef}
-                class="hidden"
+                className="hidden"
                 onChange={handleFileChange}
                 accept=".xlsx, .xls, .csv, .txt"
             />
@@ -135,20 +133,20 @@ export default function VendorsPage() {
                 onOpenChange={setDialogOpen}
                 vendor={selectedVendor}
             />
-            <div class="space-y-6">
-                <div class="flex items-center justify-between">
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Vendors</h1>
-                        <p class="text-muted-foreground">
+                        <h1 className="text-3xl font-bold tracking-tight">Vendors</h1>
+                        <p className="text-muted-foreground">
                             Manage a master list of all company vendors and subcontractors.
                         </p>
                     </div>
-                     <div class="flex items-center gap-2">
+                     <div className="flex items-center gap-2">
                         {selectedRowKeys.length > 0 ? (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="destructive">
-                                        <Trash2 class="mr-2 h-4 w-4" />
+                                        <Trash2 className="mr-2 h-4 w-4" />
                                         Delete ({selectedRowKeys.length})
                                     </Button>
                                 </AlertDialogTrigger>
@@ -161,7 +159,7 @@ export default function VendorsPage() {
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDeleteSelected} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                             Delete
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
@@ -170,11 +168,11 @@ export default function VendorsPage() {
                         ) : (
                             <>
                                 <Button variant="outline" onClick={handleImportClick}>
-                                    <Upload class="mr-2 h-4 w-4" />
+                                    <Upload className="mr-2 h-4 w-4" />
                                     Import
                                 </Button>
                                 <Button onClick={handleNewVendor}>
-                                    <PlusCircle class="mr-2" />
+                                    <PlusCircle className="mr-2" />
                                     New Vendor
                                 </Button>
                             </>
@@ -191,7 +189,7 @@ export default function VendorsPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead class="w-[40px]">
+                                    <TableHead className="w-[40px]">
                                         <Checkbox
                                             checked={selectedRowKeys.length > 0 && selectedRowKeys.length === sortedVendors.length}
                                             onCheckedChange={(checked) => {
@@ -209,7 +207,7 @@ export default function VendorsPage() {
                                     <TableHead>Contact Person</TableHead>
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Email</TableHead>
-                                    <TableHead class="w-[50px]"></TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -228,7 +226,7 @@ export default function VendorsPage() {
                                                 aria-label="Select row"
                                             />
                                         </TableCell>
-                                        <TableCell class="font-medium">{vendor.name}</TableCell>
+                                        <TableCell className="font-medium">{vendor.name}</TableCell>
                                         <TableCell>{vendor.trade}</TableCell>
                                         <TableCell>{vendor.contactPerson}</TableCell>
                                         <TableCell>{vendor.phone}</TableCell>
@@ -237,8 +235,8 @@ export default function VendorsPage() {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                        <MoreHorizontal class="h-4 w-4" />
-                                                        <span class="sr-only">Toggle menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <span className="sr-only">Toggle menu</span>
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
@@ -246,7 +244,7 @@ export default function VendorsPage() {
                                                     <DropdownMenuItem onClick={() => handleEditVendor(vendor)}>Edit</DropdownMenuItem>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">Delete</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
@@ -257,7 +255,7 @@ export default function VendorsPage() {
                                                             </AlertDialogHeader>
                                                             <AlertDialogFooter>
                                                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteVendor(vendor.id)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                <AlertDialogAction onClick={() => handleDeleteVendor(vendor.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                                                     Delete
                                                                 </AlertDialogAction>
                                                             </AlertDialogFooter>

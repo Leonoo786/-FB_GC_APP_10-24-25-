@@ -220,17 +220,17 @@ export default function ImportExportPage() {
   };
 
   return (
-    <div class="space-y-6">
+    <div className="space-y-6">
       <input
         type="file"
         ref={fileInputRef}
-        class="hidden"
+        className="hidden"
         onChange={handleFileChange}
         accept=".json"
       />
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">Import / Export</h1>
-        <p class="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">Import / Export</h1>
+        <p className="text-muted-foreground">
           Manage your application data in bulk and monitor storage usage.
         </p>
       </div>
@@ -242,86 +242,86 @@ export default function ImportExportPage() {
             Download a single backup file of all your data, or upload a backup file to restore your application state.
           </CardDescription>
         </CardHeader>
-        <CardContent class="space-y-4">
+        <CardContent className="space-y-4">
             <div
-              class="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4"
             >
-              <div class='mb-4 sm:mb-0'>
-                <p class="font-medium">All Application Data</p>
-                <p class="text-sm text-muted-foreground">
+              <div className='mb-4 sm:mb-0'>
+                <p className="font-medium">All Application Data</p>
+                <p className="text-sm text-muted-foreground">
                   Save or load a snapshot of your entire application.
                 </p>
               </div>
-              <div class="flex w-full sm:w-auto items-center gap-2">
+              <div className="flex w-full sm:w-auto items-center gap-2">
                 <Button
                   variant="outline"
-                  class='w-1/2 sm:w-auto'
+                  className='w-1/2 sm:w-auto'
                   onClick={handleImportClick}
                 >
-                  <Upload class="mr-2 h-4 w-4" /> Import
+                  <Upload className="mr-2 h-4 w-4" /> Import
                 </Button>
-                <Button variant="default" class='w-1/2 sm:w-auto' onClick={handleExport}>
-                  <Download class="mr-2 h-4 w-4" /> Export
+                <Button variant="default" className='w-1/2 sm:w-auto' onClick={handleExport}>
+                  <Download className="mr-2 h-4 w-4" /> Export
                 </Button>
               </div>
             </div>
              <Card>
-                <CardHeader class="flex flex-row items-center gap-4 space-y-0 pb-2">
-                    <HardDrive class="h-8 w-8 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
+                    <HardDrive className="h-8 w-8 text-muted-foreground" />
                     <div>
                         <CardTitle>Current Data Size</CardTitle>
                         <CardDescription>The total size of your data stored in the browser relative to Firestore's 1 GiB free tier.</CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <p class="text-3xl font-bold">{displaySize}</p>
-                    <Progress value={storageUsagePercentage} class="mt-2" />
-                    <p class="text-xs text-muted-foreground mt-1">
+                    <p className="text-3xl font-bold">{displaySize}</p>
+                    <Progress value={storageUsagePercentage} className="mt-2" />
+                    <p className="text-xs text-muted-foreground mt-1">
                       You've used {storageUsagePercentage.toFixed(4)}% of the 1 GiB free limit.
                     </p>
                 </CardContent>
             </Card>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Document Reads</CardTitle>
-                        <BookOpen class="h-4 w-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Reads</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
                         of 50,000 per day (free tier)
                         </p>
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Document Writes</CardTitle>
-                        <PenSquare class="h-4 w-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Writes</CardTitle>
+                        <PenSquare className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
                         of 20,000 per day (free tier)
                         </p>
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Document Deletes</CardTitle>
-                        <Trash2 class="h-4 w-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Document Deletes</CardTitle>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
+                        <div className="text-2xl font-bold">0</div>
+                        <p className="text-xs text-muted-foreground">
                         of 20,000 per day (free tier)
                         </p>
                     </CardContent>
                 </Card>
             </div>
             <Alert>
-              <Database class="h-4 w-4" />
+              <Database className="h-4 w-4" />
               <AlertTitle>Note on Usage Metrics</AlertTitle>
               <AlertDescription>
                 The read, write, and delete counts are currently zero because the application is using local browser storage. Migrating to Firebase Firestore would enable these real-time metrics.
@@ -329,6 +329,3 @@ export default function ImportExportPage() {
             </Alert>
         </CardContent>
       </Card>
-    </div>
-  );
-}

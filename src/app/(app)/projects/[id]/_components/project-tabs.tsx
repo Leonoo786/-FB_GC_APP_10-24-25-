@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import Link from "next/link";
@@ -24,8 +22,8 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
     const baseHref = `/projects/${projectId}`;
     
     return (
-        <div class="border-b">
-            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+        <div className="border-b">
+            <nav className="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
                 {tabs.map((tab) => {
                     const href = tab.href ? `${baseHref}/${tab.href}` : baseHref;
                     const isActive = pathname === href;
@@ -34,7 +32,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
                         <Link
                             key={tab.name}
                             href={href}
-                            class={cn(
+                            className={cn(
                                 "whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm",
                                 isActive
                                     ? "border-primary text-primary"

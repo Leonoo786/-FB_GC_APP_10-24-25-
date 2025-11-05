@@ -65,15 +65,15 @@ export default function ProjectChangeOrdersPage({
       />
       <Card>
         <CardHeader>
-          <div class="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle class="text-2xl">Change Orders</CardTitle>
+              <CardTitle className="text-2xl">Change Orders</CardTitle>
               <CardDescription>
                 Manage all change orders for this project.
               </CardDescription>
             </div>
             <Button onClick={() => setIsAddChangeOrderOpen(true)}>
-              <PlusCircle class="mr-2 h-4 w-4" /> Add Change Order
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Change Order
             </Button>
           </div>
         </CardHeader>
@@ -81,22 +81,22 @@ export default function ProjectChangeOrdersPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-[120px]">CO #</TableHead>
+                <TableHead className="w-[120px]">CO #</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead class="w-[120px]">Status</TableHead>
-                <TableHead class="text-right w-[150px]">Amount</TableHead>
-                <TableHead class="w-[50px]"></TableHead>
+                <TableHead className="w-[120px]">Status</TableHead>
+                <TableHead className="text-right w-[150px]">Amount</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projectChangeOrders.map((co) => (
                 <TableRow key={co.id}>
-                  <TableCell class="font-medium">{co.coNumber}</TableCell>
+                  <TableCell className="font-medium">{co.coNumber}</TableCell>
                   <TableCell>{co.description}</TableCell>
                   <TableCell>
                     <Badge variant={statusVariant[co.status]}>{co.status}</Badge>
                   </TableCell>
-                  <TableCell class="text-right">
+                  <TableCell className="text-right">
                     {co.totalRequest.toLocaleString('en-US', {
                       style: 'currency',
                       currency: 'USD',
@@ -106,14 +106,14 @@ export default function ProjectChangeOrdersPage({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal class="h-4 w-4" />
-                          <span class="sr-only">Toggle menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Toggle menu</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem>
-                          <FileText class="mr-2" /> View Details
+                          <FileText className="mr-2" /> View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem>Edit</DropdownMenuItem>
                         <DropdownMenuItem>Delete</DropdownMenuItem>
@@ -124,7 +124,7 @@ export default function ProjectChangeOrdersPage({
               ))}
               {projectChangeOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} class="text-center h-24">
+                  <TableCell colSpan={5} className="text-center h-24">
                     No change orders for this project yet.
                   </TableCell>
                 </TableRow>

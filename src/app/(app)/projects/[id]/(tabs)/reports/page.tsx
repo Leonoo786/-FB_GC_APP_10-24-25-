@@ -113,7 +113,7 @@ export default function ProjectReportsPage({
     <>
       <Card>
         <CardHeader>
-          <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
               <CardTitle>Top Spending Categories</CardTitle>
               <CardDescription>
@@ -127,47 +127,47 @@ export default function ProjectReportsPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Category</TableHead>
-                <TableHead class="text-right">Budget</TableHead>
-                <TableHead class="text-right">Spent</TableHead>
-                <TableHead class="text-right">Balance</TableHead>
-                <TableHead class="w-[150px]">Progress Chart</TableHead>
-                <TableHead class="text-center w-[120px]">Transactions</TableHead>
+                <TableHead className="text-right">Budget</TableHead>
+                <TableHead className="text-right">Spent</TableHead>
+                <TableHead className="text-right">Balance</TableHead>
+                <TableHead className="w-[150px]">Progress Chart</TableHead>
+                <TableHead className="text-center w-[120px]">Transactions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {categorySpending.map((item, index) => (
                   <TableRow key={item.category}>
                     <TableCell>
-                      <div class="flex items-center gap-3">
-                         <span class={cn("h-2.5 w-2.5 rounded-full", categoryColors[index % categoryColors.length])} />
-                        <span class="font-medium">{item.category}</span>
+                      <div className="flex items-center gap-3">
+                         <span className={cn("h-2.5 w-2.5 rounded-full", categoryColors[index % categoryColors.length])} />
+                        <span className="font-medium">{item.category}</span>
                       </div>
                     </TableCell>
-                    <TableCell class="text-right">
+                    <TableCell className="text-right">
                       {item.budget.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
-                    <TableCell class="text-right text-red-600">
+                    <TableCell className="text-right text-red-600">
                       {item.spent.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
-                    <TableCell class="text-right">
+                    <TableCell className="text-right">
                       {item.balance.toLocaleString('en-US', {
                         style: 'currency',
                         currency: 'USD',
                       })}
                     </TableCell>
                     <TableCell>
-                      <div class='flex items-center gap-2'>
-                        <Progress value={item.progress} class={cn("h-2", item.isOverBudget && "[&>div]:bg-red-600")} />
-                        <span class='text-xs text-muted-foreground'>{item.progress > 0 ? item.progress.toFixed(1) : '0.0'}%</span>
+                      <div className='flex items-center gap-2'>
+                        <Progress value={item.progress} className={cn("h-2", item.isOverBudget && "[&>div]:bg-red-600")} />
+                        <span className='text-xs text-muted-foreground'>{item.progress > 0 ? item.progress.toFixed(1) : '0.0'}%</span>
                       </div>
                     </TableCell>
-                    <TableCell class="text-center">
+                    <TableCell className="text-center">
                       <Button
                         variant="outline"
                         size="sm"
@@ -190,7 +190,3 @@ export default function ProjectReportsPage({
           category={selectedCategory}
           expenses={getExpensesForCategory(selectedCategory)}
         />
-      )}
-    </>
-  );
-}

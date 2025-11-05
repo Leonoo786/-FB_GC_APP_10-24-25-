@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Flag } from 'lucide-react';
@@ -21,11 +20,11 @@ export function MilestoneProgress({ value, total }: MilestoneProgressProps) {
   ];
 
   return (
-    <div class="flex flex-col items-center text-sm relative">
-       <div class="h-20 w-20">
+    <div className="flex flex-col items-center text-sm relative">
+       <div className="h-20 w-20">
         <ChartContainer
           config={{}}
-          class="min-h-0 w-full h-full p-0 [&>div]:h-full"
+          className="min-h-0 w-full h-full p-0 [&>div]:h-full"
         >
           <PieChart>
             <Pie
@@ -46,12 +45,12 @@ export function MilestoneProgress({ value, total }: MilestoneProgressProps) {
             </Pie>
           </PieChart>
         </ChartContainer>
-         <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <Flag class="h-5 w-5 text-muted-foreground" />
+         <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <Flag className="h-5 w-5 text-muted-foreground" />
          </div>
       </div>
-      <p class="font-bold text-lg">{value}/{total}</p>
-      <p class="text-xs text-muted-foreground">Milestones</p>
+      <p className="font-bold text-lg">{value}/{total}</p>
+      <p className="text-xs text-muted-foreground">Milestones</p>
     </div>
   );
 }

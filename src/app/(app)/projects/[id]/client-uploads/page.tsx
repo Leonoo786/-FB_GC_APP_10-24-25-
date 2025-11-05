@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -42,39 +41,39 @@ export default function ProjectClientUploadsPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div class="space-y-4">
+        <div className="space-y-4">
           {mockUploads.map((upload) => (
             <div
               key={upload.id}
-              class="flex items-center justify-between rounded-lg border p-4"
+              className="flex items-center justify-between rounded-lg border p-4"
             >
-              <div class="flex items-center gap-4">
-                <FileIcon class="h-8 w-8 text-muted-foreground" />
+              <div className="flex items-center gap-4">
+                <FileIcon className="h-8 w-8 text-muted-foreground" />
                 <div>
-                  <p class="font-medium">{upload.fileName}</p>
-                  <p class="text-sm text-muted-foreground">
+                  <p className="font-medium">{upload.fileName}</p>
+                  <p className="text-sm text-muted-foreground">
                     {upload.fileSize} &bull; {upload.uploadedAt}
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon">
-                  <Download class="h-5 w-5" />
-                  <span class="sr-only">Download</span>
+                  <Download className="h-5 w-5" />
+                  <span className="sr-only">Download</span>
                 </Button>
                 <Button variant="ghost" size="icon">
-                  <Edit class="h-5 w-5" />
-                  <span class="sr-only">Edit</span>
+                  <Edit className="h-5 w-5" />
+                  <span className="sr-only">Edit</span>
                 </Button>
-                <Button variant="ghost" size="icon" class='text-destructive hover:text-destructive'>
-                  <Trash2 class="h-5 w-5" />
-                  <span class="sr-only">Delete</span>
+                <Button variant="ghost" size="icon" className='text-destructive hover:text-destructive'>
+                  <Trash2 className="h-5 w-5" />
+                  <span className="sr-only">Delete</span>
                 </Button>
               </div>
             </div>
           ))}
-          <Button class="w-full" size="lg">
-            <Upload class="mr-2" />
+          <Button className="w-full" size="lg">
+            <Upload className="mr-2" />
             Upload a File
           </Button>
         </div>

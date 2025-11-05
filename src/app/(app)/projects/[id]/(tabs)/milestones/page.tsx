@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useContext } from 'react';
@@ -89,59 +87,59 @@ export default function ProjectMilestonesPage({
       />
       <Card>
         <CardHeader>
-          <div class="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
-              <CardTitle class="text-2xl">Project Milestones</CardTitle>
+              <CardTitle className="text-2xl">Project Milestones</CardTitle>
               <CardDescription>
                 Track major project goals and deadlines.
               </CardDescription>
             </div>
             <Button onClick={handleNewMilestone}>
-              <PlusCircle class="mr-2 h-4 w-4" /> Add Milestone
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Milestone
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {projectMilestones.length === 0 ? (
-            <div class="text-center py-12 text-muted-foreground">
-              <Flag class="mx-auto h-12 w-12" />
-              <h3 class="mt-2 text-sm font-semibold">No milestones yet</h3>
-              <p class="mt-1 text-sm">
+            <div className="text-center py-12 text-muted-foreground">
+              <Flag className="mx-auto h-12 w-12" />
+              <h3 className="mt-2 text-sm font-semibold">No milestones yet</h3>
+              <p className="mt-1 text-sm">
                 Get started by creating a new project milestone.
               </p>
-              <Button class="mt-6" onClick={handleNewMilestone}>
-                <PlusCircle class="mr-2 h-4 w-4" /> Add Milestone
+              <Button className="mt-6" onClick={handleNewMilestone}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Milestone
               </Button>
             </div>
           ) : (
-            <div class="space-y-4">
+            <div className="space-y-4">
               {projectMilestones.map((milestone) => (
                 <Card key={milestone.id}>
-                  <CardContent class="p-4 flex items-start justify-between">
-                    <div class="flex-1 space-y-2">
-                      <div class="flex items-center gap-4">
-                        <h3 class="font-semibold text-lg">{milestone.name}</h3>
+                  <CardContent className="p-4 flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-4">
+                        <h3 className="font-semibold text-lg">{milestone.name}</h3>
                         <Badge variant={statusVariant[milestone.status]}>{milestone.status}</Badge>
                       </div>
-                      <p class="text-sm text-muted-foreground">{milestone.description}</p>
-                      <p class="text-sm">
+                      <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                      <p className="text-sm">
                         <strong>Due:</strong> {format(new Date(milestone.dueDate), 'PPP')}
                         {milestone.status !== 'Completed' && isPast(new Date(milestone.dueDate)) && (
-                            <span class="text-destructive font-medium ml-2">(Overdue)</span>
+                            <span className="text-destructive font-medium ml-2">(Overdue)</span>
                         )}
                       </p>
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" class="h-8 w-8">
-                                <MoreVertical class="h-4 w-4" />
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuItem onClick={() => handleEditMilestone(milestone)}>Edit</DropdownMenuItem>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">Delete</DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
@@ -152,7 +150,7 @@ export default function ProjectMilestonesPage({
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteMilestone(milestone.id)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                        <AlertDialogAction onClick={() => handleDeleteMilestone(milestone.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>

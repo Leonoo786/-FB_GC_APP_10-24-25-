@@ -108,7 +108,7 @@ export function AddTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent class="sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit' : 'Add New'} Task</DialogTitle>
           <DialogDescription>
@@ -116,7 +116,7 @@ export function AddTaskDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -156,7 +156,7 @@ export function AddTaskDialog({
               )}
             />
 
-            <div class="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
                 name="status"
@@ -203,7 +203,7 @@ export function AddTaskDialog({
                 />
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                 <FormField
                 control={form.control}
                 name="assigneeId"
@@ -232,14 +232,14 @@ export function AddTaskDialog({
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => (
-                    <FormItem class='flex flex-col'>
+                    <FormItem className='flex flex-col'>
                     <FormLabel>Due Date (Optional)</FormLabel>
                      <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant={'outline'}
-                            class={cn(
+                            className={cn(
                               'w-full pl-3 text-left font-normal',
                               !field.value && 'text-muted-foreground'
                             )}
@@ -249,11 +249,11 @@ export function AddTaskDialog({
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent class="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -268,7 +268,7 @@ export function AddTaskDialog({
                 />
             </div>
 
-            <DialogFooter class="pt-4">
+            <DialogFooter className="pt-4">
               <Button
                 type="button"
                 variant="ghost"
@@ -279,8 +279,4 @@ export function AddTaskDialog({
               <Button type="submit">{isEditing ? 'Save Changes' : 'Create Task'}</Button>
             </DialogFooter>
           </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  );
-}
+        </

@@ -263,7 +263,7 @@ export default function ProjectBudgetPage() {
             <input
                 type="file"
                 ref={fileInputRef}
-                class="hidden"
+                className="hidden"
                 onChange={handleFileChange}
                 accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
             />
@@ -289,17 +289,17 @@ export default function ProjectBudgetPage() {
             />
             <Card>
                 <CardHeader>
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <CardTitle class="text-2xl">Project Budget</CardTitle>
+                            <CardTitle className="text-2xl">Project Budget</CardTitle>
                             <CardDescription>Detailed cost breakdown for {project.name}.</CardDescription>
                         </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                              {selectedRowKeys.length > 0 ? (
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                     <Button variant="destructive">
-                                        <Trash2 class="mr-2 h-4 w-4" />
+                                        <Trash2 className="mr-2 h-4 w-4" />
                                         Delete ({selectedRowKeys.length})
                                     </Button>
                                     </AlertDialogTrigger>
@@ -312,7 +312,7 @@ export default function ProjectBudgetPage() {
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDeleteSelected} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                            <AlertDialogAction onClick={handleDeleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                                 Delete
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
@@ -320,12 +320,12 @@ export default function ProjectBudgetPage() {
                                 </AlertDialog>
                             ) : (
                                 <>
-                                    <div class="flex items-center space-x-2">
+                                    <div className="flex items-center space-x-2">
                                         <Switch id="group-by-category" checked={showGroupByCategory} onCheckedChange={setShowGroupByCategory}/>
                                         <Label htmlFor="group-by-category">Group by Category</Label>
                                     </div>
                                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                                        <SelectTrigger class="w-full sm:w-[180px]">
+                                        <SelectTrigger className="w-full sm:w-[180px]">
                                         <SelectValue placeholder="All Categories" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -338,7 +338,7 @@ export default function ProjectBudgetPage() {
                                         </SelectContent>
                                     </Select>
                                     <Button variant="outline" onClick={handleImportClick}>
-                                        <Upload class="mr-2 h-4 w-4" />
+                                        <Upload className="mr-2 h-4 w-4" />
                                         Import
                                     </Button>
                                     <Button variant="outline" onClick={() => setPasteDialogOpen(true)}>
@@ -347,7 +347,7 @@ export default function ProjectBudgetPage() {
                                 </>
                             )}
                             <Button onClick={handleNewItem}>
-                                <PlusCircle class="mr-2 h-4 w-4" />
+                                <PlusCircle className="mr-2 h-4 w-4" />
                                 Add Item
                             </Button>
                         </div>
@@ -359,37 +359,37 @@ export default function ProjectBudgetPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Category</TableHead>
-                                    <TableHead class="text-right">Original Budget</TableHead>
-                                    <TableHead class="text-right">Approved COs</TableHead>
-                                    <TableHead class="text-right">Revised Budget</TableHead>
-                                    <TableHead class="text-right">Committed Cost</TableHead>
-                                    <TableHead class="text-right">Projected Cost</TableHead>
+                                    <TableHead className="text-right">Original Budget</TableHead>
+                                    <TableHead className="text-right">Approved COs</TableHead>
+                                    <TableHead className="text-right">Revised Budget</TableHead>
+                                    <TableHead className="text-right">Committed Cost</TableHead>
+                                    <TableHead className="text-right">Projected Cost</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {groupedBudgetItems.map(({ category, subtotals }) => (
-                                    <TableRow key={category} class="bg-secondary hover:bg-secondary/80 font-bold">
+                                    <TableRow key={category} className="bg-secondary hover:bg-secondary/80 font-bold">
                                         <TableCell>{category}</TableCell>
-                                        <TableCell class="text-right">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        <TableCell class="text-right">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        <TableCell class="text-right">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                        <TableCell class="text-right">
-                                            <Button variant="link" class="p-0 h-auto text-secondary-foreground" onClick={() => handleTransactionsClick(category)}>
+                                        <TableCell className="text-right">${subtotals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">${subtotals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">${subtotals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">
+                                            <Button variant="link" className="p-0 h-auto text-secondary-foreground" onClick={() => handleTransactionsClick(category)}>
                                                 ${subtotals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </Button>
                                         </TableCell>
-                                        <TableCell class="text-right">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell className="text-right">${subtotals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                             <TableFooter>
                                 <TableRow>
-                                    <TableCell class="font-bold">Totals</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="font-bold">Totals</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 </TableRow>
                             </TableFooter>
                         </Table>
@@ -397,7 +397,7 @@ export default function ProjectBudgetPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead class="w-[40px]">
+                                    <TableHead className="w-[40px]">
                                         <Checkbox
                                             checked={selectedRowKeys.length > 0 && selectedRowKeys.length === filteredAndSortedItems.length}
                                             onCheckedChange={(checked) => {
@@ -413,17 +413,17 @@ export default function ProjectBudgetPage() {
                                     <TableHead>
                                         <Button variant="ghost" onClick={() => requestSort('notes')}>
                                             Notes
-                                            <ArrowUpDown class="ml-2 h-4 w-4" />
+                                            <ArrowUpDown className="ml-2 h-4 w-4" />
                                         </Button>
                                     </TableHead>
                                     <TableHead>Category</TableHead>
                                     <TableHead>Cost Type</TableHead>
-                                    <TableHead class="text-right">Original Budget</TableHead>
-                                    <TableHead class="text-right">Approved COs</TableHead>
-                                    <TableHead class="text-right">Revised Budget</TableHead>
-                                    <TableHead class="text-right">Committed Cost</TableHead>
-                                    <TableHead class="text-right">Projected Cost</TableHead>
-                                    <TableHead class="w-[50px]"></TableHead>
+                                    <TableHead className="text-right">Original Budget</TableHead>
+                                    <TableHead className="text-right">Approved COs</TableHead>
+                                    <TableHead className="text-right">Revised Budget</TableHead>
+                                    <TableHead className="text-right">Committed Cost</TableHead>
+                                    <TableHead className="text-right">Projected Cost</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -446,24 +446,24 @@ export default function ProjectBudgetPage() {
                                                     aria-label="Select row"
                                                 />
                                             </TableCell>
-                                            <TableCell class="font-medium">{item.notes}</TableCell>
+                                            <TableCell className="font-medium">{item.notes}</TableCell>
                                             <TableCell>{item.category}</TableCell>
-                                            <TableCell class="capitalize">{item.costType}</TableCell>
-                                            <TableCell class="text-right">${item.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell class="text-right">${item.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell class="text-right font-semibold">${revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                            <TableCell class="text-right">
-                                                 <Button variant="link" class="p-0 h-auto" onClick={() => handleTransactionsClick(item.category)}>
+                                            <TableCell className="capitalize">{item.costType}</TableCell>
+                                            <TableCell className="text-right">${item.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right">${item.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right font-semibold">${revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right">
+                                                 <Button variant="link" className="p-0 h-auto" onClick={() => handleTransactionsClick(item.category)}>
                                                     ${committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </Button>
                                             </TableCell>
-                                            <TableCell class="text-right">${item.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                            <TableCell className="text-right">${item.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span className="sr-only">Toggle menu</span>
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
@@ -471,7 +471,7 @@ export default function ProjectBudgetPage() {
                                                         <DropdownMenuItem onClick={() => handleEditItem(item)}>Edit</DropdownMenuItem>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger asChild>
-                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent>
                                                                 <AlertDialogHeader>
@@ -482,7 +482,7 @@ export default function ProjectBudgetPage() {
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>
                                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                                    <AlertDialogAction onClick={() => handleDeleteItem(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                                                         Delete
                                                                     </AlertDialogAction>
                                                                 </AlertDialogFooter>
@@ -497,12 +497,12 @@ export default function ProjectBudgetPage() {
                             </TableBody>
                             <TableFooter>
                                 <TableRow>
-                                    <TableCell colSpan={4} class="font-bold">Totals</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                                    <TableCell class="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell colSpan={4} className="font-bold">Totals</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.originalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.approvedCOBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.revisedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.committedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right font-bold">${totals.projectedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
                             </TableFooter>
@@ -513,4 +513,3 @@ export default function ProjectBudgetPage() {
         </>
     );
     
-}

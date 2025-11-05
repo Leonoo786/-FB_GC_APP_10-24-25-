@@ -9,10 +9,10 @@ import { JobEstimatorForm } from "./_components/job-estimator-form";
 
 export default function JobEstimatorPage() {
   return (
-    <div class="space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">AI Job Estimator</h1>
-        <p class="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight">AI Job Estimator</h1>
+        <p className="text-muted-foreground">
           Generate a preliminary budget from a job description or blueprint.
         </p>
       </div>
@@ -27,7 +27,4 @@ export default function JobEstimatorPage() {
         <CardContent>
           <JobEstimatorForm />
         </CardContent>
-      </Card>
-    </div>
-  );
-}
+      

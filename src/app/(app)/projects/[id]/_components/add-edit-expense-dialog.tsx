@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -32,7 +31,6 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { AppStateContext } from '@/context/app-state-context';
 import type { Expense, Vendor } from '@/lib/types';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   date: z.date({ required_error: 'Please select a date.' }),
@@ -161,7 +159,7 @@ export function AddEditExpenseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent class="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit' : 'Add'} Expense</DialogTitle>
           <DialogDescription>
@@ -169,17 +167,17 @@ export function AddEditExpenseDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} class="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-6 pl-1">
             <FormField
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormItem class="flex flex-col">
+                <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
                    <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
-                        <div class="relative">
+                        <div className="relative">
                            <Input
                              value={manualDate}
                              onChange={(e) => setManualDate(e.target.value)}
@@ -191,13 +189,13 @@ export function AddEditExpenseDialog({
                                   setManualDate(field.value ? format(field.value, "PPP") : "");
                                 }
                              }}
-                             class="w-full pl-3 text-left font-normal"
+                             className="w-full pl-3 text-left font-normal"
                            />
-                           <CalendarIcon class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                           <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
                         </div>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent class="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -223,7 +221,7 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="category"
               render={({ field }) => (
-                <FormItem class="flex flex-col">
+                <FormItem className="flex flex-col">
                   <FormLabel>Category</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -231,7 +229,7 @@ export function AddEditExpenseDialog({
                         <Button
                           variant="outline"
                           role="combobox"
-                          class={cn(
+                          className={cn(
                             "w-full justify-between",
                             !field.value && "text-muted-foreground"
                           )}
@@ -241,18 +239,18 @@ export function AddEditExpenseDialog({
                                 (cat) => cat === field.value
                               )
                             : "Select a budget category"}
-                          <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent class="w-[--radix-popover-trigger-width] p-0">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
                         <CommandInput placeholder="Search category..." />
                         <CommandList>
                         <CommandEmpty>
                              <Button
                                 variant="ghost"
-                                class="w-full justify-start"
+                                className="w-full justify-start"
                                 onClick={() => {
                                     const newCategoryName = form.getValues('category');
                                     if(newCategoryName && !uniqueBudgetCategories.includes(newCategoryName)) {
@@ -274,7 +272,7 @@ export function AddEditExpenseDialog({
                               }}
                             >
                               <Check
-                                class={cn(
+                                className={cn(
                                   "mr-2 h-4 w-4",
                                   category === field.value
                                     ? "opacity-100"
@@ -297,7 +295,7 @@ export function AddEditExpenseDialog({
               control={form.control}
               name="vendor"
               render={({ field }) => (
-                <FormItem class="flex flex-col">
+                <FormItem className="flex flex-col">
                   <FormLabel>Vendor (Optional)</FormLabel>
                    <Popover>
                     <PopoverTrigger asChild>
@@ -305,7 +303,7 @@ export function AddEditExpenseDialog({
                         <Button
                           variant="outline"
                           role="combobox"
-                          class={cn(
+                          className={cn(
                             "w-full justify-between",
                             !field.value && "text-muted-foreground"
                           )}
@@ -315,18 +313,18 @@ export function AddEditExpenseDialog({
                                 (vendor) => vendor.name === field.value
                               )?.name
                             : "Select a vendor"}
-                          <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent class="w-[--radix-popover-trigger-width] p-0">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                       <Command>
                         <CommandInput placeholder="Search vendor..." />
                         <CommandList>
                         <CommandEmpty>
                              <Button
                                 variant="ghost"
-                                class="w-full justify-start"
+                                className="w-full justify-start"
                                 onClick={() => {
                                     const newVendorName = form.getValues('vendor');
                                     if(newVendorName && !vendors.some(v => v.name === newVendorName)) {
@@ -358,7 +356,7 @@ export function AddEditExpenseDialog({
                               }}
                             >
                               <Check
-                                class={cn(
+                                className={cn(
                                   "mr-2 h-4 w-4",
                                   vendor.name === field.value
                                     ? "opacity-100"
@@ -464,7 +462,7 @@ export function AddEditExpenseDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter class="pt-4">
+            <DialogFooter className="pt-4">
               <Button
                 type="button"
                 variant="ghost"

@@ -44,7 +44,7 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
   ], [data]);
 
   return (
-    <ChartContainer config={chartConfig} class="min-h-[300px] w-full">
+    <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
       <ResponsiveContainer>
         <BarChart data={chartData} accessibilityLayer>
             <CartesianGrid vertical={false} />
@@ -63,7 +63,3 @@ export function FinancialBreakdownChart({ data }: FinancialBreakdownChartProps) 
             />
             <Bar dataKey="value" radius={4} />
         </BarChart>
-      </ResponsiveContainer>
-    </ChartContainer>
-  )
-}

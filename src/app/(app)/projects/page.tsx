@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useContext, useEffect, useMemo } from 'react';
@@ -102,57 +100,57 @@ export default function ProjectsPage() {
                 onOpenChange={setDialogOpen}
                 project={selectedProject}
             />
-            <div class="flex flex-col gap-6">
-                <div class="flex items-center justify-between">
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
-                        <p class="text-muted-foreground">
+                        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+                        <p className="text-muted-foreground">
                             Manage all your construction projects from start to finish.
                         </p>
                     </div>
                     <Button onClick={handleNewProject}>
-                        <PlusCircle class="mr-2" />
+                        <PlusCircle className="mr-2" />
                         New Project
                     </Button>
                 </div>
-                <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {projectData.map(project => (
-                        <Card key={project.id} class="flex flex-col">
-                            <CardHeader class="p-0">
+                        <Card key={project.id} className="flex flex-col">
+                            <CardHeader className="p-0">
                                 <Link href={`/projects/${project.id}`}>
-                                    <div class="relative h-48 w-full">
+                                    <div className="relative h-48 w-full">
                                         <Image
                                             src={project.imageUrl}
                                             alt={project.name}
                                             fill
-                                            class="rounded-t-lg object-cover"
+                                            className="rounded-t-lg object-cover"
                                             data-ai-hint={project.imageHint}
                                         />
                                     </div>
                                 </Link>
                             </CardHeader>
-                            <CardContent class="flex-grow p-6">
-                                <div class="flex items-start justify-between">
+                            <CardContent className="flex-grow p-6">
+                                <div className="flex items-start justify-between">
                                     <Link href={`/projects/${project.id}`}>
-                                        <CardTitle class="mb-2 text-xl hover:underline">{project.name}</CardTitle>
+                                        <CardTitle className="mb-2 text-xl hover:underline">{project.name}</CardTitle>
                                     </Link>
-                                    <div class="flex items-center gap-1">
+                                    <div className="flex items-center gap-1">
                                         <Badge variant={statusVariant[project.status]}>{project.status}</Badge>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" class="h-8 w-8">
-                                                    <MoreVertical class="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onClick={() => handleEdit(project)}>
-                                                    <Edit class="mr-2 h-4 w-4" />
+                                                    <Edit className="mr-2 h-4 w-4" />
                                                     Edit
                                                 </DropdownMenuItem>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} class="text-destructive">
-                                                            <Trash class="mr-2 h-4 w-4" />
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                                            <Trash className="mr-2 h-4 w-4" />
                                                             Delete
                                                         </DropdownMenuItem>
                                                     </AlertDialogTrigger>
@@ -168,7 +166,7 @@ export default function ProjectsPage() {
                                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={() => handleDelete(project.id, project.name)}
-                                                                class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                                             >
                                                                 Delete
                                                             </AlertDialogAction>
@@ -179,58 +177,58 @@ export default function ProjectsPage() {
                                         </DropdownMenu>
                                     </div>
                                 </div>
-                                <CardDescription class="line-clamp-2">{project.description}</CardDescription>
+                                <CardDescription className="line-clamp-2">{project.description}</CardDescription>
                             </CardContent>
-                            <CardFooter class="flex flex-col items-start gap-4">
-                                <div class="w-full">
-                                    <div class="flex justify-between text-sm text-muted-foreground mb-1">
+                            <CardFooter className="flex flex-col items-start gap-4">
+                                <div className="w-full">
+                                    <div className="flex justify-between text-sm text-muted-foreground mb-1">
                                         <span>Budget Status</span>
                                         <span>{project.budgetUsedPercent.toFixed(1)}% Used</span>
                                     </div>
                                     <Progress value={project.budgetUsedPercent} aria-label={`${project.budgetUsedPercent}% of budget used`} />
                                 </div>
-                                <div class="w-full space-y-2 text-sm text-muted-foreground">
-                                     <div class="flex items-center justify-between gap-2">
-                                        <div class="flex items-center gap-1.5">
-                                            <DollarSign class="size-4" />
+                                <div className="w-full space-y-2 text-sm text-muted-foreground">
+                                     <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <DollarSign className="size-4" />
                                             <span>Final Bid:</span>
                                         </div>
-                                        <span class="font-medium text-foreground">${(project.finalBidAmount || 0).toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${(project.finalBidAmount || 0).toLocaleString()}</span>
                                     </div>
-                                     <div class="flex items-center justify-between gap-2">
-                                         <div class="flex items-center gap-1.5">
-                                            <Target class="size-4" />
+                                     <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Target className="size-4" />
                                             <span>Total Budget (cost):</span>
                                         </div>
-                                        <span class="font-medium text-foreground">${project.totalBudget.toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${project.totalBudget.toLocaleString()}</span>
                                     </div>
-                                    <div class="flex items-center justify-between gap-2">
-                                        <div class="flex items-center gap-1.5">
-                                            <TrendingUp class="size-4" />
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <TrendingUp className="size-4" />
                                             <span>Spent to Date:</span>
                                         </div>
-                                        <span class="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${project.spentSoFar.toLocaleString()}</span>
                                     </div>
-                                    <div class="flex items-center justify-between gap-2">
-                                         <div class="flex items-center gap-1.5">
-                                            <Wallet class="size-4" />
+                                    <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Wallet className="size-4" />
                                             <span>Remaining Budget:</span>
                                         </div>
-                                        <span class="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${project.remainingBudget.toLocaleString()}</span>
                                     </div>
-                                     <div class="flex items-center justify-between gap-2">
-                                         <div class="flex items-center gap-1.5">
-                                            <PiggyBank class="size-4" />
+                                     <div className="flex items-center justify-between gap-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <PiggyBank className="size-4" />
                                             <span>Profit / Loss:</span>
                                         </div>
-                                        <span class="font-medium text-foreground">${project.profitLoss.toLocaleString()}</span>
+                                        <span className="font-medium text-foreground">${project.profitLoss.toLocaleString()}</span>
                                     </div>
-                                    <div class="flex items-center justify-between gap-2 pt-1 border-t mt-2">
-                                         <div class="flex items-center gap-1.5">
-                                            <Calendar class="size-4" />
+                                    <div className="flex items-center justify-between gap-2 pt-1 border-t mt-2">
+                                         <div className="flex items-center gap-1.5">
+                                            <Calendar className="size-4" />
                                             <span>Timeline:</span>
                                         </div>
-                                        <span class="font-medium text-foreground">{project.daysIn} days in, {project.daysLeft} days left</span>
+                                        <span className="font-medium text-foreground">{project.daysIn} days in, {project.daysLeft} days left</span>
                                     </div>
                                 </div>
                             </CardFooter>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useContext } from "react"
@@ -56,7 +55,7 @@ export function BudgetChart() {
 
 
   return (
-    <ChartContainer config={chartConfig} class="min-h-[200px] w-full">
+    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
       <BarChart accessibilityLayer data={chartData}>
         <CartesianGrid vertical={false} />
         <XAxis

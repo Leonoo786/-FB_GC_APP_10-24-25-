@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, use, useContext, useRef, useMemo } from 'react';
+import { useState, useContext, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,25 +24,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { MoreHorizontal, PlusCircle, ArrowUpDown, Upload, Trash2 } from 'lucide-react';
-import { AddEditExpenseDialog } from '../../_components/add-edit-expense-dialog';
-import { format, isValid } from 'date-fns';
+import { MoreHorizontal, PlusCircle, ArrowUpDown, Trash2 } from 'lucide-react';
+import { AddEditExpenseDialog } from '../_components/add-edit-expense-dialog';
+import { format } from 'date-fns';
 import { AppStateContext } from '@/context/app-state-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Expense } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import * as XLSX from 'xlsx';
 import { Checkbox } from '@/components/ui/checkbox';
 
-
-export default function ProjectExpensesPage({
+export default function ProjectGetReimbursedPage({
   params,
 }: {
   params: { id: string };
@@ -52,39 +42,21 @@ export default function ProjectExpensesPage({
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: keyof Expense; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc'});
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [vendorFilter, setVendorFilter] = useState('all');
   const appState = useContext(AppStateContext);
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!appState) {
     return <div>Loading...</div>;
   }
-  const { expenses, budgetCategories, setExpenses } = appState;
-  const projectExpenses = expenses ? expenses.filter(
-    (exp) => exp.projectId === params.id
-  ) : [];
+  const { expenses, setExpenses } = appState;
+  
+  const projectExpenses = useMemo(() => expenses.filter(
+    (exp) => exp.projectId === params.id && exp.category === 'Get Reimbursed'
+  ), [expenses, params.id]);
 
-  const uniqueVendors = useMemo(() => {
-    const vendorSet = new Set<string>();
-    projectExpenses.forEach(exp => {
-      if (exp.vendorName) {
-        vendorSet.add(exp.vendorName);
-      }
-    });
-    return Array.from(vendorSet).sort();
-  }, [projectExpenses]);
 
   const sortedExpenses = useMemo(() => {
     let sortableItems = [...projectExpenses];
-    
-    if (categoryFilter !== 'all') {
-      sortableItems = sortableItems.filter(exp => exp.category === categoryFilter);
-    }
-    if (vendorFilter !== 'all') {
-      sortableItems = sortableItems.filter(exp => exp.vendorName === vendorFilter);
-    }
     
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
@@ -102,7 +74,7 @@ export default function ProjectExpensesPage({
       });
     }
     return sortableItems;
-  }, [projectExpenses, sortConfig, categoryFilter, vendorFilter]);
+  }, [projectExpenses, sortConfig]);
 
   const requestSort = (key: keyof Expense) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -143,122 +115,18 @@ export default function ProjectExpensesPage({
   }
 
   const handleSaveExpense = (expense: Expense) => {
+    const expenseToSave = { ...expense, category: 'Get Reimbursed' };
     if (selectedExpense && expense.id) {
         // Edit
-        setExpenses(current => current.map(e => e.id === expense.id ? expense : e));
+        setExpenses(current => current.map(e => e.id === expenseToSave.id ? expenseToSave : e));
     } else {
         // Add
-        setExpenses(current => [{...expense, id: crypto.randomUUID()}, ...current]);
+        setExpenses(current => [{...expenseToSave, id: crypto.randomUUID()}, ...current]);
     }
   };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !appState) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        // Convert to array of arrays, ignoring headers
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-
-        if (rows.length < 2) {
-            toast({
-                title: 'Import Warning',
-                description: 'The file is empty or only contains a header row.',
-                variant: 'destructive',
-            });
-            return;
-        }
-
-        const dataRows = rows.slice(1);
-        
-        const parseAmount = (value: any): number => {
-            if (typeof value === 'number') return value;
-            if (typeof value === 'string') {
-              const cleaned = value.replace(/[^0-9.-]+/g, '');
-              const num = parseFloat(cleaned);
-              return isNaN(num) ? 0 : num;
-            }
-            return 0;
-        };
-
-        const parseDate = (value: any): Date | null => {
-            if (!value) return null;
-            const date = new Date(value);
-            return isValid(date) ? date : null;
-        }
-
-        const newExpenses = dataRows.map((row): Expense | null => {
-            const date = parseDate(row[0]);
-            const amount = parseAmount(row[7]);
-            
-            if (!date || !amount) {
-                return null; // Skip invalid rows
-            }
-
-            return {
-                id: crypto.randomUUID(),
-                projectId: params.id,
-                date: format(date, 'yyyy-MM-dd'),
-                category: row[1] || 'Uncategorized',
-                vendorName: row[2] || '',
-                description: row[3] || 'N/A',
-                paymentMethod: row[4] || 'N/A',
-                paymentReference: row[5] || '',
-                invoiceNumber: row[6] || '',
-                amount: amount,
-            };
-        }).filter((item): item is Expense => item !== null);
-        
-        if (newExpenses.length > 0) {
-            setExpenses((current) => [...current, ...newExpenses]);
-            toast({
-                title: 'Import Successful',
-                description: `${newExpenses.length} expenses have been imported.`
-            });
-        } else {
-            toast({
-                title: 'Import Warning',
-                description: `Could not import any valid expenses. Please check your file's format and column content.`,
-                variant: 'destructive',
-            });
-        }
-
-      } catch (error) {
-        console.error("Error importing expenses:", error);
-        toast({
-            title: "Import Failed",
-            description: "There was an error processing the file.",
-            variant: "destructive",
-        });
-      }
-    };
-    reader.readAsArrayBuffer(file);
-
-    if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-    }
-  };
-
 
   return (
     <>
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={handleFileChange}
-        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-      />
       <AddEditExpenseDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -270,9 +138,9 @@ export default function ProjectExpensesPage({
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <CardTitle className="text-2xl">Daily Expenses</CardTitle>
+              <CardTitle className="text-2xl">Get Reimbursed</CardTitle>
               <CardDescription>
-                Log and track daily expenses for this project.
+                Track and manage reimbursable expenses for this project.
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
@@ -299,40 +167,7 @@ export default function ProjectExpensesPage({
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-              ) : (
-                <>
-                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {budgetCategories.map((category) => (
-                        <SelectItem key={category.id} value={category.name}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                   <Select value={vendorFilter} onValueChange={setVendorFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <SelectValue placeholder="All Vendors" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Vendors</SelectItem>
-                      {uniqueVendors.map((vendor) => (
-                        <SelectItem key={vendor} value={vendor}>
-                          {vendor}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline" onClick={handleImportClick}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Import
-                  </Button>
-                </>
-              )}
+              ) : null}
               <Button
                 onClick={handleNewExpense}
                 className="w-full sm:w-auto"
@@ -348,7 +183,7 @@ export default function ProjectExpensesPage({
               <TableRow>
                  <TableHead className="w-[40px]">
                     <Checkbox
-                        checked={selectedRowKeys.length > 0 && sortedExpenses.length > 0 && selectedRowKeys.length === sortedExpenses.length}
+                        checked={selectedRowKeys.length > 0 && sortedExpenses.length > 0 && sortedExpenses.length === sortedExpenses.length}
                         onCheckedChange={(checked) => {
                             if (checked) {
                                 setSelectedRowKeys(sortedExpenses.map(exp => exp.id));
@@ -366,12 +201,6 @@ export default function ProjectExpensesPage({
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => requestSort('category')}>
-                    Category
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                 <TableHead>
                   <Button variant="ghost" onClick={() => requestSort('vendorName')}>
                     Vendor
                     <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -409,7 +238,6 @@ export default function ProjectExpensesPage({
                   <TableCell>
                     {format(new Date(expense.date), 'PP')}
                   </TableCell>
-                  <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.vendorName}</TableCell>
                   <TableCell>{expense.description}</TableCell>
                   <TableCell>{expense.paymentMethod}</TableCell>
@@ -456,6 +284,17 @@ export default function ProjectExpensesPage({
                   </TableCell>
                 </TableRow>
               ))}
+               {sortedExpenses.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center h-24">
+                    No reimbursable expenses recorded for this project yet.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-        </Card
+        </CardContent>
+      </Card>
+    </>
+  );
+}
